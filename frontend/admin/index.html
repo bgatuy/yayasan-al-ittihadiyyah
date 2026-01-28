@@ -1,0 +1,816 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Admin Dashboard - Al-Ittihadiyyah</title>
+  <link rel="icon" type="image/png" href="/favicon.png">
+
+  <!-- Tailwind CSS -->
+  <link href="/css/output.css" rel="stylesheet">
+
+  <!-- Google Font -->
+  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+  <!-- Font Awesome untuk Ikon -->
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+
+  <style>
+    body { font-family: 'Poppins', sans-serif; }
+    /* Fix list style in rich text editor */
+    #news-content-editor ul { list-style-type: disc; padding-left: 1.5rem; }
+    #news-content-editor ol { list-style-type: decimal; padding-left: 1.5rem; }
+
+    /* Efek "Zoom Out" di Mobile */
+    @media (max-width: 767px) {
+      html {
+        font-size: 90%;
+      }
+    }
+  </style>
+</head>
+<body class="bg-slate-100 text-slate-800 font-poppins overflow-x-hidden">
+
+<!-- Mobile Overlay -->
+<div id="sidebar-overlay" onclick="toggleSidebar()" class="fixed inset-0 bg-black/50 z-40 hidden md:hidden transition-opacity"></div>
+
+<div class="flex min-h-screen">
+  
+  <!-- SIDEBAR CMS -->
+  <aside id="sidebar" class="w-64 bg-secondary text-white flex-shrink-0 flex flex-col transition-transform duration-300 fixed h-full z-50 transform -translate-x-full md:translate-x-0">
+    <div class="p-6 flex items-center gap-3 font-bold text-xl border-b border-white/10">
+      <img src="/favicon.png" alt="Logo" class="w-8 h-8 bg-white rounded p-0.5 shadow object-contain">
+      <span>Admin Panel</span>
+    </div>
+    
+    <nav class="flex-1 p-4 space-y-2 overflow-y-auto">
+      <p class="text-xs text-white/50 uppercase font-semibold mb-2 px-2 tracking-wider">Menu Utama</p>
+      
+      <button data-view="dashboard" id="btn-dashboard" class="nav-item w-full flex items-center gap-3 px-4 py-3 bg-primary rounded-xl text-white shadow-lg shadow-primary/50 transition-all text-left">
+        <i class="fa-solid fa-gauge w-5 text-center"></i> Dashboard
+      </button>
+      <button data-view="ppdb" id="btn-ppdb" class="nav-item w-full flex items-center gap-3 px-4 py-3 text-white/80 hover:bg-white/10 rounded-xl transition-all text-left">
+        <i class="fa-solid fa-users w-5 text-center"></i> Data PPDB
+      </button>
+      <button data-view="news" id="btn-news" class="nav-item w-full flex items-center gap-3 px-4 py-3 text-white/80 hover:bg-white/10 rounded-xl transition-all text-left">
+        <i class="fa-solid fa-newspaper w-5 text-center"></i> Berita & Artikel
+      </button>
+      <button data-view="gallery" id="btn-gallery" class="nav-item w-full flex items-center gap-3 px-4 py-3 text-white/80 hover:bg-white/10 rounded-xl transition-all text-left">
+        <i class="fa-solid fa-images w-5 text-center"></i> Galeri
+      </button>
+      <button data-view="teachers" id="btn-teachers" class="nav-item w-full flex items-center gap-3 px-4 py-3 text-white/80 hover:bg-white/10 rounded-xl transition-all text-left">
+        <i class="fa-solid fa-chalkboard-user w-5 text-center"></i> Guru & Staff
+      </button>
+      <div>
+        <button id="btn-pages-toggle" class="w-full flex items-center justify-between gap-3 px-4 py-3 text-white/80 hover:bg-white/10 rounded-xl transition-all text-left">
+            <span class="flex items-center gap-3">
+                <i class="fa-solid fa-file-lines w-5 text-center"></i> Akademik
+            </span>
+            <i id="pages-submenu-icon" class="fa-solid fa-chevron-down text-xs transition-transform"></i>
+        </button>
+        <div id="pages-submenu" class="hidden flex-col pl-8 pt-1 space-y-1">
+            <button id="btn-academic-tk" onclick="openAcademicEditor('tk', 'TK Islam')" class="w-full text-left text-white/70 hover:text-white text-sm py-2 px-2 rounded-lg hover:bg-white/5 transition">TK Islam</button>
+            <button id="btn-academic-mi" onclick="openAcademicEditor('mi', 'Madrasah Ibtidaiyah')" class="w-full text-left text-white/70 hover:text-white text-sm py-2 px-2 rounded-lg hover:bg-white/5 transition">Madrasah Ibtidaiyah</button>
+        </div>
+      </div>
+      
+      <p class="text-xs text-white/50 uppercase font-semibold mt-6 mb-2 px-2 tracking-wider">Sistem</p>
+      <button data-view="settings" id="btn-settings" class="nav-item w-full flex items-center gap-3 px-4 py-3 text-white/80 hover:bg-white/10 rounded-xl transition-all text-left">
+        <i class="fa-solid fa-gear w-5 text-center"></i> Pengaturan
+      </button>
+      <button id="btn-logout" class="w-full flex items-center gap-3 px-4 py-3 text-white/80 hover:bg-red-500/20 hover:text-red-200 rounded-xl transition-all mt-auto text-left" type="button">
+        <i class="fa-solid fa-arrow-right-from-bracket w-5 text-center"></i> Logout
+      </button>
+    </nav>
+  </aside>
+
+  <!-- MAIN CONTENT -->
+  <main class="flex-1 md:ml-64 flex flex-col min-h-screen min-w-0">
+    <!-- Topbar -->
+    <header class="bg-white shadow-sm px-4 md:px-8 py-4 flex justify-between items-center sticky top-0 z-30">
+      <div class="flex items-center gap-4">
+        <button onclick="toggleSidebar()" class="md:hidden text-slate-600 hover:text-primary text-xl" aria-label="Buka menu"><i class="fa-solid fa-bars"></i></button>
+        <h2 class="text-xl font-bold text-slate-700">Dashboard</h2>
+      </div>
+      <div class="flex items-center gap-4">
+        <div class="relative">
+          <button id="btn-notification" class="w-10 h-10 rounded-full hover:bg-slate-100 text-slate-500 transition relative">
+            <i class="fa-solid fa-bell"></i>
+            <span id="notification-badge" class="absolute top-2 right-2 w-2.5 h-2.5 bg-red-500 rounded-full border-2 border-white hidden"></span>
+          </button>
+          <!-- Notification Dropdown -->
+          <div id="notification-dropdown" class="fixed inset-0 md:absolute md:inset-auto md:top-12 md:right-0 md:w-80 hidden z-50 animate-[fade-in_0.2s]">
+            <!-- Wrapper for layout and appearance -->
+            <div class="w-full h-full bg-white flex flex-col md:rounded-xl md:shadow-xl md:border md:border-slate-100">
+              <!-- Header for Mobile and Desktop -->
+              <div class="p-4 border-b border-slate-100 flex justify-between items-center flex-shrink-0">
+                  <h4 class="font-bold text-slate-700">Notifikasi</h4>
+                  <div class="flex items-center gap-4">
+                      <span id="notif-count" class="text-xs bg-red-100 text-red-600 px-2 py-0.5 rounded-full font-bold">0 Baru</span>
+                      <!-- Close button for mobile -->
+                      <button onclick="document.getElementById('btn-notification').click()" class="md:hidden text-slate-500 hover:text-primary text-xl" aria-label="Tutup notifikasi">
+                          <i class="fa-solid fa-xmark"></i>
+                      </button>
+                  </div>
+              </div>
+              <!-- Notification List -->
+              <div id="notification-list" class="flex-1 overflow-y-auto divide-y divide-slate-50 md:flex-none md:max-h-80"><!-- Items rendered by JS --></div>
+            </div>
+          </div>
+        </div>
+        <div class="flex items-center gap-3 border-l pl-4">
+          <div class="text-right hidden sm:block">
+            <p class="text-sm font-bold text-slate-700">Administrator</p>
+            <p class="text-xs text-slate-500">Super Admin</p>
+          </div>
+          <div class="w-10 h-10 rounded-full bg-primary text-white flex items-center justify-center font-bold shadow-md">A</div>
+        </div>
+      </div>
+    </header>
+
+    <!-- Content Area -->
+      
+    <div class="p-4 md:p-8 overflow-y-auto flex-1">
+      <!-- VIEW: DASHBOARD -->
+      <div id="view-dashboard" class="view-section space-y-8">
+        <!-- Stats Cards -->
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+        <div class="bg-white p-6 rounded-2xl shadow-sm border border-slate-100 hover:shadow-md transition">
+          <div class="flex justify-between items-start">
+            <div>
+              <p class="text-slate-500 text-sm mb-1">Total Pendaftar</p>
+              <h3 id="stat-total" class="text-3xl font-bold text-slate-800">0</h3>
+            </div>
+            <div class="p-3 bg-blue-50 text-blue-600 rounded-xl"><i class="fa-solid fa-user-graduate text-xl"></i></div>
+          </div>
+        </div>
+
+        <div class="bg-white p-6 rounded-2xl shadow-sm border border-slate-100 hover:shadow-md transition">
+          <div class="flex justify-between items-start">
+            <div>
+              <p class="text-slate-500 text-sm mb-1">Pendaftar TK</p>
+              <h3 id="stat-tk" class="text-3xl font-bold text-slate-800">0</h3>
+            </div>
+            <div class="p-3 bg-orange-50 text-orange-600 rounded-xl"><i class="fa-solid fa-shapes text-xl"></i></div>
+          </div>
+        </div>
+
+        <div class="bg-white p-6 rounded-2xl shadow-sm border border-slate-100 hover:shadow-md transition">
+          <div class="flex justify-between items-start">
+            <div>
+              <p class="text-slate-500 text-sm mb-1">Pendaftar MI</p>
+              <h3 id="stat-mi" class="text-3xl font-bold text-slate-800">0</h3>
+            </div>
+            <div class="p-3 bg-emerald-50 text-emerald-600 rounded-xl"><i class="fa-solid fa-book-open text-xl"></i></div>
+          </div>
+        </div>
+        </div>
+
+        <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
+        <!-- Recent Registrations Table -->
+        <div class="lg:col-span-2 bg-white rounded-2xl shadow-sm border border-slate-100 overflow-hidden">
+        <div class="p-6 border-b border-slate-100 flex justify-between items-center">
+          <h3 class="font-bold text-lg text-slate-700">Pendaftar Terbaru</h3>
+          <button onclick="switchView('ppdb')" class="text-sm text-primary font-medium hover:underline">Lihat Semua</button>
+        </div>
+        <div class="overflow-x-auto">
+          <table class="w-full text-left text-sm">
+            <thead class="bg-slate-50 text-slate-500 uppercase text-xs tracking-wider">
+              <tr>
+                <th class="px-6 py-4 font-semibold">Nama Siswa</th>
+                <th class="px-6 py-4 font-semibold">Jenjang</th>
+                <th class="px-6 py-4 font-semibold">Tanggal</th>
+                <th class="px-6 py-4 font-semibold">Status</th>
+                <th class="px-6 py-4 font-semibold text-right">Aksi</th>
+              </tr>
+            </thead>
+            <tbody id="dashboard-tbody" class="divide-y divide-slate-100">
+              <!-- Data Rendered by JS -->
+            </tbody>
+          </table>
+        </div>
+        </div>
+        
+        <!-- Right Sidebar Widgets -->
+        <div class="space-y-6">
+          <!-- Widget: Status Penerimaan -->
+          <div class="bg-white p-6 rounded-2xl shadow-sm border border-slate-100">
+            <h3 class="font-bold text-lg text-slate-700 mb-4">Status Penerimaan</h3>
+            <div class="space-y-4">
+              <div>
+                <div class="flex justify-between text-sm mb-1">
+                  <span class="text-slate-600">Diterima</span>
+                  <span id="stat-accepted-text" class="font-bold text-green-600">0%</span>
+                </div>
+                <div class="w-full bg-slate-100 rounded-full h-2.5">
+                  <div id="stat-accepted-bar" class="bg-green-500 h-2.5 rounded-full" style="width: 0%"></div>
+                </div>
+              </div>
+              <div>
+                <div class="flex justify-between text-sm mb-1">
+                  <span class="text-slate-600">Menunggu</span>
+                  <span id="stat-pending-text" class="font-bold text-yellow-600">0%</span>
+                </div>
+                <div class="w-full bg-slate-100 rounded-full h-2.5">
+                  <div id="stat-pending-bar" class="bg-yellow-400 h-2.5 rounded-full" style="width: 0%"></div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Widget: Aksi Cepat -->
+          <div class="bg-white p-6 rounded-2xl shadow-sm border border-slate-100">
+            <h3 class="font-bold text-lg text-slate-700 mb-4">Aksi Cepat</h3>
+            <div class="grid grid-cols-2 gap-3">
+              <button onclick="switchView('news'); setTimeout(() => document.getElementById('btn-add-news').click(), 100)" class="p-3 rounded-xl border border-slate-100 hover:bg-slate-50 hover:border-primary/30 hover:text-primary transition text-center flex flex-col items-center gap-2">
+                <i class="fa-solid fa-pen-nib text-xl"></i>
+                <span class="text-xs font-medium">Tulis Berita</span>
+              </button>
+              <button onclick="switchView('ppdb')" class="p-3 rounded-xl border border-slate-100 hover:bg-slate-50 hover:border-primary/30 hover:text-primary transition text-center flex flex-col items-center gap-2">
+                <i class="fa-solid fa-users text-xl"></i>
+                <span class="text-xs font-medium">Cek PPDB</span>
+              </button>
+            </div>
+          </div>
+        </div>
+        </div>
+      </div>
+
+      <!-- VIEW: DATA PPDB (Hidden by default) -->
+      <div id="view-ppdb" class="view-section hidden space-y-6">
+        <div class="flex flex-col md:flex-row justify-between md:items-center gap-4">
+          <h3 class="text-2xl font-bold text-slate-700">Data Peserta Didik Baru</h3>
+          <div class="grid grid-cols-2 md:flex gap-3 w-full md:w-auto">
+            <button id="btn-filter" class="bg-white border border-slate-200 text-slate-600 px-4 py-2 rounded-lg hover:bg-slate-50 transition shadow-sm"><i class="fa-solid fa-filter mr-2"></i> Filter</button>
+            <button id="btn-export" class="bg-primary border border-transparent text-white px-4 py-2 rounded-lg hover:bg-secondary transition shadow-lg shadow-primary/30"><i class="fa-solid fa-download mr-2"></i> Export Excel</button>
+          </div>
+        </div>
+        
+        <div class="bg-white rounded-2xl shadow-sm border border-slate-100 overflow-hidden max-w-full">
+          <div class="p-4 border-b border-slate-100">
+            <div class="relative w-full md:w-1/3">
+              <i class="fa-solid fa-magnifying-glass absolute left-3 top-1/2 -translate-y-1/2 text-slate-400"></i>
+              <input type="text" id="search-ppdb" placeholder="Cari nama siswa..." class="w-full pl-10 pr-4 py-2 border border-slate-200 rounded-xl text-sm focus:outline-none focus:border-primary focus:ring-2 focus:ring-primary/20 transition">
+            </div>
+          </div>
+          <div class="w-full overflow-x-auto overflow-y-auto max-h-[60vh]">
+          <table class="w-full text-left text-sm whitespace-nowrap">
+            <thead class="bg-slate-50 text-slate-500 uppercase text-xs tracking-wider font-semibold [&>tr>th]:sticky [&>tr>th]:top-0 [&>tr>th]:bg-slate-50 [&>tr>th]:z-10 [&>tr>th]:border-b [&>tr>th]:border-slate-200">
+              <tr>
+                <th class="px-6 py-4">ID</th>
+                <th class="px-6 py-4">Nama Siswa</th>
+                <th class="px-6 py-4">Jenjang</th>
+                <th class="px-6 py-4">Gelombang</th>
+                <th class="px-6 py-4">Status</th>
+                <th class="px-6 py-4 text-right">Aksi</th>
+              </tr>
+            </thead>
+            <tbody id="ppdb-tbody" class="divide-y divide-slate-100">
+              <!-- Data Rendered by JS -->
+            </tbody>
+          </table>
+          </div>
+          <div class="p-4 border-t border-slate-100 flex flex-col md:flex-row justify-between items-center gap-4">
+            <span id="pagination-info" class="text-sm text-slate-500">Menampilkan 0 dari 0 data</span>
+            <div id="pagination-controls" class="flex gap-2">
+              <!-- Pagination Buttons -->
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- VIEW: BERITA & ARTIKEL -->
+      <div id="view-news" class="view-section hidden space-y-6">
+        <div class="flex flex-col md:flex-row justify-between md:items-center gap-4">
+          <h3 class="text-2xl font-bold text-slate-700">Berita & Artikel</h3>
+          <button id="btn-add-news" class="w-full md:w-auto bg-primary text-white px-4 py-2 rounded-lg hover:bg-secondary transition shadow-lg shadow-primary/30">
+            <i class="fa-solid fa-plus mr-2"></i> Tambah Baru
+          </button>
+        </div>
+
+        <div id="admin-news-grid" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+          <!-- Data Rendered by JS -->
+        </div>
+      </div>
+
+      <!-- VIEW: GALERI -->
+      <div id="view-gallery" class="view-section hidden space-y-6">
+        <div class="flex flex-col md:flex-row justify-between md:items-center gap-4">
+          <h3 class="text-2xl font-bold text-slate-700">Kelola Galeri</h3>
+          <button id="btn-add-gallery" class="w-full md:w-auto bg-primary text-white px-4 py-2 rounded-lg hover:bg-secondary transition shadow-lg shadow-primary/30">
+            <i class="fa-solid fa-plus mr-2"></i> Tambah Foto
+          </button>
+        </div>
+        <div id="admin-gallery-grid" class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
+          <!-- Gallery items will be rendered here by JS -->
+        </div>
+      </div>
+
+      <!-- VIEW: GURU & STAFF -->
+      <div id="view-teachers" class="view-section hidden space-y-6">
+        <div class="flex flex-col md:flex-row justify-between md:items-center gap-4">
+          <h3 class="text-2xl font-bold text-slate-700">Manajemen Guru & Staff</h3>
+          <button id="btn-add-teacher" class="w-full md:w-auto bg-primary text-white px-4 py-2 rounded-lg hover:bg-secondary transition shadow-lg shadow-primary/30">
+            <i class="fa-solid fa-plus mr-2"></i> Tambah Pengajar
+          </button>
+        </div>
+        
+        <div id="admin-teachers-grid" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+          <!-- Data Rendered by JS -->
+        </div>
+      </div>
+
+      <!-- VIEW: EDITOR AKADEMIK (TK/MI) -->
+      <div id="view-academic" class="view-section hidden space-y-6">
+        <div class="flex flex-col md:flex-row justify-between md:items-center gap-4">
+          <h3 id="academic-title" class="text-2xl font-bold text-slate-700">Edit Halaman</h3>
+          <button onclick="saveAcademicPage()" class="w-full md:w-auto bg-primary text-white px-6 py-2 rounded-lg hover:bg-secondary transition shadow-lg shadow-primary/30">
+            Simpan Perubahan
+          </button>
+        </div>
+
+        <div class="bg-white p-8 rounded-2xl shadow-sm border border-slate-100">
+          <input type="hidden" id="academic-key">
+          
+          <div class="space-y-8">
+            <!-- Section 1 -->
+            <div class="space-y-4">
+                <h4 class="font-bold text-primary border-b pb-2 text-lg">1. Tampilan Utama</h4>
+                <div>
+                    <label for="academic-image-input" class="block text-sm font-medium text-slate-700 mb-2">Gambar Utama</label>
+                    <div id="academic-image-dropzone" class="border-2 border-dashed border-slate-300 rounded-xl p-6 text-center cursor-pointer hover:border-primary hover:bg-slate-50 transition">
+                        <div id="academic-image-preview-container" class="hidden relative group">
+                            <img id="academic-image-preview" src="" class="max-h-48 mx-auto rounded-lg mb-4 object-cover">
+                            <button onclick="removeAcademicHeroImage(event)" class="absolute top-2 right-2 bg-red-500 text-white w-8 h-8 rounded-full hover:bg-red-600 transition flex items-center justify-center shadow-md" title="Hapus Gambar">
+                                <i class="fa-solid fa-trash-can"></i>
+                            </button>
+                            <p class="text-xs text-slate-400">Klik untuk mengganti foto</p>
+                        </div>
+                        <div id="academic-upload-prompt">
+                            <i class="fa-solid fa-cloud-arrow-up text-4xl text-slate-400 mb-3"></i>
+                            <p class="text-slate-600">Seret & lepas gambar di sini, atau <span class="text-primary font-semibold">klik untuk memilih file</span>.</p>
+                            <p class="text-xs text-slate-400 mt-1">PNG, JPG, atau WebP. Max 200KB.</p>
+                        </div>
+                        <input type="file" id="academic-image-input" accept="image/*" class="hidden">
+                    </div>
+                </div>
+                <div>
+                    <p class="block text-sm font-medium text-slate-700 mb-1">Deskripsi Kurikulum</p>
+                    <div class="border border-slate-200 rounded-xl overflow-hidden focus-within:border-primary focus-within:ring-1 focus-within:ring-primary transition bg-white">
+                        <div class="bg-slate-50 border-b border-slate-200 p-2 flex flex-wrap gap-1">
+                            <button type="button" onclick="formatAcademicDoc('bold')" class="w-8 h-8 rounded hover:bg-slate-200 text-slate-600 flex items-center justify-center transition" title="Bold"><i class="fa-solid fa-bold"></i></button>
+                            <button type="button" onclick="formatAcademicDoc('italic')" class="w-8 h-8 rounded hover:bg-slate-200 text-slate-600 flex items-center justify-center transition" title="Italic"><i class="fa-solid fa-italic"></i></button>
+                            <button type="button" onclick="formatAcademicDoc('underline')" class="w-8 h-8 rounded hover:bg-slate-200 text-slate-600 flex items-center justify-center transition" title="Underline"><i class="fa-solid fa-underline"></i></button>
+                        </div>
+                        <div id="academic-hero-desc-editor" contenteditable="true" class="w-full p-3 min-h-[100px] max-h-[200px] overflow-y-auto outline-none text-sm leading-relaxed text-slate-700"></div>
+                    </div>
+                </div>
+                <div>
+                    <label for="academic-curriculum-points" class="block text-sm font-medium text-slate-700 mb-1">Poin Unggulan Kurikulum (Format: Judul | Deskripsi)</label>
+                    <textarea id="academic-curriculum-points" rows="4" class="w-full p-3 border border-slate-200 rounded-xl focus:outline-none focus:border-primary text-sm font-mono"></textarea>
+                    <p class="text-xs text-slate-400 mt-1">Pisahkan judul dan deskripsi dengan tanda garis lurus (|). Satu poin per baris.</p>
+                </div>
+            </div>
+
+            <!-- Section 2 -->
+            <div class="grid md:grid-cols-2 gap-8">
+                <div class="space-y-4">
+                    <h4 class="font-bold text-primary border-b pb-2 text-lg">2. Jadwal & Kegiatan</h4>
+                    <div>
+                        <label for="academic-schedule" class="block text-sm font-medium text-slate-700 mb-1">Jadwal Harian (Format: Jam | Kegiatan)</label>
+                        <textarea id="academic-schedule" rows="6" class="w-full p-3 border border-slate-200 rounded-xl focus:outline-none focus:border-primary text-sm font-mono" placeholder="07:00 - 08:00 | Upacara"></textarea>
+                        <p class="text-xs text-slate-400 mt-1">Pisahkan jam dan kegiatan dengan tanda garis lurus (|).</p>
+                    </div>
+                    <div>
+                        <label for="academic-ekskul" class="block text-sm font-medium text-slate-700 mb-1">Daftar Ekstrakurikuler</label>
+                        <textarea id="academic-ekskul" rows="5" class="w-full p-3 border border-slate-200 rounded-xl focus:outline-none focus:border-primary text-sm font-mono"></textarea>
+                        <p class="text-xs text-slate-400 mt-1">Tulis satu nama ekskul per baris.</p>
+                    </div>
+                </div>
+
+                <!-- Section 3 -->
+                <div class="space-y-4">
+                    <h4 class="font-bold text-primary border-b pb-2 text-lg">3. Biaya Pendidikan</h4>
+                    <div>
+                        <label for="academic-biaya-masuk" class="block text-sm font-medium text-slate-700 mb-1">Rincian Biaya Masuk (Format: Item | Harga)</label>
+                        <textarea id="academic-biaya-masuk" rows="6" class="w-full p-3 border border-slate-200 rounded-xl focus:outline-none focus:border-primary text-sm font-mono"></textarea>
+                    </div>
+                    <div>
+                        <label for="academic-biaya-bulanan" class="block text-sm font-medium text-slate-700 mb-1">Rincian Biaya Bulanan (Format: Item | Harga)</label>
+                        <textarea id="academic-biaya-bulanan" rows="5" class="w-full p-3 border border-slate-200 rounded-xl focus:outline-none focus:border-primary text-sm font-mono"></textarea>
+                    </div>
+                </div>
+
+                <!-- Section 4 -->
+                <div class="space-y-4">
+                    <h4 class="font-bold text-primary border-b pb-2 text-lg">4. Prestasi Siswa</h4>
+                    <div>
+                        <p class="block text-sm font-medium text-slate-700 mb-3">Daftar Prestasi</p>
+                        <!-- Container List -->
+                        <div id="achievement-list-container" class="space-y-3 mb-4"></div>
+                        
+                        <!-- Form Tambah -->
+                        <div class="bg-slate-50 p-4 rounded-xl border border-slate-200">
+                            <h5 class="font-bold text-slate-700 mb-3 text-sm"><i class="fa-solid fa-plus-circle mr-1"></i> Tambah Prestasi Baru</h5>
+                            <div class="grid grid-cols-1 md:grid-cols-2 gap-3 mb-3">
+                                <input type="text" id="ach-name" placeholder="Nama Siswa" class="p-2 border border-slate-200 rounded-lg text-sm focus:outline-none focus:border-primary">
+                                <input type="text" id="ach-title" placeholder="Judul Prestasi (Misal: Juara 1 Lomba...)" class="p-2 border border-slate-200 rounded-lg text-sm focus:outline-none focus:border-primary">
+                                <input type="text" id="ach-level" placeholder="Tingkat (Misal: Kota 2024)" class="p-2 border border-slate-200 rounded-lg text-sm focus:outline-none focus:border-primary md:col-span-2">
+                            </div>
+                            
+                            <div class="mb-3">
+                                <div id="ach-image-dropzone" class="border-2 border-dashed border-slate-300 rounded-xl p-4 text-center cursor-pointer hover:border-primary hover:bg-slate-50 transition bg-white">
+                                    <div id="ach-image-preview-container" class="hidden relative group">
+                                        <img id="ach-image-preview" src="" class="h-32 mx-auto rounded-lg mb-2 object-cover">
+                                        <p class="text-xs text-slate-400">Klik untuk mengganti foto</p>
+                                    </div>
+                                    <div id="ach-upload-prompt">
+                                        <i class="fa-solid fa-cloud-arrow-up text-2xl text-slate-400 mb-2"></i>
+                                        <p class="text-xs text-slate-600">Upload Foto Dokumentasi (Max 200KB)</p>
+                                    </div>
+                                    <input type="file" id="ach-image" accept="image/*" class="hidden">
+                                </div>
+                            </div>
+                            <button onclick="addAchievementItem()" class="w-full bg-white border border-primary text-primary hover:bg-primary hover:text-white px-4 py-2 rounded-lg text-sm transition font-medium">Tambah ke Daftar</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- VIEW: SETTINGS (Hidden by default) -->
+      <div id="view-settings" class="view-section hidden space-y-6">
+        <h3 class="text-2xl font-bold text-slate-700">Pengaturan Sistem</h3>
+        <div class="bg-white p-8 rounded-2xl shadow-sm border border-slate-100 max-w-2xl">
+          <form class="space-y-4">
+            <div>
+              <label for="setting-academic-year" class="block text-sm font-medium text-slate-700 mb-1">Tahun Ajaran Aktif</label>
+              <input type="text" id="setting-academic-year" placeholder="Contoh: 2025/2026" class="w-full p-3 border rounded-xl">
+            </div>
+            
+            <div class="border-t border-slate-100 pt-4 mt-4">
+              <h4 class="font-bold text-slate-700 mb-3">Pengaturan Gelombang PPDB</h4>
+              <div class="space-y-4">
+                <div>
+                  <label for="setting-wave-name" class="block text-sm font-medium text-slate-700 mb-1">Nama Gelombang</label>
+                  <input type="text" id="setting-wave-name" placeholder="Contoh: Gelombang 1" class="w-full p-3 border rounded-xl">
+                </div>
+                <div>
+                  <label for="setting-wave-period" class="block text-sm font-medium text-slate-700 mb-1">Periode Pendaftaran</label>
+                  <input type="text" id="setting-wave-period" placeholder="Contoh: 1 Okt - 31 Des 2025" class="w-full p-3 border rounded-xl">
+                </div>
+                <div>
+                  <label for="setting-wave-status" class="block text-sm font-medium text-slate-700 mb-1">Status Pendaftaran</label>
+                  <select id="setting-wave-status" class="w-full p-3 border rounded-xl">
+                    <option value="dibuka">Dibuka</option>
+                    <option value="ditutup">Ditutup</option>
+                  </select>
+                </div>
+              </div>
+            </div>
+
+            <div class="pt-4">
+              <button type="button" id="btn-save-settings" class="bg-primary text-white px-6 py-2 rounded-xl hover:bg-secondary">Simpan Perubahan</button>
+            </div>
+          </form>
+        </div>
+      </div>
+
+    </div>
+  </main>
+</div>
+
+<!-- MODAL TAMBAH BERITA -->
+<div id="modal-news" class="fixed inset-0 bg-black/50 z-50 hidden items-center justify-center p-4 backdrop-blur-sm">
+  <div class="bg-white rounded-2xl w-full max-w-lg p-6 space-y-4 shadow-2xl animate-[fade-in_0.3s] max-h-[90vh] overflow-y-auto">
+    <h3 class="text-xl font-bold text-slate-700">Tambah Berita Baru</h3>
+    <input type="hidden" id="news-id-hidden">
+    
+    <input type="text" id="news-title" placeholder="Judul Berita" class="w-full p-3 border border-slate-200 rounded-xl focus:outline-none focus:border-primary">
+    <input type="date" id="news-date" class="w-full p-3 border border-slate-200 rounded-xl focus:outline-none focus:border-primary text-slate-600">
+    
+    <!-- Image Upload -->
+    <div class="space-y-2">
+      <label for="news-image-input" class="block text-sm font-medium text-slate-700 mb-2">Gambar Utama</label>
+      <div id="news-image-dropzone" class="border-2 border-dashed border-slate-300 rounded-xl p-6 text-center cursor-pointer hover:border-primary hover:bg-slate-50 transition">
+        <div id="news-image-preview-container" class="hidden relative group">
+            <img id="news-image-preview" src="" class="max-h-48 mx-auto rounded-lg mb-4 object-cover">
+            <button id="btn-remove-image" type="button" onclick="removeNewsImage(event)" class="absolute top-2 right-2 bg-red-500 text-white w-8 h-8 rounded-full hover:bg-red-600 transition flex items-center justify-center shadow-md" title="Hapus Gambar">
+                <i class="fa-solid fa-trash-can"></i>
+            </button>
+            <p class="text-xs text-slate-400">Klik untuk mengganti foto</p>
+        </div>
+        <div id="news-upload-prompt">
+            <i class="fa-solid fa-cloud-arrow-up text-4xl text-slate-400 mb-3"></i>
+            <p class="text-slate-600">Seret & lepas gambar di sini, atau <span class="text-primary font-semibold">klik untuk memilih file</span>.</p>
+            <p class="text-xs text-slate-400 mt-1">PNG, JPG, atau WebP. Max 200KB.</p>
+        </div>
+        <input type="file" id="news-image-input" accept="image/*" class="hidden">
+      </div>
+    </div>
+
+    <!-- Rich Text Editor -->
+    <div class="border border-slate-200 rounded-xl overflow-hidden focus-within:border-primary focus-within:ring-1 focus-within:ring-primary transition bg-white">
+      <div class="bg-slate-50 border-b border-slate-200 p-2 flex flex-wrap gap-1">
+        <button type="button" onclick="formatDoc('bold')" class="w-8 h-8 rounded hover:bg-slate-200 text-slate-600 flex items-center justify-center transition" title="Bold"><i class="fa-solid fa-bold"></i></button>
+        <button type="button" onclick="formatDoc('italic')" class="w-8 h-8 rounded hover:bg-slate-200 text-slate-600 flex items-center justify-center transition" title="Italic"><i class="fa-solid fa-italic"></i></button>
+        <button type="button" onclick="formatDoc('underline')" class="w-8 h-8 rounded hover:bg-slate-200 text-slate-600 flex items-center justify-center transition" title="Underline"><i class="fa-solid fa-underline"></i></button>
+        <div class="w-px h-6 bg-slate-300 mx-1 self-center"></div>
+        <button type="button" onclick="formatDoc('justifyLeft')" class="w-8 h-8 rounded hover:bg-slate-200 text-slate-600 flex items-center justify-center transition" title="Rata Kiri"><i class="fa-solid fa-align-left"></i></button>
+        <button type="button" onclick="formatDoc('justifyCenter')" class="w-8 h-8 rounded hover:bg-slate-200 text-slate-600 flex items-center justify-center transition" title="Rata Tengah"><i class="fa-solid fa-align-center"></i></button>
+        <button type="button" onclick="formatDoc('justifyRight')" class="w-8 h-8 rounded hover:bg-slate-200 text-slate-600 flex items-center justify-center transition" title="Rata Kanan"><i class="fa-solid fa-align-right"></i></button>
+        <div class="w-px h-6 bg-slate-300 mx-1 self-center"></div>
+        <button type="button" onclick="formatDoc('insertUnorderedList')" class="w-8 h-8 rounded hover:bg-slate-200 text-slate-600 flex items-center justify-center transition" title="List Bullet"><i class="fa-solid fa-list-ul"></i></button>
+        <button type="button" onclick="formatDoc('insertOrderedList')" class="w-8 h-8 rounded hover:bg-slate-200 text-slate-600 flex items-center justify-center transition" title="List Angka"><i class="fa-solid fa-list-ol"></i></button>
+      </div>
+      <div id="news-content-editor" contenteditable="true" class="p-4 min-h-[200px] max-h-[300px] overflow-y-auto outline-none text-slate-700 text-sm leading-relaxed" placeholder="Tulis berita di sini..."></div>
+    </div>
+
+    <div class="flex justify-end gap-3 pt-2">
+      <button onclick="toggleModal('modal-news')" class="px-4 py-2 text-slate-500 hover:bg-slate-100 rounded-lg transition">Batal</button>
+      <button onclick="saveNews()" class="px-4 py-2 bg-primary text-white rounded-lg hover:bg-secondary transition shadow-lg shadow-primary/30">Simpan</button>
+    </div>
+  </div>
+</div>
+
+<!-- MODAL TEACHER (GURU) -->
+<div id="modal-teacher" class="fixed inset-0 bg-black/50 z-50 hidden items-center justify-center p-4 backdrop-blur-sm">
+  <div class="bg-white rounded-2xl w-full max-w-lg p-6 space-y-4 shadow-2xl animate-[fade-in_0.3s] max-h-[90vh] overflow-y-auto">
+    <h3 class="text-xl font-bold text-slate-700">Data Guru / Staff</h3>
+    <input type="hidden" id="teacher-id-hidden">
+    
+    <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+      <div class="md:col-span-2">
+        <label for="teacher-name" class="block text-sm font-medium text-slate-700 mb-1">Nama Lengkap & Gelar</label>
+        <input type="text" id="teacher-name" placeholder="Contoh: Ahmad Fauzi, S.Pd" class="w-full p-3 border border-slate-200 rounded-xl focus:outline-none focus:border-primary">
+      </div>
+      <div>
+        <label for="teacher-position" class="block text-sm font-medium text-slate-700 mb-1">Jabatan</label>
+        <input type="text" id="teacher-position" placeholder="Contoh: Guru Kelas 1" class="w-full p-3 border border-slate-200 rounded-xl focus:outline-none focus:border-primary">
+      </div>
+      <div>
+        <label for="teacher-education" class="block text-sm font-medium text-slate-700 mb-1">Pendidikan Terakhir</label>
+        <input type="text" id="teacher-education" placeholder="Contoh: S1 PGSD" class="w-full p-3 border border-slate-200 rounded-xl focus:outline-none focus:border-primary">
+      </div>
+      <div class="md:col-span-2">
+        <label for="teacher-subject" class="block text-sm font-medium text-slate-700 mb-1">Mata Pelajaran</label>
+        <input type="text" id="teacher-subject" placeholder="Contoh: Matematika atau 5 Tahun" class="w-full p-3 border border-slate-200 rounded-xl focus:outline-none focus:border-primary">
+      </div>
+      <div class="md:col-span-2">
+        <label for="teacher-quote" class="block text-sm font-medium text-slate-700 mb-1">Kutipan (Quote)</label>
+        <textarea id="teacher-quote" rows="2" class="w-full p-3 border border-slate-200 rounded-xl focus:outline-none focus:border-primary text-sm" placeholder="Kata-kata mutiara..."></textarea>
+      </div>
+      <div class="md:col-span-2">
+        <label for="teacher-image-input" class="block text-sm font-medium text-slate-700 mb-2">Foto Profil</label>
+        <div id="teacher-image-dropzone" class="border-2 border-dashed border-slate-300 rounded-xl p-6 text-center cursor-pointer hover:border-primary hover:bg-slate-50 transition">
+            <div id="teacher-image-preview-container" class="hidden">
+                <img id="teacher-image-preview" src="" class="max-h-48 mx-auto rounded-lg mb-4 object-cover">
+                <p class="text-xs text-slate-400">Klik untuk mengganti foto</p>
+            </div>
+            <div id="teacher-upload-prompt">
+                <i class="fa-solid fa-cloud-arrow-up text-4xl text-slate-400 mb-3"></i>
+                <p class="text-slate-600">Seret & lepas gambar di sini, atau <span class="text-primary font-semibold">klik untuk memilih file</span>.</p>
+                <p class="text-xs text-slate-400 mt-1">PNG, JPG, atau WebP. Max 200KB.</p>
+            </div>
+            <input type="file" id="teacher-image-input" accept="image/*" class="hidden">
+        </div>
+      </div>
+    </div>
+
+    <div class="flex justify-end gap-3 pt-2">
+      <button onclick="toggleModal('modal-teacher')" class="px-4 py-2 text-slate-500 hover:bg-slate-100 rounded-lg transition">Batal</button>
+      <button onclick="saveTeacher()" class="px-4 py-2 bg-primary text-white rounded-lg hover:bg-secondary transition shadow-lg shadow-primary/30">Simpan</button>
+    </div>
+  </div>
+</div>
+
+<!-- MODAL FILTER -->
+<div id="modal-filter" class="fixed inset-0 bg-black/50 z-50 hidden items-center justify-center p-4 backdrop-blur-sm">
+  <div class="bg-white rounded-2xl w-full max-w-sm p-6 space-y-4 shadow-2xl animate-[fade-in_0.3s] max-h-[90vh] overflow-y-auto">
+    <h3 class="text-xl font-bold text-slate-700">Filter Data</h3>
+    
+    <div>
+      <label for="filter-jenjang" class="block text-sm font-medium text-slate-700 mb-1">Jenjang</label>
+      <select id="filter-jenjang" class="w-full p-3 border border-slate-200 rounded-xl focus:outline-none focus:border-primary">
+        <option value="">Semua Jenjang</option>
+        <option value="TK">TK</option>
+        <option value="MI">MI</option>
+      </select>
+    </div>
+
+    <div>
+      <label for="filter-wave" class="block text-sm font-medium text-slate-700 mb-1">Gelombang</label>
+      <select id="filter-wave" class="w-full p-3 border border-slate-200 rounded-xl focus:outline-none focus:border-primary">
+        <option value="">Semua Gelombang</option>
+        <option value="Gelombang 1">Gelombang 1</option>
+        <option value="Gelombang 2">Gelombang 2</option>
+        <option value="Gelombang 3">Gelombang 3</option>
+      </select>
+    </div>
+
+    <div>
+      <label for="filter-status" class="block text-sm font-medium text-slate-700 mb-1">Status</label>
+      <select id="filter-status" class="w-full p-3 border border-slate-200 rounded-xl focus:outline-none focus:border-primary">
+        <option value="">Semua Status</option>
+        <option value="Menunggu Pembayaran">Menunggu Pembayaran</option>
+        <option value="Menunggu Verifikasi">Menunggu Verifikasi</option>
+        <option value="Terverifikasi">Terverifikasi</option>
+        <option value="Diterima">Diterima</option>
+        <option value="Tidak Diterima">Tidak Diterima</option>
+      </select>
+    </div>
+
+    <div class="flex justify-end gap-3 pt-2">
+      <button onclick="toggleModal('modal-filter')" class="px-4 py-2 text-slate-500 hover:bg-slate-100 rounded-lg transition">Batal</button>
+      <button id="btn-apply-filter" class="px-4 py-2 bg-primary text-white rounded-lg hover:bg-secondary transition shadow-lg shadow-primary/30">Terapkan</button>
+    </div>
+  </div>
+</div>
+
+<!-- MODAL DETAIL SISWA -->
+<div id="modal-detail" class="fixed inset-0 bg-black/50 z-50 hidden items-center justify-center p-4 backdrop-blur-sm">
+  <div class="bg-white rounded-2xl w-full max-w-2xl p-6 space-y-6 shadow-2xl animate-[fade-in_0.3s] max-h-[90vh] overflow-y-auto">
+    <div class="flex justify-between items-start border-b border-slate-100 pb-4">
+      <div>
+        <h3 class="text-xl font-bold text-slate-700" id="detail-name">Nama Siswa</h3>
+        <p class="text-sm text-slate-500" id="detail-id">#ID</p>
+      </div>
+      <button onclick="toggleModal('modal-detail')" class="text-slate-400 hover:text-slate-600 transition"><i class="fa-solid fa-xmark text-xl"></i></button>
+    </div>
+    
+    <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+      <!-- Data Siswa -->
+      <div class="space-y-3">
+        <h4 class="font-semibold text-primary border-b border-primary/20 pb-1 mb-2">Data Siswa</h4>
+        <div>
+          <p class="text-xs text-slate-500">Jenjang</p>
+          <p class="font-medium" id="detail-level">-</p>
+        </div>
+        <div>
+          <p class="text-xs text-slate-500">Gelombang Pendaftaran</p>
+          <span id="detail-wave" class="inline-block bg-blue-50 text-blue-600 px-2 py-1 rounded text-xs font-bold mt-1">-</span>
+        </div>
+        <div>
+          <p class="text-xs text-slate-500">Jenis Kelamin</p>
+          <p class="font-medium" id="detail-gender">-</p>
+        </div>
+        <div>
+          <p class="text-xs text-slate-500">Alamat Lengkap</p>
+          <p class="font-medium" id="detail-address">-</p>
+        </div>
+        <div>
+          <p class="text-xs text-slate-500">Asal Sekolah</p>
+          <p class="font-medium" id="detail-school">-</p>
+        </div>
+        <div>
+          <p class="text-xs text-slate-500">Status Pendaftaran</p>
+          <select id="detail-status-select" class="w-full mt-1 p-2 border border-slate-200 rounded-lg text-sm focus:outline-none focus:border-primary bg-white">
+            <option value="Menunggu Pembayaran">Menunggu Pembayaran</option>
+            <option value="Menunggu Verifikasi">Menunggu Verifikasi</option>
+            <option value="Terverifikasi">Terverifikasi</option>
+            <option value="Diterima">Diterima</option>
+            <option value="Tidak Diterima">Tidak Diterima</option>
+          </select>
+        </div>
+      </div>
+
+      <!-- Data Orang Tua -->
+      <div class="space-y-3">
+        <h4 class="font-semibold text-primary border-b border-primary/20 pb-1 mb-2">Data Orang Tua</h4>
+        <div>
+          <p class="text-xs text-slate-500">Nama Ibu/Wali</p>
+          <p class="font-medium" id="detail-parent">-</p>
+        </div>
+        <div>
+          <p class="text-xs text-slate-500">No. WhatsApp</p>
+          <p class="font-medium" id="detail-phone">-</p>
+        </div>
+        <div>
+          <p class="text-xs text-slate-500">Email</p>
+          <p class="font-medium" id="detail-email">-</p>
+        </div>
+      </div>
+
+      <!-- Bukti Pembayaran -->
+      <div class="md:col-span-2 space-y-2">
+        <h4 class="font-semibold text-primary border-b border-primary/20 pb-1 mb-2">Bukti Pembayaran</h4>
+        <div id="detail-payment-container" class="bg-slate-50 p-4 rounded-xl border border-slate-200 text-center min-h-[100px] flex items-center justify-center">
+           <!-- Image will be injected here -->
+        </div>
+      </div>
+    </div>
+
+    <div class="flex justify-end gap-3 pt-4 border-t border-slate-100">
+      <button onclick="toggleModal('modal-detail')" class="px-4 py-2 bg-slate-100 text-slate-600 rounded-lg hover:bg-slate-200 transition">Tutup</button>
+      <button id="btn-save-status" class="px-4 py-2 bg-primary text-white rounded-lg hover:bg-secondary transition shadow-lg shadow-primary/30">Simpan Status</button>
+    </div>
+  </div>
+</div>
+
+<!-- MODAL KONFIRMASI HAPUS -->
+<div id="modal-confirm" class="fixed inset-0 bg-black/50 z-50 hidden items-center justify-center p-4 backdrop-blur-sm">
+  <div class="bg-white rounded-2xl w-full max-w-sm p-6 space-y-4 shadow-2xl animate-[fade-in_0.3s] text-center">
+    <div class="w-16 h-16 bg-red-100 text-red-600 rounded-full flex items-center justify-center mx-auto text-2xl mb-2">
+      <i class="fa-solid fa-trash-can"></i>
+    </div>
+    <div>
+      <h3 class="text-xl font-bold text-slate-700">Hapus Data?</h3>
+      <p class="text-slate-500 text-sm mt-2">Apakah Anda yakin ingin menghapus data ini? Tindakan ini tidak dapat dibatalkan.</p>
+    </div>
+    <div class="flex justify-center gap-3 pt-4">
+      <button onclick="toggleModal('modal-confirm')" class="px-5 py-2.5 text-slate-500 hover:bg-slate-100 rounded-xl transition font-medium">Batal</button>
+      <button id="btn-confirm-delete" class="px-5 py-2.5 bg-red-600 text-white rounded-xl hover:bg-red-700 transition shadow-lg shadow-red-600/30 font-medium">Ya, Hapus</button>
+    </div>
+  </div>
+</div>
+
+<!-- MODAL TAMBAH FOTO GALERI -->
+<div id="modal-gallery" class="fixed inset-0 bg-black/50 z-50 hidden items-center justify-center p-4 backdrop-blur-sm">
+  <div class="bg-white rounded-2xl w-full max-w-md p-6 space-y-4 shadow-2xl animate-[fade-in_0.3s]">
+    <h3 class="text-xl font-bold text-slate-700">Tambah Foto ke Galeri</h3>
+    
+    <!-- Image Upload -->
+    <div>
+      <label for="gallery-image-input" class="block text-sm font-medium text-slate-700 mb-2">Pilih File Gambar</label>
+      <div id="gallery-image-dropzone" class="border-2 border-dashed border-slate-300 rounded-xl p-6 text-center cursor-pointer hover:border-primary hover:bg-slate-50 transition">
+        <div id="gallery-image-preview-container" class="hidden">
+            <img id="gallery-image-preview" src="" class="max-h-48 mx-auto rounded-lg mb-4">
+        </div>
+        <div id="gallery-upload-prompt">
+            <i class="fa-solid fa-cloud-arrow-up text-4xl text-slate-400 mb-3"></i>
+            <p class="text-slate-600">Seret & lepas gambar di sini, atau <span class="text-primary font-semibold">klik untuk memilih file</span>.</p>
+            <p class="text-xs text-slate-400 mt-1">PNG, JPG, atau WebP. Max 200KB.</p>
+        </div>
+        <input type="file" id="gallery-image-input" accept="image/*" class="hidden">
+      </div>
+    </div>
+
+    <div class="flex justify-end gap-3 pt-2">
+      <button onclick="toggleModal('modal-gallery')" class="px-4 py-2 text-slate-500 hover:bg-slate-100 rounded-lg transition">Batal</button>
+      <button onclick="saveGalleryImage()" class="px-4 py-2 bg-primary text-white rounded-lg hover:bg-secondary transition shadow-lg shadow-primary/30">Simpan</button>
+    </div>
+  </div>
+</div>
+
+<!-- MODAL SUKSES -->
+<div id="modal-success" class="fixed inset-0 bg-black/50 z-50 hidden items-center justify-center p-4 backdrop-blur-sm">
+  <div class="bg-white rounded-2xl w-full max-w-sm p-6 space-y-4 shadow-2xl animate-[fade-in_0.3s] text-center">
+    <div class="w-16 h-16 bg-green-100 text-green-600 rounded-full flex items-center justify-center mx-auto text-2xl mb-2">
+      <i class="fa-solid fa-check"></i>
+    </div>
+    <div>
+      <h3 id="success-title" class="text-xl font-bold text-slate-700">Berhasil Disimpan!</h3>
+      <p id="success-message" class="text-slate-500 text-sm mt-2">Pengaturan sistem telah berhasil diperbarui.</p>
+    </div>
+    <div class="flex justify-center pt-4">
+      <button onclick="toggleModal('modal-success')" class="px-6 py-2.5 bg-primary text-white rounded-xl hover:bg-secondary transition shadow-lg shadow-primary/30 font-medium w-full">Oke</button>
+    </div>
+  </div>
+</div>
+
+<!-- MODAL PERINGATAN (VALIDASI) -->
+<div id="modal-alert" class="fixed inset-0 bg-black/50 z-50 hidden items-center justify-center p-4 backdrop-blur-sm">
+  <div class="bg-white rounded-2xl w-full max-w-sm p-6 space-y-4 shadow-2xl animate-[fade-in_0.3s] text-center">
+    <div class="w-16 h-16 bg-yellow-100 text-yellow-600 rounded-full flex items-center justify-center mx-auto text-2xl mb-2">
+      <i class="fa-solid fa-exclamation"></i>
+    </div>
+    <div>
+      <h3 id="alert-title" class="text-xl font-bold text-slate-700">Data Belum Lengkap</h3>
+      <p id="alert-message" class="text-slate-500 text-sm mt-2">Mohon isi judul berita terlebih dahulu sebelum menyimpan.</p>
+    </div>
+    <div class="flex justify-center pt-4">
+      <button onclick="toggleModal('modal-alert')" class="px-6 py-2.5 bg-slate-100 text-slate-600 rounded-xl hover:bg-slate-200 transition font-medium w-full">Mengerti</button>
+    </div>
+  </div>
+</div>
+
+<!-- MODAL IMAGE VIEWER -->
+<div id="modal-image-viewer" class="fixed inset-0 bg-black/90 z-[60] hidden items-center justify-center p-4 backdrop-blur-sm" onclick="this.classList.add('hidden'); this.classList.remove('flex');">
+  <div class="relative max-w-full max-h-full p-2">
+    <img id="full-image-source" src="" class="max-w-full max-h-[90vh] rounded-lg shadow-2xl object-contain">
+    <div class="absolute top-4 right-4 flex gap-3">
+      <button class="text-white/70 hover:text-white transition text-2xl bg-black/50 w-10 h-10 rounded-full flex items-center justify-center" title="Tutup"><i class="fa-solid fa-xmark"></i></button>
+    </div>
+  </div>
+</div>
+
+<!-- CONFIG: URL Backend Laravel -->
+<script src="/js/config.js"></script>
+
+<!-- Pastikan auth.js dimuat sebelum data.js dan admin.js -->
+<script src="/js/utils.js"></script>
+<script src="/js/data.js"></script>
+<script src="/js/auth.js"></script>
+<script src="/js/admin.js"></script>
+
+<script>
+  // Lakukan pengecekan otentikasi saat halaman dimuat
+  document.addEventListener('DOMContentLoaded', () => {
+    if (!window.Auth.getAuthToken()) {
+      window.location.href = '/admin/login.html';
+    }
+  });
+</script>
+</body>
+</html>

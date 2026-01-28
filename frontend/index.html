@@ -1,0 +1,386 @@
+<!-- Landing Page -->
+ <!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Al-Ittihadiyyah</title>
+  <link rel="icon" type="image/png" href="/favicon.png">
+
+  <!-- Tailwind CSS -->
+  <link href="/css/output.css" rel="stylesheet">
+
+  <!-- Google Font -->
+  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+  <!-- Font Awesome -->
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+
+  <style>
+    html { scroll-behavior: smooth; }
+    body { font-family: 'Poppins', sans-serif; }
+    /* Hide scrollbar for Chrome, Safari and Opera */
+    .scrollbar-hide::-webkit-scrollbar {
+        display: none;
+    }
+    /* Hide scrollbar for IE, Edge and Firefox */
+    .scrollbar-hide {
+        -ms-overflow-style: none;  /* IE and Edge */
+        scrollbar-width: none;  /* Firefox */
+    }
+  </style>
+</head>
+<body class="bg-slate-50 text-slate-800">
+
+<!-- NAVBAR -->
+<header id="navbar" class="fixed top-0 w-full z-50 transition-all duration-300 text-white py-4">
+  <div class="max-w-screen-xl mx-auto px-4 md:px-8 lg:px-12 flex items-center justify-between">
+    <div class="flex items-center gap-3">
+      <img src="/favicon.png" alt="Logo" class="w-10 h-10 bg-white rounded-xl p-1 shadow-sm object-contain">
+      <div>
+        <p class="font-bold leading-none uppercase text-lg">Al-Ittihadiyyah</p>
+      </div>
+    </div>
+    
+    <!-- Desktop Menu -->
+    <nav class="hidden md:flex items-center gap-8 text-sm font-medium">
+      <a href="/" class="hover:text-accent transition">Beranda</a>
+      <a href="/berita/" class="hover:text-accent transition">Berita</a>
+      <div class="relative group">
+        <button class="hover:text-accent transition flex items-center gap-1 py-4">Akademik <i class="fa-solid fa-chevron-down text-xs"></i></button>
+        <div class="absolute top-full left-1/2 -translate-x-1/2 w-56 bg-white text-slate-800 rounded-xl shadow-xl border border-slate-100 overflow-hidden opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-300 transform origin-top">
+          <a href="/tamankanak-kanak/" class="block px-6 py-3 hover:bg-slate-50 hover:text-primary transition border-b border-slate-50">TK Islam</a>
+          <a href="/madrasahibtidaiyah/" class="block px-6 py-3 hover:bg-slate-50 hover:text-primary transition">Madrasah Ibtidaiyah</a>
+        </div>
+      </div>
+      <a href="/guru/" class="hover:text-accent transition">Guru & Staff</a>
+      <a href="/ppdbonline/" id="nav-cta" class="bg-accent text-secondary px-5 py-2 rounded-xl hover:brightness-110 hover:shadow-xl hover:-translate-y-0.5 transition shadow-lg">Pendaftaran Online</a>
+    </nav>
+
+    <!-- Mobile Menu Button -->
+    <button id="mobile-menu-btn" class="md:hidden text-white text-2xl focus:outline-none p-2">
+      <i class="fa-solid fa-bars"></i>
+    </button>
+  </div>
+
+  <!-- Mobile Menu Dropdown -->
+  <div id="mobile-menu" class="hidden md:hidden absolute top-full left-0 w-full bg-white/95 backdrop-blur-xl border-t border-slate-100 shadow-2xl flex-col p-4 gap-2 transition-all">
+    <a href="/" class="flex items-center gap-4 px-4 py-3 font-semibold text-slate-600 hover:text-primary hover:bg-slate-50 rounded-xl transition">
+      <i class="fa-solid fa-house w-5 text-center"></i> Beranda
+    </a>
+    <a href="/berita/" class="flex items-center gap-4 px-4 py-3 font-semibold text-slate-600 hover:text-primary hover:bg-slate-50 rounded-xl transition">
+      <i class="fa-solid fa-newspaper w-5 text-center"></i> Berita
+    </a>
+    <div>
+      <button id="mobile-akademik-btn" class="w-full flex items-center justify-between px-4 py-3 font-semibold text-slate-600 hover:text-primary hover:bg-slate-50 rounded-xl transition text-left">
+        <div class="flex items-center gap-4">
+          <i class="fa-solid fa-graduation-cap w-5 text-center"></i> Akademik
+        </div>
+        <i id="mobile-akademik-icon" class="fa-solid fa-chevron-down text-xs transition-transform duration-300"></i>
+      </button>
+      <div id="mobile-akademik-menu" class="hidden flex-col gap-1 mt-1 pl-4">
+        <a href="/tamankanak-kanak/" class="flex items-center gap-4 px-4 py-2 font-medium text-slate-500 hover:text-primary hover:bg-slate-50 rounded-xl transition">
+          <i class="fa-solid fa-shapes w-5 text-center"></i> TK Islam
+        </a>
+        <a href="/madrasahibtidaiyah/" class="flex items-center gap-4 px-4 py-2 font-medium text-slate-500 hover:text-primary hover:bg-slate-50 rounded-xl transition">
+          <i class="fa-solid fa-book-open w-5 text-center"></i> Madrasah Ibtidaiyah
+        </a>
+      </div>
+    </div>
+    <a href="/guru/" class="flex items-center gap-4 px-4 py-3 font-semibold text-slate-600 hover:text-primary hover:bg-slate-50 rounded-xl transition">
+      <i class="fa-solid fa-chalkboard-user w-5 text-center"></i> Guru & Staff
+    </a>
+    <div class="pt-2 mt-2 border-t border-slate-100">
+      <a href="/ppdbonline/" class="flex items-center justify-center gap-2 w-full bg-accent text-secondary font-bold py-3 rounded-xl shadow-lg hover:shadow-xl hover:brightness-105 transition">
+        <i class="fa-solid fa-user-plus"></i> Pendaftaran Online
+      </a>
+    </div>
+  </div>
+</header>
+
+<!-- HERO -->
+<section class="relative overflow-hidden">
+  <div class="absolute inset-0 bg-gradient-to-br from-primary via-secondary to-emerald-900"></div>
+  <div class="absolute inset-0 opacity-20 bg-[radial-gradient(circle_at_top,white,transparent_60%)]"></div>
+
+  <div class="relative max-w-screen-xl mx-auto px-4 md:px-8 lg:px-12 pt-32 md:pt-40 pb-20 md:pb-24 flex flex-col gap-16 items-center text-white">
+    <div class="text-center max-w-3xl">
+      <span class="inline-block bg-white/20 px-4 py-1 rounded-full text-sm mb-4">TK Islam Terpadu & Madrasah Ibtidaiyah</span>
+      <h1 class="text-3xl md:text-4xl lg:text-5xl font-bold leading-tight mb-6">Membangun Generasi <span class="text-accent">Berakhlak</span> & Berprestasi</h1>
+      <p class="text-white/90 mb-8">Pendidikan Islami modern untuk jenjang TK dan Madrasah Ibtidaiyyah dengan pendekatan karakter dan akademik seimbang.</p>
+    </div>
+    <div class="w-full max-w-4xl">
+      <div class="bg-white/10 rounded-3xl p-8 backdrop-blur border border-white/10 shadow-xl">
+        <div class="grid grid-cols-2 md:grid-cols-4 gap-8 text-center">
+          <div>
+            <p class="text-3xl font-bold text-white">B</p>
+            <p class="text-sm text-white/80">Terakreditasi</p>
+          </div>
+          <div>
+            <p class="text-3xl font-bold text-white">15+</p>
+            <p class="text-sm text-white/80">Guru Professional</p>
+          </div>
+          <div>
+            <p class="text-3xl font-bold text-white">300+</p>
+            <p class="text-sm text-white/80">Siswa Aktif</p>
+          </div>
+          <div>
+            <p class="text-3xl font-bold text-white">95%</p>
+            <p class="text-sm text-white/80">Kepercayaan Wali</p>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- VISI MISI (PROFIL) -->
+<section id="profil" class="py-24 bg-white">
+  <div class="max-w-screen-xl mx-auto px-4 md:px-8 lg:px-12">
+    
+    <!-- Profil Singkat -->
+    <div class="grid md:grid-cols-2 gap-12 items-center mb-24">
+      <div class="relative">
+        <div class="absolute -top-4 -left-4 w-24 h-24 bg-primary/10 rounded-full -z-10"></div>
+        <img src="https://lh3.googleusercontent.com/p/AF1QipPs6D037Y3FIw10f49Ane2L0sXMlLOFcrngCFUL=s1360-w1360-h1020-rw" alt="Gedung Sekolah" class="rounded-2xl shadow-xl w-full object-cover h-[400px]">
+        <div class="absolute -bottom-6 right-0 md:-right-6 bg-white p-6 rounded-xl shadow-lg border-l-4 border-accent">
+          <p class="font-bold text-slate-800 text-lg">Terakreditasi B</p>
+          <p class="text-slate-500 text-sm">Sejak Tahun 1997</p>
+        </div>
+      </div>
+      <div>
+        <span class="text-primary font-bold tracking-wider uppercase text-md mb-2 block">Tentang Kami</span>
+        <h2 class="text-3xl md:text-4xl font-bold text-slate-800 mb-6">Mewujudkan Pendidikan Berkualitas Berlandaskan Iman & Taqwa</h2>
+        <p class="text-slate-600 leading-relaxed mb-6">
+          Yayasan Al-Ittihadiyyah berdiri dengan semangat untuk mencetak generasi penerus bangsa yang tidak hanya cerdas secara intelektual, tetapi juga memiliki akhlak mulia.
+        </p>
+        <p class="text-slate-600 leading-relaxed mb-8">
+          Kami memadukan kurikulum nasional dengan nilai-nilai keislaman yang kuat, didukung oleh tenaga pendidik profesional dan fasilitas yang memadai untuk menunjang tumbuh kembang anak secara optimal.
+        </p>
+        <a href="/profil/" class="text-primary font-semibold hover:text-secondary transition">Baca Sejarah Lengkap <i class="fa-solid fa-arrow-right ml-2"></i></a>
+      </div>
+    </div>
+
+    <!-- Visi Misi Redesigned -->
+    <div class="rounded-[3rem] p-8 md:p-16 relative overflow-hidden">      
+      <div class="relative z-10">
+        <!-- Visi Section (Centered) -->
+        <div class="text-center max-w-3xl mx-auto mb-16 relative">
+           <h2 class="text-3xl font-bold text-primary mb-6 relative z-10">Visi & Misi</h2>
+           <p class="text-lg md:text-xl font-medium text-slate-700 mb-6 leading-relaxed italic relative z-10">
+             "Menjadi lembaga pendidikan Islam terdepan yang mencetak generasi Rabbani, unggul dalam prestasi, dan berwawasan global."
+           </p>
+           <p class="text-slate-500">Komitmen kami untuk masa depan pendidikan Islam yang lebih cerah.</p>
+        </div>
+
+        <!-- Misi Section (Grid) -->
+
+        <div class="grid md:grid-cols-3 gap-8">
+          <div class="bg-white p-8 rounded-2xl shadow-sm border border-slate-100 hover:shadow-md transition group text-center md:text-left">
+            <div class="w-14 h-14 bg-blue-50 text-blue-600 rounded-2xl flex items-center justify-center text-2xl mb-6 group-hover:bg-blue-600 group-hover:text-white transition mx-auto md:mx-0">
+              <i class="fa-solid fa-book-quran"></i>
+            </div>
+            <h4 class="font-bold text-lg text-slate-800 mb-3">Pendidikan Karakter</h4>
+            <p class="text-slate-600 text-sm leading-relaxed">Menanamkan nilai-nilai tauhid dan akhlakul karimah dalam setiap aspek pembelajaran.</p>
+          </div>
+          
+          <div class="bg-white p-8 rounded-2xl shadow-sm border border-slate-100 hover:shadow-md transition group text-center md:text-left">
+            <div class="w-14 h-14 bg-emerald-50 text-emerald-600 rounded-2xl flex items-center justify-center text-2xl mb-6 group-hover:bg-emerald-600 group-hover:text-white transition mx-auto md:mx-0">
+              <i class="fa-solid fa-brain"></i>
+            </div>
+            <h4 class="font-bold text-lg text-slate-800 mb-3">Akademik Unggul</h4>
+            <p class="text-slate-600 text-sm leading-relaxed">Menyelenggarakan pembelajaran yang integratif, kreatif, dan inovatif berbasis teknologi.</p>
+          </div>
+
+          <div class="bg-white p-8 rounded-2xl shadow-sm border border-slate-100 hover:shadow-md transition group text-center md:text-left">
+            <div class="w-14 h-14 bg-orange-50 text-orange-600 rounded-2xl flex items-center justify-center text-2xl mb-6 group-hover:bg-orange-600 group-hover:text-white transition mx-auto md:mx-0">
+              <i class="fa-solid fa-users-rays"></i>
+            </div>
+            <h4 class="font-bold text-lg text-slate-800 mb-3">Sinergi Harmonis</h4>
+            <p class="text-slate-600 text-sm leading-relaxed">Membangun kerjasama yang harmonis antara sekolah, orang tua, dan masyarakat luas.</p>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- BERITA -->
+<section id="berita" class="py-20 bg-slate-50">
+  <div class="max-w-screen-xl mx-auto px-4 md:px-8 lg:px-12">
+    <div class="text-center mb-14">
+      <h2 class="text-3xl font-bold text-primary mb-4">Berita & Kegiatan Terbaru</h2>
+      <p class="text-slate-600">Informasi terkini seputar kegiatan sekolah dan prestasi siswa</p>
+    </div>
+
+    <div id="home-news-container" class="grid md:grid-cols-3 gap-8">
+      <!-- News items will be rendered here by JS -->
+    </div>
+    
+    <div class="text-center mt-10">
+      <a href="/berita/" class="inline-block border border-slate-300 text-slate-600 px-6 py-2 rounded-xl font-semibold hover:bg-primary hover:text-white hover:border-primary transition">Lihat Semua Berita</a>
+    </div>
+  </div>
+</section>
+
+<!-- PROGRAM -->
+<section id="program" class="max-w-screen-xl mx-auto px-4 md:px-8 lg:px-12 py-20">
+  <h2 class="text-3xl font-bold text-center mb-14 text-primary">Program Unggulan</h2>
+  <div class="grid md:grid-cols-3 gap-8">
+    <div class="bg-white p-8 rounded-2xl shadow hover:shadow-lg transition">
+      <h3 class="font-semibold text-lg mb-3">Tahfidz & Akhlak</h3>
+      <p class="text-slate-600 text-sm">Pembiasaan ibadah, hafalan Al-Qur'an, dan pendidikan karakter Islami.</p>
+    </div>
+    <div class="bg-white p-8 rounded-2xl shadow hover:shadow-lg transition">
+      <h3 class="font-semibold text-lg mb-3">Akademik Aktif</h3>
+      <p class="text-slate-600 text-sm">Belajar tematik, numerasi, literasi, dan sains berbasis praktik.</p>
+    </div>
+    <div class="bg-white p-8 rounded-2xl shadow hover:shadow-lg transition">
+      <h3 class="font-semibold text-lg mb-3">Ekstrakurikuler</h3>
+      <p class="text-slate-600 text-sm">Pramuka, seni islami, olahraga, dan kreativitas anak.</p>
+    </div>
+  </div>
+</section>
+
+<!-- FASILITAS -->
+<section id="fasilitas" class="py-20 bg-white">
+  <div class="max-w-screen-xl mx-auto px-4 md:px-8 lg:px-12">
+    <h2 class="text-3xl font-bold text-center mb-14 text-primary">Fasilitas</h2>
+    <div class="grid grid-cols-2 md:grid-cols-4 gap-6">
+      <div class="text-center group p-6 rounded-2xl border border-slate-50 hover:border-primary/20 hover:shadow-lg transition duration-300">
+        <div class="w-16 h-16 mx-auto bg-primary/10 text-primary rounded-2xl flex items-center justify-center text-3xl mb-4 group-hover:bg-primary group-hover:text-white transition">
+          <i class="fa-solid fa-mosque"></i>
+        </div>
+        <h4 class="font-bold text-slate-700">Masjid</h4>
+      </div>
+      <div class="text-center group p-6 rounded-2xl border border-slate-50 hover:border-primary/20 hover:shadow-lg transition duration-300">
+        <div class="w-16 h-16 mx-auto bg-primary/10 text-primary rounded-2xl flex items-center justify-center text-3xl mb-4 group-hover:bg-primary group-hover:text-white transition">
+          <i class="fa-solid fa-chalkboard-user"></i>
+        </div>
+        <h4 class="font-bold text-slate-700">Ruang Kelas AC</h4>
+      </div>
+      <div class="text-center group p-6 rounded-2xl border border-slate-50 hover:border-primary/20 hover:shadow-lg transition duration-300">
+        <div class="w-16 h-16 mx-auto bg-primary/10 text-primary rounded-2xl flex items-center justify-center text-3xl mb-4 group-hover:bg-primary group-hover:text-white transition">
+          <i class="fa-solid fa-book-open-reader"></i>
+        </div>
+        <h4 class="font-bold text-slate-700">Perpustakaan</h4>
+      </div>
+      <div class="text-center group p-6 rounded-2xl border border-slate-50 hover:border-primary/20 hover:shadow-lg transition duration-300">
+        <div class="w-16 h-16 mx-auto bg-primary/10 text-primary rounded-2xl flex items-center justify-center text-3xl mb-4 group-hover:bg-primary group-hover:text-white transition">
+          <i class="fa-solid fa-computer"></i>
+        </div>
+        <h4 class="font-bold text-slate-700">Lab Komputer</h4>
+      </div>
+      <div class="text-center group p-6 rounded-2xl border border-slate-50 hover:border-primary/20 hover:shadow-lg transition duration-300">
+        <div class="w-16 h-16 mx-auto bg-primary/10 text-primary rounded-2xl flex items-center justify-center text-3xl mb-4 group-hover:bg-primary group-hover:text-white transition">
+          <i class="fa-solid fa-futbol"></i>
+        </div>
+        <h4 class="font-bold text-slate-700">Lapangan Futsal</h4>
+      </div>
+      <div class="text-center group p-6 rounded-2xl border border-slate-50 hover:border-primary/20 hover:shadow-lg transition duration-300">
+        <div class="w-16 h-16 mx-auto bg-primary/10 text-primary rounded-2xl flex items-center justify-center text-3xl mb-4 group-hover:bg-primary group-hover:text-white transition">
+          <i class="fa-solid fa-puzzle-piece"></i>
+        </div>
+        <h4 class="font-bold text-slate-700">Playground</h4>
+      </div>
+      <div class="text-center group p-6 rounded-2xl border border-slate-50 hover:border-primary/20 hover:shadow-lg transition duration-300">
+        <div class="w-16 h-16 mx-auto bg-primary/10 text-primary rounded-2xl flex items-center justify-center text-3xl mb-4 group-hover:bg-primary group-hover:text-white transition">
+          <i class="fa-solid fa-utensils"></i>
+        </div>
+        <h4 class="font-bold text-slate-700">Kantin Sehat</h4>
+      </div>
+      <div class="text-center group p-6 rounded-2xl border border-slate-50 hover:border-primary/20 hover:shadow-lg transition duration-300">
+        <div class="w-16 h-16 mx-auto bg-primary/10 text-primary rounded-2xl flex items-center justify-center text-3xl mb-4 group-hover:bg-primary group-hover:text-white transition">
+          <i class="fa-solid fa-shield-halved"></i>
+        </div>
+        <h4 class="font-bold text-slate-700">CCTV & Keamanan</h4>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- GALERI -->
+<section id="galeri" class="bg-slate-100 py-20">
+  <div class="max-w-screen-xl mx-auto px-4 md:px-8 lg:px-12">
+    <h2 class="text-3xl font-bold text-center mb-4 text-primary">Galeri Kegiatan</h2>
+    <p class="text-center text-slate-600 mb-10">Dokumentasi aktivitas belajar dan bermain siswa</p>
+    
+    <div class="relative group px-4 md:px-0">
+      <!-- Slider Container -->
+      <div id="gallery-slider" class="flex overflow-x-auto snap-x snap-mandatory gap-6 pb-4 scrollbar-hide scroll-smooth min-h-[10rem]">
+        <!-- Items rendered by JS -->
+      </div>
+
+      <!-- Navigation Buttons -->
+      <button id="prev-slide" class="absolute left-0 md:-left-4 top-1/2 -translate-y-1/2 w-10 h-10 md:w-12 md:h-12 bg-white/80 backdrop-blur text-primary rounded-full shadow-lg flex items-center justify-center hover:bg-primary hover:text-white transition opacity-0 group-hover:opacity-100 focus:opacity-100 z-10">
+        <i class="fa-solid fa-chevron-left"></i>
+      </button>
+      <button id="next-slide" class="absolute right-0 md:-right-4 top-1/2 -translate-y-1/2 w-10 h-10 md:w-12 md:h-12 bg-white/80 backdrop-blur text-primary rounded-full shadow-lg flex items-center justify-center hover:bg-primary hover:text-white transition opacity-0 group-hover:opacity-100 focus:opacity-100 z-10">
+        <i class="fa-solid fa-chevron-right"></i>
+      </button>
+
+      <!-- Slider Indicators (Bullets) -->
+      <div id="gallery-indicators" class="flex justify-center gap-2 mt-6"></div>
+    </div>
+  </div>
+</section>
+
+<!-- FOOTER -->
+<footer class="bg-secondary text-white pt-16 pb-8">
+  <div class="max-w-screen-xl mx-auto px-4 md:px-8 lg:px-12">
+    <div class="grid md:grid-cols-3 gap-12 mb-12">
+      <!-- Identitas & Sosmed -->
+      <div class="text-center">
+        <div class="flex items-center justify-center gap-3 mb-6">
+           <img src="/favicon.png" alt="Logo" class="w-10 h-10 bg-white rounded-xl p-1 shadow-sm object-contain">
+           <span class="font-bold text-xl">Al-Ittihadiyyah</span>
+        </div>
+        <p class="text-white/80 text-sm leading-relaxed mb-6">
+          Membangun generasi Rabbani yang unggul dalam prestasi, berakhlak mulia, dan siap menghadapi tantangan global.
+        </p>
+      </div>
+
+      <!-- Social Media -->
+      <div class="text-center md:-ml-8">
+        <h4 class="font-bold text-lg mb-6 text-white">Social Media</h4>
+        <div class="flex justify-center gap-4">
+          <a href="https://www.instagram.com/" target="_blank" class="w-10 h-10 rounded-full bg-white/10 flex items-center justify-center hover:bg-accent hover:text-secondary transition"><i class="fa-brands fa-instagram"></i></a>
+          <a href="https://www.facebook.com/" target="_blank" class="w-10 h-10 rounded-full bg-white/10 flex items-center justify-center hover:bg-accent hover:text-secondary transition"><i class="fa-brands fa-facebook-f"></i></a>
+          <a href="https://www.youtube.com/" target="_blank" class="w-10 h-10 rounded-full bg-white/10 flex items-center justify-center hover:bg-accent hover:text-secondary transition"><i class="fa-brands fa-youtube"></i></a>
+        </div>
+      </div>
+
+      <!-- Kontak -->
+      <div class="text-center md:text-left md:justify-self-end">
+        <h4 class="font-bold text-lg mb-6 text-white md:text-center">Hubungi Kami</h4>
+        <ul class="space-y-4 text-sm text-white/80">
+          <li class="flex gap-3 items-start justify-center md:justify-start">
+            <i class="fa-solid fa-location-dot mt-1 text-white"></i>
+            <span>Jl. Masjid An Nur No.6, RT.3/RW.2, Menteng Dalam, Kec. Tebet, Kota Jakarta Selatan, 12870</span>
+          </li>
+          <li class="flex gap-3 items-center justify-center md:justify-start">
+            <i class="fa-solid fa-phone text-white"></i>
+            <span>(021) No. Telp</span>
+          </li>
+          <li class="flex gap-3 items-center justify-center md:justify-start">
+            <i class="fa-solid fa-envelope text-white"></i>
+            <span>Email Sekolah</span>
+          </li>
+        </ul>
+      </div>
+    </div>
+
+    <div class="border-t border-white/10 pt-8 text-center text-sm text-white/60">
+      <p>&copy; 2026 Yayasan Pendidikan Islam Al-Ittihadiyyah. All rights reserved.</p>
+    </div>
+  </div>
+</footer>
+
+<!-- CONFIG: URL Backend Laravel -->
+<script src="/js/config.js"></script>
+
+<script src="/js/utils.js"></script>
+<script src="/js/data.js"></script>
+<script src="/js/main.js"></script>
+
+</body>
+</html>

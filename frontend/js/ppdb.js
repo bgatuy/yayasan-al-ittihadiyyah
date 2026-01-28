@@ -1,0 +1,879 @@
+document.addEventListener('DOMContentLoaded', async () => {
+  // --- TAB SWITCHING LOGIC ---
+  window.switchPpdbTab = function(tabName) {
+    const viewRegister = document.getElementById('view-register');
+    const viewCheck = document.getElementById('view-check');
+    const viewPayment = document.getElementById('view-payment');
+    const viewLoading = document.getElementById('view-loading');
+    
+    // Hide all views
+    [viewRegister, viewCheck, viewPayment, viewLoading].forEach(view => {
+      if (view) view.classList.add('hidden');
+    });
+
+    // Show selected view
+    if (tabName === 'register') {
+        if(viewRegister) viewRegister.classList.remove('hidden');
+    } else if (tabName === 'check') {
+        if(viewCheck) viewCheck.classList.remove('hidden');
+    } else if (tabName === 'payment') {
+        if(viewPayment) viewPayment.classList.remove('hidden');
+    }
+
+    // Perbarui style tombol/tab navigasi
+    const tabs = document.querySelectorAll('[data-tab]');
+    
+    // Definisikan kelas untuk setiap state (untuk header gelap)
+    const activeClasses = ['bg-primary', 'text-white', 'hover:bg-primary/90'];
+    const inactiveClasses = ['text-white/70', 'hover:text-white', 'hover:bg-white/10'];
+
+    tabs.forEach(tab => {
+        // Hapus semua kelas styling yang relevan (baik yang baru maupun yang lama)
+        tab.classList.remove(
+            'bg-primary', 'text-white', 'hover:bg-primary/90', // Kelas aktif baru
+            'text-white/70', 'hover:text-white', 'hover:bg-white/10', // Kelas inaktif baru
+            'text-primary', 'bg-primary/10', // Kelas aktif lama
+            'text-slate-500', 'hover:text-primary', 'hover:bg-slate-50' // Kelas inaktif lama
+        );
+
+        // Tentukan tab mana yang harus aktif secara visual.
+        // Untuk view 'payment', kita ingin tab 'check' yang aktif.
+        const activeTabName = (tabName === 'payment') ? 'check' : tabName;
+
+        if (tab.dataset.tab === activeTabName) {
+            tab.classList.add(...activeClasses);
+        } else {
+            tab.classList.add(...inactiveClasses);
+        }
+    });
+
+    // Reset posisi scroll ke paling atas secara instan (seperti pindah halaman)
+    window.scrollTo(0, 0);
+  };
+
+  // Fungsi untuk pindah ke halaman pembayaran
+  window.goToPaymentPage = (id) => {
+    if (!id) {
+      const storedId = localStorage.getItem('ppdb_current_reg_id');
+      if (!storedId) {
+        alert('ID Pendaftaran tidak ditemukan.');
+        switchPpdbTab('check');
+        return;
+      }
+      id = storedId;
+    }
+    
+    localStorage.setItem('ppdb_current_reg_id', id);
+    // FIX: Hanya tutup modal sukses jika sedang terbuka.
+    // Ini mencegah modal muncul secara tidak terduga saat berpindah ke halaman pembayaran dari 'Cek Status'.
+    const successModal = document.getElementById('modal-success-ppdb');
+    if (successModal && !successModal.classList.contains('hidden')) {
+      // The modal is open (e.g., from new registration), so close it.
+      window.utils.toggleModal('modal-success-ppdb');
+    }
+    switchPpdbTab('payment');
+    renderPaymentView(id);
+  };
+
+  // --- INITIAL VIEW LOGIC (ANTI-FLICKER) ---
+  // This function determines which view to show on page load.
+  // It runs immediately to prevent the default view from flickering.
+  (async function initializePpdbView() {
+    const hash = window.location.hash;
+    const urlParams = new URLSearchParams(window.location.search);
+    const viewParam = urlParams.get('view');
+    const idParam = urlParams.get('id');
+    const pendingRegId = localStorage.getItem('ppdb_current_reg_id');
+
+    // Priority 0: Handle URL hash for check/payment views
+    if (hash.startsWith('#payment/')) {
+      const regIdFromHash = hash.split('/')[1];
+      if (regIdFromHash) {
+        await showPaymentViewFromHash(regIdFromHash); // Call directly, no setTimeout needed now
+        return;
+      }
+    } else if (hash === '#check') {
+      switchPpdbTab('check');
+      return;
+    }
+
+    // Priority 1: Direct URL parameters for deep linking
+    if (viewParam === 'payment' && idParam) {
+      goToPaymentPage(idParam);
+      return;
+    }
+    if (viewParam === 'check') {
+      switchPpdbTab('check');
+      return;
+    }
+    
+    // Priority 2: Resume a pending registration from localStorage
+    if (pendingRegId) {
+      let pendingReg = null;
+      try {
+        pendingReg = await window.DataStore.checkPpdbStatus(pendingRegId);
+      } catch (error) {
+        console.error(`Auto-resume check failed for ID ${pendingRegId}:`, error);
+        if (error.message && error.message.toLowerCase().includes('not found')) {
+          localStorage.removeItem('ppdb_current_reg_id');
+        }
+      }
+      
+      if (pendingReg && ['Menunggu Pembayaran', 'Menunggu Verifikasi', 'Terverifikasi'].includes(pendingReg.status)) {
+        // If there's a pending payment, go directly to the payment page.
+        goToPaymentPage(pendingRegId);
+        return;
+      } else {
+        // If status is final (Diterima, etc.) or not found, clear the stored ID.
+        localStorage.removeItem('ppdb_current_reg_id');
+      }
+    }
+
+    // Default Fallback: Show the main registration form.
+    switchPpdbTab('register');
+  })();
+
+  const btnDaftar = document.getElementById('btn-daftar');
+  if (btnDaftar) {
+    btnDaftar.addEventListener('click', async () => {
+      // Ambil Data Input
+      const jenjangValue = document.querySelector('input[name="jenjang"]:checked')?.value;
+      const nameValue = document.getElementById('reg-name').value.trim();
+      const genderValue = document.querySelector('input[name="jk"]:checked')?.value;
+      const birthplaceValue = document.getElementById('reg-birthplace').value.trim();
+      const birthdateValue = document.getElementById('reg-birthdate').value;
+      const parentValue = document.getElementById('reg-parent').value.trim();
+      const phoneValue = document.getElementById('reg-phone').value.trim();
+      const emailValue = document.getElementById('reg-email').value.trim();
+      const addressValue = document.getElementById('reg-address').value.trim();
+      let schoolValue = document.getElementById('reg-school').value.trim();
+
+      // Validasi Lengkap (Wajib Semua)
+      let missingFields = [];
+      if (!jenjangValue) missingFields.push("Jenjang");
+      if (!nameValue) missingFields.push("Nama Lengkap");
+      if (!genderValue) missingFields.push("Jenis Kelamin");
+      if (!birthplaceValue) missingFields.push("Tempat Lahir");
+      if (!birthdateValue) missingFields.push("Tanggal Lahir");
+      if (!parentValue) missingFields.push("Nama Orang Tua");
+      if (!addressValue) missingFields.push("Alamat");
+      if (!phoneValue) missingFields.push("No. WhatsApp");
+      if (!emailValue) missingFields.push("Email");
+      
+      // Validasi Asal Sekolah (Wajib untuk MI)
+      if (jenjangValue === 'MI' && !schoolValue) {
+         missingFields.push("Asal Sekolah");
+      }
+
+      if (missingFields.length > 0) {
+        const modalAlert = document.getElementById('modal-alert-ppdb');
+        const alertMsg = document.getElementById('alert-message-ppdb');
+        const msgText = "Mohon lengkapi data berikut: " + missingFields.join(", ");
+
+        if (modalAlert) {
+            if(alertMsg) alertMsg.textContent = msgText;
+            modalAlert.classList.remove('hidden');
+            modalAlert.classList.add('flex');
+        } else {
+            alert(msgText);
+        }
+        return;
+      }
+
+      if (!schoolValue) schoolValue = '-'; // Default jika kosong (misal TK)
+      
+      const settings = await window.DataStore.getSettings();
+
+      // Buat FormData untuk dikirim ke backend
+      const formData = new FormData();
+      formData.append('nama_lengkap', nameValue);
+      formData.append('jenis_kelamin', genderValue);
+      formData.append('jenjang', jenjangValue);
+      formData.append('tempat_lahir', birthplaceValue);
+      formData.append('tanggal_lahir', birthdateValue);
+      formData.append('nama_orang_tua', parentValue);
+      formData.append('nomor_wa', phoneValue);
+      formData.append('email', emailValue);
+      formData.append('alamat', addressValue);
+      formData.append('asal_sekolah', schoolValue);
+      formData.append('gelombang', settings.nama_gelombang || 'Gelombang 1');
+      // bukti_bayar tidak dikirim saat pendaftaran awal
+
+      // Simpan via DataStore
+      const response = await window.DataStore.registerPpdb(formData);
+      
+      // Ambil ID dari response backend
+      const newId = response.data.id;
+      
+      // Simpan ID pendaftaran di localStorage untuk kemudahan akses
+      localStorage.setItem('ppdb_current_reg_id', newId);
+
+      // Tampilkan modal sukses pendaftaran
+      const modalSuccess = document.getElementById('modal-success-ppdb');
+      const successIdDisplay = document.getElementById('success-reg-id');
+      if (modalSuccess && successIdDisplay) {
+        successIdDisplay.textContent = newId;
+        window.utils.toggleModal('modal-success-ppdb', true);
+      }
+    });
+  }
+
+  // Listener untuk tombol "Lanjutkan Pembayaran" di modal sukses pendaftaran
+  document.getElementById('btn-go-to-payment')?.addEventListener('click', () => {
+    const regId = localStorage.getItem('ppdb_current_reg_id');
+    if (regId) goToPaymentPage(regId);
+  });
+
+  document.getElementById('btn-close-alert-ppdb')?.addEventListener('click', () => {
+    btnCloseAlert.addEventListener('click', () => {
+        const modal = document.getElementById('modal-alert-ppdb');
+        if (modal) {
+            modal.classList.add('hidden');
+            modal.classList.remove('flex');
+        }
+    });
+  });
+
+  // Logika: Sembunyikan Asal Sekolah jika Jenjang TK dipilih
+  const radioJenjang = document.querySelectorAll('input[name="jenjang"]');
+  const fieldAsalSekolah = document.getElementById('field-asal-sekolah');
+
+  function toggleAsalSekolah() {
+    const selected = document.querySelector('input[name="jenjang"]:checked');
+    if (selected && selected.value === 'TK') {
+      fieldAsalSekolah.classList.add('hidden');
+    } else {
+      fieldAsalSekolah.classList.remove('hidden');
+    }
+  }
+
+  radioJenjang.forEach(radio => radio.addEventListener('change', toggleAsalSekolah));
+  toggleAsalSekolah(); // Cek status awal saat halaman dimuat
+
+  // --- LOGIKA BANNER GELOMBANG (Dari Pengaturan Admin) ---
+  const settings = window.DataStore ? await window.DataStore.getSettings() : {};
+  
+  const waveName = settings.nama_gelombang || 'Gelombang 1';
+  const wavePeriod = settings.periode_pendaftaran || '1 Oktober - 31 Desember 2025';
+  const waveStatus = settings.status_ppdb || 'ditutup';
+
+  const banner = document.getElementById('info-wave-banner');
+  const iconBox = document.getElementById('info-wave-icon');
+  const title = document.getElementById('info-wave-title');
+  const desc = document.getElementById('info-wave-desc');
+  const period = document.getElementById('info-wave-period');
+
+  if (banner && title && period) {
+    if (waveStatus === 'ditutup') {
+      // Tampilan jika pendaftaran DITUTUP
+      banner.className = 'bg-red-50 border border-red-100 rounded-2xl p-4 mb-8 flex items-start gap-4';
+      iconBox.className = 'bg-red-100 text-red-600 w-10 h-10 rounded-full flex items-center justify-center flex-shrink-0';
+      title.className = 'font-bold text-red-800';
+      title.textContent = 'Pendaftaran Ditutup';
+      desc.className = 'text-sm text-red-600 mt-1';
+      desc.textContent = 'Mohon maaf, pendaftaran saat ini sedang ditutup. Nantikan informasi gelombang berikutnya.';
+      
+      // Disable tombol daftar
+      if (btnDaftar) {
+        btnDaftar.disabled = true;
+        btnDaftar.classList.add('opacity-50', 'cursor-not-allowed');
+        btnDaftar.textContent = 'Pendaftaran Ditutup';
+      }
+    } else {
+      // Tampilan jika pendaftaran DIBUKA (Default)
+      title.textContent = `Pendaftaran ${waveName} Dibuka!`;
+      period.textContent = wavePeriod;
+    }
+  }
+
+  // --- LOGIKA CEK STATUS ---
+  const checkForm = document.getElementById('check-status-form');
+  if (checkForm) {
+    checkForm.addEventListener('submit', async (e) => {
+        e.preventDefault();
+        const inputId = document.getElementById('check-id').value.trim().toUpperCase();
+        if (!inputId) {
+            alert('Silakan masukkan ID Pendaftaran.');
+            return;
+        }
+        
+        // [FIX] Gunakan endpoint publik yang aman untuk cek status, bukan endpoint admin.
+        // Ini lebih aman, efisien, dan memperbaiki error 401 di halaman publik.
+        let result = null;
+        try {
+            result = await window.DataStore.checkPpdbStatus(inputId);
+        } catch (error) {
+            console.error("Error saat cek status:", error);
+            result = null;
+        }
+        const resultCard = document.getElementById('result-card');
+
+        if (result) {
+            // Populate Data
+            document.getElementById('result-name').textContent = result.nama_lengkap;
+            document.getElementById('result-level').textContent = result.jenjang === 'MI' ? 'Madrasah Ibtidaiyah' : 'TK Islam';
+            document.getElementById('result-reg-id').textContent = result.id;
+            document.getElementById('result-wave').textContent = result.gelombang;
+
+            // Styling Status
+            const header = document.getElementById('result-header');
+            const icon = document.getElementById('result-icon');
+            const statusText = document.getElementById('result-status');
+            const messageText = document.getElementById('result-message');
+            const actionDiv = document.getElementById('result-action');
+
+            // Reset Classes
+            header.className = 'p-6 text-center border-b border-slate-200 transition-colors duration-300';
+            icon.className = 'w-16 h-16 rounded-full flex items-center justify-center mx-auto text-3xl shadow-sm mb-3 transition-colors duration-300';
+            actionDiv.innerHTML = '';
+            actionDiv.classList.add('hidden');
+
+            if (result.status === 'Diterima') { // STATUS: DITERIMA
+                header.classList.add('bg-green-50');
+                icon.classList.add('bg-green-100', 'text-green-600');
+                icon.innerHTML = '<i class="fa-solid fa-check"></i>';
+                statusText.textContent = 'DITERIMA';
+                statusText.className = 'text-xl font-bold text-green-700';
+                messageText.textContent = 'Selamat! Anda dinyatakan lulus seleksi.';
+                
+                actionDiv.classList.remove('hidden');
+                actionDiv.innerHTML = `<button onclick="downloadAcceptancePDF('${result.id}', '${result.nama_lengkap}', '${result.jenjang}', '${result.gelombang}')" class="block w-full bg-primary text-white text-center font-bold py-3 rounded-xl hover:bg-secondary transition shadow-lg shadow-primary/30"><i class="fa-solid fa-file-pdf mr-2"></i> Unduh Surat Penerimaan</button>`;
+            } else if (result.status === 'Terverifikasi') { // STATUS: TERVERIFIKASI
+                header.classList.add('bg-green-50');
+                icon.classList.add('bg-green-100', 'text-green-600');
+                icon.innerHTML = '<i class="fa-solid fa-clipboard-check"></i>';
+                statusText.textContent = 'TERVERIFIKASI';
+                statusText.className = 'text-xl font-bold text-green-700';
+                messageText.textContent = 'Pembayaran Anda telah diverifikasi. Silakan tunggu pengumuman hasil seleksi.';
+                
+                actionDiv.classList.remove('hidden');
+                // FIX: Evaluate the date expression within the template literal by wrapping it in ${...}
+                // and adding quotes so it's passed as a string in the onclick handler.
+                const dateString = new Date(result.created_at).toLocaleDateString('id-ID');
+                actionDiv.innerHTML = `<button onclick="downloadReceiptPDF('${result.id}', '${result.nama_lengkap}', '${result.jenjang}', '150.000', '${dateString}')" class="block w-full bg-primary text-white text-center font-bold py-3 rounded-xl hover:bg-secondary transition shadow-lg shadow-primary/30"><i class="fa-solid fa-file-pdf mr-2"></i> Unduh Bukti Pembayaran</button>`;
+            } else if (result.status === 'Tidak Diterima') { // STATUS: TIDAK DITERIMA
+                header.classList.add('bg-red-50');
+                icon.classList.add('bg-red-100', 'text-red-600');
+                icon.innerHTML = '<i class="fa-solid fa-xmark"></i>';
+                statusText.textContent = 'TIDAK DITERIMA';
+                statusText.className = 'text-xl font-bold text-red-700';
+                messageText.textContent = 'Mohon maaf, Anda belum lulus seleksi kali ini.';
+            } else if (result.status === 'Menunggu Pembayaran') { // STATUS: MENUNGGU PEMBAYARAN
+                header.classList.add('bg-orange-50');
+                icon.classList.add('bg-orange-100', 'text-orange-600');
+                icon.innerHTML = '<i class="fa-solid fa-wallet"></i>';
+                statusText.textContent = 'MENUNGGU PEMBAYARAN';
+                statusText.className = 'text-xl font-bold text-orange-700';
+                messageText.textContent = 'Silakan selesaikan pembayaran pendaftaran.';
+                
+                actionDiv.classList.remove('hidden');
+                const payBtn = document.createElement('button');
+                payBtn.className = 'block w-full bg-orange-500 text-white text-center font-bold py-3 rounded-xl hover:bg-orange-600 transition shadow-lg shadow-orange-500/30';
+                payBtn.innerHTML = '<i class="fa-solid fa-credit-card mr-2"></i> Bayar Sekarang';
+                payBtn.onclick = () => {
+                    // Gunakan fungsi baru untuk pindah ke halaman pembayaran
+                    goToPaymentPage(result.id);
+                };
+                actionDiv.appendChild(payBtn);
+            } else { // STATUS: MENUNGGU VERIFIKASI
+                header.classList.add('bg-yellow-50');
+                icon.classList.add('bg-yellow-100', 'text-yellow-600');
+                icon.innerHTML = '<i class="fa-solid fa-hourglass-half"></i>';
+                statusText.textContent = result.status.toUpperCase();
+                statusText.className = 'text-xl font-bold text-yellow-700';
+                messageText.textContent = 'Bukti pembayaran Anda sedang dalam proses verifikasi oleh admin.';
+            }
+
+            resultCard.classList.remove('hidden');
+        } else {
+            alert('Data tidak ditemukan! Mohon periksa kembali ID Pendaftaran Anda.');
+            resultCard.classList.add('hidden');
+        }
+    });
+  }
+
+  // --- LOGIKA HALAMAN PEMBAYARAN (STATE-BASED) ---
+
+  // Fungsi untuk me-refresh halaman pembayaran setelah aksi (misal: setelah upload)
+  window.refreshPaymentPage = () => {
+    window.utils.toggleModal('modal-success-payment', false);
+    const regId = localStorage.getItem('ppdb_current_reg_id');
+    if (regId) {
+      renderPaymentView(regId);
+    }
+  };
+
+  // Fungsi utama yang mengatur tampilan halaman pembayaran berdasarkan status
+  async function renderPaymentView(id) {
+    // Ambil elemen-elemen UI
+    const uploadView = document.getElementById('payment-step-upload');
+    const waitingView = document.getElementById('payment-step-waiting');
+    const idDisplay = document.getElementById('payment-reg-id-display');
+
+    // Sembunyikan semua view dulu
+    uploadView.classList.add('hidden');
+    waitingView.classList.add('hidden');
+    idDisplay.textContent = id.toUpperCase();
+
+    try {
+      // Panggil endpoint baru untuk cek status
+      const data = await window.DataStore.checkPpdbStatus(id);
+      const status = data.status;
+
+      if (status === 'Menunggu Pembayaran') {
+        // Reset form upload
+        document.getElementById('payment-proof').value = '';
+        document.getElementById('payment-preview-img').classList.add('hidden');
+        document.getElementById('upload-placeholder').classList.remove('hidden');
+        // Tampilkan view upload
+        uploadView.classList.remove('hidden');
+      } else if (status === 'Menunggu Verifikasi') {
+        document.getElementById('waiting-icon').innerHTML = '<i class="fa-solid fa-hourglass-half"></i>';
+        document.getElementById('waiting-title').textContent = 'Menunggu Verifikasi';
+        document.getElementById('waiting-message').textContent = 'Terima kasih! Bukti pembayaran Anda sedang kami periksa. Silakan cek halaman ini atau halaman "Cek Status" secara berkala.';
+        waitingView.classList.remove('hidden');
+      } else if (status === 'Terverifikasi') {
+        document.getElementById('waiting-icon').innerHTML = '<i class="fa-solid fa-clipboard-check"></i>';
+        document.getElementById('waiting-title').textContent = 'Pembayaran Terverifikasi';
+        document.getElementById('waiting-message').textContent = 'Pembayaran Anda telah berhasil diverifikasi. Saat ini data Anda sedang dalam proses seleksi. Hasil akhir akan diumumkan di halaman "Cek Status".';
+        waitingView.classList.remove('hidden');
+      } else if (status === 'Diterima' || status === 'Tidak Diterima') {
+        // Jika sudah ada hasil, arahkan ke halaman Cek Status
+        switchPpdbTab('check');
+        document.getElementById('check-id').value = id;
+        document.getElementById('check-status-form').dispatchEvent(new Event('submit'));
+      }
+    } catch (error) {
+      console.error("Gagal mengambil status:", error);
+      alert('Gagal mengambil status pendaftaran. Pastikan ID Pendaftaran benar.');
+      switchPpdbTab('check');
+    }
+  }
+
+  const paymentFileInput = document.getElementById('payment-proof');
+  if(paymentFileInput) {
+      paymentFileInput.addEventListener('change', (e) => {
+          if(e.target.files && e.target.files[0]) {
+              const reader = new FileReader();
+              reader.onload = (ev) => {
+                  const previewImg = document.getElementById('payment-preview-img');
+                  const placeholder = document.getElementById('upload-placeholder');
+                  if(previewImg) {
+                      previewImg.src = ev.target.result;
+                      previewImg.classList.remove('hidden');
+                  }
+                  if(placeholder) placeholder.classList.add('hidden');
+              }
+              reader.readAsDataURL(e.target.files[0]);
+          }
+      });
+  }
+
+  // Helper: Kompresi Gambar Agresif (Target ~50KB)
+  const compressImage = (file, quality = 0.4, maxWidth = 500) => {
+      return new Promise((resolve, reject) => {
+          const reader = new FileReader();
+          reader.readAsDataURL(file);
+          reader.onload = event => {
+              const img = new Image();
+              img.src = event.target.result;
+              img.onload = () => {
+                  const canvas = document.createElement('canvas');
+                  let width = img.width;
+                  let height = img.height;
+
+                  // Resize paksa ke lebar 500px agar file kecil
+                  if (width > maxWidth) {
+                      height = Math.round(height * (maxWidth / width));
+                      width = maxWidth;
+                  }
+
+                  canvas.width = width;
+                  canvas.height = height;
+                  const ctx = canvas.getContext('2d');
+                  ctx.drawImage(img, 0, 0, width, height);
+                  
+                  // Output: JPEG dengan kualitas 40%
+                  resolve(canvas.toDataURL('image/jpeg', quality));
+              };
+              img.onerror = error => reject(error);
+          };
+          reader.onerror = error => reject(error);
+      });
+  };
+
+  const btnConfirmPayment = document.getElementById('btn-confirm-payment');
+  if(btnConfirmPayment) {
+      btnConfirmPayment.addEventListener('click', async () => {
+          const fileInput = document.getElementById('payment-proof');
+          const id = document.getElementById('payment-reg-id-display').textContent;
+
+          if(!fileInput.files[0]) {
+              const modalAlert = document.getElementById('modal-alert-ppdb'); // Bisa pakai modal yang sama
+              const alertMsg = document.getElementById('alert-message-ppdb');
+              
+              if (modalAlert) {
+                  if(alertMsg) alertMsg.textContent = 'Mohon upload bukti transfer terlebih dahulu.';
+                  modalAlert.classList.remove('hidden');
+                  modalAlert.classList.add('flex');
+              } else {
+                  alert('Mohon upload bukti transfer terlebih dahulu.');
+              }
+              return;
+          }
+
+          // Loading state
+          const originalText = btnConfirmPayment.textContent;
+          btnConfirmPayment.textContent = 'Memproses...';
+          btnConfirmPayment.disabled = true;
+
+          try {
+              // Kompres gambar dan konversi ke Blob
+              const compressedDataUrl = await compressImage(fileInput.files[0]);
+              const imageBlob = window.utils.dataURLtoBlob(compressedDataUrl);
+
+              const formData = new FormData();
+              formData.append('bukti_bayar', imageBlob, `payment_${id}.jpg`);
+              
+              // Panggil fungsi DataStore baru yang menargetkan endpoint upload
+              const updated = await window.DataStore.uploadPaymentProof(id, formData);
+              
+              if(updated) {
+                  // Jangan hapus ID, karena mungkin user mau cek status lagi.
+                  // Cukup tampilkan modal sukses.
+                  const modalSuccess = document.getElementById('modal-success-payment');
+                  if(modalSuccess) {
+                      modalSuccess.classList.remove('hidden');
+                      modalSuccess.classList.add('flex');
+                  }
+              } else {
+                  alert('Gagal memperbarui data pendaftaran.');
+              }
+          } catch (error) {
+              console.error(error);
+              alert('Gagal memproses gambar. Silakan coba lagi.');
+          } finally {
+              btnConfirmPayment.textContent = originalText;
+              btnConfirmPayment.disabled = false;
+          }
+      });
+  }
+
+  // Called from success modal. Sets hash; ppdb.js handles view switch.
+  window.setPaymentHashFromSuccessModal = function() {
+    const regId = document.getElementById('success-reg-id').textContent;
+    if (regId && regId !== 'REG-XXXX') {
+      window.location.hash = `payment/${regId}`;
+    }
+  }
+
+  // Replaces original goToPaymentPage() call from result card.
+  window.goToPaymentPageWithHash = function() {
+    const regId = document.getElementById('result-reg-id').textContent;
+    if (regId) {
+      window.location.hash = `payment/${regId}`;
+      showPaymentViewFromHash(regId);
+    }
+  }
+
+  // Main function to display the payment view from an ID
+  window.showPaymentViewFromHash = async function(regId) {
+    if (!regId) return;
+
+    document.getElementById('view-register').style.display = 'none';
+    document.getElementById('view-check').style.display = 'none';
+    document.getElementById('view-payment').style.display = 'block';
+
+    try {
+      const registration = await window.DataStore.getRegistrationById(regId);
+      if (!registration) {
+        alert('ID Pendaftaran tidak ditemukan.');
+        window.location.hash = '#check';
+        switchPpdbTab('check');
+        document.getElementById('check-id').value = regId;
+        return;
+      }
+
+      document.getElementById('payment-reg-id-display').textContent = registration.id;
+      const paymentStepUpload = document.getElementById('payment-step-upload');
+      const paymentStepWaiting = document.getElementById('payment-step-waiting');
+      paymentStepUpload.style.display = 'none';
+      paymentStepWaiting.style.display = 'none';
+
+      if (registration.status === 'Menunggu Pembayaran') {
+        paymentStepUpload.style.display = 'block';
+      } else if (['Menunggu Verifikasi', 'Terverifikasi'].includes(registration.status)) {
+        paymentStepWaiting.style.display = 'block';
+        const waitingIcon = document.getElementById('waiting-icon');
+        const waitingTitle = document.getElementById('waiting-title');
+        const waitingMessage = document.getElementById('waiting-message');
+        
+        if (registration.status === 'Menunggu Verifikasi') {
+          waitingIcon.innerHTML = '<i class="fa-solid fa-hourglass-half"></i>';
+          waitingIcon.className = 'w-20 h-20 bg-blue-100 text-blue-600 rounded-full flex items-center justify-center mx-auto text-3xl mb-4';
+          waitingTitle.textContent = 'Menunggu Verifikasi';
+          waitingMessage.textContent = 'Terima kasih! Bukti pembayaran Anda sedang kami periksa. Silakan cek halaman ini secara berkala.';
+        } else { // Terverifikasi
+          waitingIcon.innerHTML = '<i class="fa-solid fa-check"></i>';
+          waitingIcon.className = 'w-20 h-20 bg-green-100 text-green-600 rounded-full flex items-center justify-center mx-auto text-3xl mb-4';
+          waitingTitle.textContent = 'Pembayaran Terverifikasi';
+          waitingMessage.textContent = 'Pembayaran Anda telah kami terima. Pendaftaran Anda telah terverifikasi.';
+        }
+      } else {
+        alert(`Status pendaftaran Anda saat ini adalah "${registration.status}". Anda akan diarahkan ke halaman Cek Status.`);
+        window.location.hash = '#check';
+        window.location.reload();
+      }
+    } catch (error) {
+      console.error('Gagal menampilkan halaman pembayaran:', error);
+      alert('Terjadi kesalahan saat memuat data pembayaran. Silakan coba lagi.');
+      window.location.hash = '';
+      window.location.reload();
+    }
+  }
+
+  window.copyRegistrationId = function(button) {
+    const idElement = document.getElementById('success-reg-id');
+    const idToCopy = idElement.textContent;
+    
+    navigator.clipboard.writeText(idToCopy).then(() => {
+      const originalIcon = button.innerHTML;
+      button.innerHTML = `<i class="fa-solid fa-check text-green-500 text-xl"></i>`;
+      
+      setTimeout(() => {
+        button.innerHTML = originalIcon;
+      }, 2000);
+    }).catch(err => {
+      console.error('Gagal menyalin ID:', err);
+      alert('Gagal menyalin ID. Mohon salin secara manual.');
+    });
+  }
+
+  window.copyAccountNumber = function(button) {
+    const accountNumber = '7123456789';
+    navigator.clipboard.writeText(accountNumber).then(() => {
+      const originalIcon = button.innerHTML;
+      button.innerHTML = `<i class="fa-solid fa-check text-green-500 text-lg"></i>`;
+      
+      setTimeout(() => {
+        button.innerHTML = originalIcon;
+      }, 2000);
+    }).catch(err => {
+      console.error('Gagal menyalin nomor rekening:', err);
+      alert('Gagal menyalin nomor rekening. Mohon salin secara manual.');
+    });
+  }
+
+  // --- PDF DOWNLOAD FUNCTIONS ---
+  window.downloadAcceptancePDF = function(id, name, level, wave) {
+      // Cek ketersediaan library jsPDF
+      const jsPDF = window.jspdf ? window.jspdf.jsPDF : window.jsPDF;
+      if (!jsPDF) {
+          alert("Library jsPDF tidak ditemukan. Pastikan script sudah dimuat.");
+          return;
+      }
+
+      const levelName = level === 'MI' ? 'Madrasah Ibtidaiyah' : 'TK Islam';
+      const academicYear = localStorage.getItem('ppdb_academic_year') || '2025/2026';
+      
+      const doc = new jsPDF('p', 'mm', 'a4');
+
+      // ===== MARGIN & SETUP =====
+      const marginLeft = 30;
+      const marginRight = 30;
+      const marginTop = 30;
+      const pageWidth = 210;
+      const contentWidth = pageWidth - marginLeft - marginRight;
+      let y = marginTop;
+
+      // ===== KOP SURAT =====
+      doc.setFont('helvetica', 'bold');
+      doc.setFontSize(14);
+      doc.text('YAYASAN PENDIDIKAN ISLAM AL-ITTIHADIYYAH', pageWidth / 2, y, { align: 'center' });
+      
+      y += 6;
+      doc.setFontSize(9);
+      doc.setFont('helvetica', 'italic');
+      doc.text('Jl. Masjid An Nur No.6, Tebet, Jakarta Selatan | Telp: (021) 12345678', pageWidth / 2, y, { align: 'center' });
+      
+      y += 8;
+      doc.setLineWidth(0.5);
+      doc.line(marginLeft, y, pageWidth - marginRight, y);
+      doc.setLineWidth(0.2); // Double line effect
+      doc.line(marginLeft, y + 1, pageWidth - marginRight, y + 1);
+      y += 15;
+
+      // ===== JUDUL =====
+      doc.setFont('helvetica', 'bold');
+      doc.setFontSize(12);
+      doc.text('SURAT KETERANGAN DITERIMA', pageWidth / 2, y, { align: 'center' });
+      doc.setLineWidth(0.2);
+      doc.line((pageWidth/2) - 35, y + 1, (pageWidth/2) + 35, y + 1); // Underline judul
+      y += 15;
+
+      // ===== ISI SURAT =====
+      doc.setFont('helvetica', 'normal');
+      doc.setFontSize(11);
+      
+      const paragraf1 = `      Panitia Penerimaan Peserta Didik Baru (PPDB) Yayasan Al-Ittihadiyyah Tahun Ajaran ${academicYear}, berdasarkan hasil seleksi administrasi dan observasi yang telah dilakukan, dengan ini menerangkan bahwa:`;
+      
+      doc.text(paragraf1, marginLeft, y, { maxWidth: contentWidth, align: 'justify' });
+      y += 15;
+
+      // ===== DATA SISWA (Manual Table) =====
+      const labelX = marginLeft + 10;
+      const colonX = marginLeft + 50;
+      const valueX = marginLeft + 55;
+      const rowHeight = 7;
+
+      const dataSiswa = [
+          { label: 'ID Pendaftaran', value: id },
+          { label: 'Nama Siswa', value: name },
+          { label: 'Jenjang', value: levelName },
+          { label: 'Gelombang', value: wave }
+      ];
+
+      dataSiswa.forEach(row => {
+          doc.text(row.label, labelX, y);
+          doc.text(':', colonX, y);
+          doc.setFont('helvetica', 'bold');
+          doc.text(row.value, valueX, y);
+          doc.setFont('helvetica', 'normal');
+          y += rowHeight;
+      });
+      y += 8;
+
+      // ===== STATUS LULUS =====
+      doc.text('Dinyatakan:', marginLeft, y);
+      y += 10;
+
+      // Kotak LULUS
+      doc.setDrawColor(0);
+      doc.setLineWidth(0.5);
+      doc.rect((pageWidth/2) - 30, y - 6, 60, 12); // x, y, w, h
+      doc.setFont('helvetica', 'bold');
+      doc.setFontSize(14);
+      doc.text('LULUS / DITERIMA', pageWidth / 2, y + 2, { align: 'center' });
+      y += 15;
+
+      // ===== PENUTUP =====
+      doc.setFont('helvetica', 'normal');
+      doc.setFontSize(11);
+      const paragraf2 = '      Kepada orang tua/wali murid diharapkan segera melakukan Daftar Ulang dan penyelesaian administrasi keuangan di sekretariat sekolah paling lambat 7 (tujuh) hari setelah surat ini diterbitkan.';
+      doc.text(paragraf2, marginLeft, y, { maxWidth: contentWidth, align: 'justify' });
+
+      doc.save(`Bukti_Penerimaan_${id}.pdf`);
+  };
+
+  window.downloadReceiptPDF = function(id, name, level, amount, date) {
+      // Cek ketersediaan library jsPDF
+      const jsPDF = window.jspdf ? window.jspdf.jsPDF : window.jsPDF;
+      if (!jsPDF) {
+          alert("Library jsPDF tidak ditemukan.");
+          return;
+      }
+
+      const levelName = level === 'MI' ? 'Madrasah Ibtidaiyah' : 'TK Islam';
+      const academicYear = localStorage.getItem('ppdb_academic_year') || '2025/2026';
+      
+      const doc = new jsPDF('p', 'mm', 'a4');
+
+      // ===== MARGIN & SETUP =====
+      const marginLeft = 30;
+      const marginRight = 30;
+      const marginTop = 30;
+      const pageWidth = 210;
+      let y = marginTop;
+
+      // ===== KOP SURAT =====
+      doc.setFont('helvetica', 'bold');
+      doc.setFontSize(14);
+      doc.text('YAYASAN PENDIDIKAN ISLAM AL-ITTIHADIYYAH', pageWidth / 2, y, { align: 'center' });
+      
+      y += 6;
+      doc.setFontSize(9);
+      doc.setFont('helvetica', 'italic');
+      doc.text('Jl. Masjid An Nur No.6, Tebet, Jakarta Selatan', pageWidth / 2, y, { align: 'center' });
+      
+      y += 8;
+      doc.setLineWidth(0.5);
+      doc.line(marginLeft, y, pageWidth - marginRight, y);
+      doc.setLineWidth(0.2);
+      doc.line(marginLeft, y + 1, pageWidth - marginRight, y + 1);
+      y += 15;
+
+      // ===== JUDUL =====
+      doc.setFont('helvetica', 'bold');
+      doc.setFontSize(12);
+      doc.text('KUITANSI PEMBAYARAN', pageWidth / 2, y, { align: 'center' });
+      y += 15;
+
+      // ===== RINCIAN PEMBAYARAN =====
+      doc.setFont('helvetica', 'normal');
+      doc.setFontSize(11);
+
+      const labelX = marginLeft + 5;
+      const colonX = marginLeft + 45;
+      const valueX = marginLeft + 50;
+      const rowHeight = 8;
+
+      const dataBayar = [
+          { label: 'No. Referensi', value: id },
+          { label: 'Tanggal', value: date },
+          { label: 'Telah Terima Dari', value: 'Orang Tua / Wali Calon Siswa' },
+          { label: 'Nama Siswa', value: name },
+          { label: 'Jenjang', value: levelName },
+          { label: 'Guna Pembayaran', value: `Biaya Pendaftaran PPDB ${academicYear}` }
+      ];
+
+      dataBayar.forEach(row => {
+          doc.text(row.label, labelX, y);
+          doc.text(':', colonX, y);
+          
+          // Bold untuk Nama dan ID
+          if(row.label === 'Nama Siswa' || row.label === 'No. Referensi') doc.setFont('helvetica', 'bold');
+          
+          // Handle text wrapping untuk deskripsi panjang
+          if(row.label === 'Guna Pembayaran') {
+              doc.text(row.value, valueX, y, { maxWidth: 100 });
+          } else {
+              doc.text(row.value, valueX, y);
+          }
+          
+          doc.setFont('helvetica', 'normal');
+          y += rowHeight;
+      });
+      y += 5;
+
+      // ===== TOTAL BOX =====
+      doc.setFillColor(245, 245, 245); // Light gray bg
+      doc.rect(marginLeft, y, pageWidth - marginLeft - marginRight, 12, 'F'); // Filled rect
+      doc.setDrawColor(200, 200, 200);
+      doc.rect(marginLeft, y, pageWidth - marginLeft - marginRight, 12, 'S'); // Stroke rect
+      
+      doc.setFontSize(11);
+      doc.text('JUMLAH DIBAYAR:', marginLeft + 5, y + 8);
+      doc.setFont('helvetica', 'bold');
+      doc.text(`Rp ${amount}`, pageWidth - marginRight - 5, y + 8, { align: 'right' });
+      y += 25;
+
+      // ===== CAP LUNAS =====
+      doc.setDrawColor(0);
+      doc.setLineWidth(0.5);
+      doc.rect((pageWidth/2) - 25, y - 6, 50, 12);
+      doc.setFontSize(14);
+      doc.text('LUNAS', pageWidth / 2, y + 2, { align: 'center' });
+      y += 30;
+
+      // ===== FOOTER =====
+      doc.setFontSize(8);
+      doc.setFont('helvetica', 'italic');
+      doc.setTextColor(100);
+      // Posisi footer disesuaikan agar tidak terlalu bawah (karena konten lebih sedikit tanpa TTD)
+      // Menggunakan y saat ini atau posisi fixed di bawah jika diinginkan
+      doc.text('Dokumen ini adalah bukti pembayaran yang sah yang diterbitkan secara elektronik.', pageWidth / 2, y, { align: 'center' });
+
+      doc.save(`Tanda_Terima_${id}.pdf`);
+  };
+
+});

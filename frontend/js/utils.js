@@ -1,0 +1,60 @@
+window.utils = {
+  // Toggle Modal (Show/Hide)
+  toggleModal: (modalId) => {
+    const modal = document.getElementById(modalId);
+    if (modal) {
+      modal.classList.toggle('hidden');
+      modal.classList.toggle('flex');
+    }
+  },
+
+  // Format Date to ID locale
+  formatDate: (dateInput) => {
+    if (!dateInput) return '';
+    const date = new Date(dateInput);
+    return date.toLocaleDateString('id-ID', { day: 'numeric', month: 'short', year: 'numeric' });
+  },
+
+  // Format Currency
+  formatCurrency: (amount) => {
+    return new Intl.NumberFormat('id-ID', { style: 'currency', currency: 'IDR', minimumFractionDigits: 0 }).format(amount);
+  },
+
+  // Get full URL for a storage path
+  getStorageUrl: (path) => {
+    if (!path) return ''; // Return empty if path is null, undefined, or empty string
+    
+    // If path is already a full URL or a data URI, return it as is
+    if (path.startsWith('http') || path.startsWith('blob:') || path.startsWith('data:')) {
+      return path;
+    }
+    
+    const baseUrl = window.APP_CONFIG?.STORAGE_BASE_URL || 'http://localhost:8000/storage';
+    // Remove leading slash from path if it exists to prevent double slashes
+    const cleanPath = path.startsWith('/') ? path.substring(1) : path;
+    return `${baseUrl}/${cleanPath}`;
+  },
+
+  // Helper for text editors
+  formatDoc: (cmd, value = null, editorId = 'news-content-editor') => {
+    document.execCommand(cmd, false, value);
+    const editor = document.getElementById(editorId);
+    if(editor) editor.focus();
+  },
+
+  // Convert Data URL to Blob for file upload
+  dataURLtoBlob: (dataurl) => {
+    const arr = dataurl.split(',');
+    const mime = arr[0].match(/:(.*?);/)[1];
+    const bstr = atob(arr[1]);
+    let n = bstr.length;
+    const u8arr = new Uint8Array(n);
+    while (n--) {
+      u8arr[n] = bstr.charCodeAt(n);
+    }
+    return new Blob([u8arr], { type: mime });
+  },
+};
+
+// Expose toggleModal globally for HTML onclick attributes
+window.toggleModal = window.utils.toggleModal;

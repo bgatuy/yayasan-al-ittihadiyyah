@@ -1,0 +1,138 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Berita Al-Ittihadiyyah</title>
+  <link rel="icon" type="image/png" href="/favicon.png">
+
+  <!-- Tailwind CSS -->
+  <link href="/css/output.css" rel="stylesheet">
+
+  <!-- Google Font -->
+  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+  <!-- Font Awesome -->
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+
+  <style>
+    html { scroll-behavior: smooth; }
+    body { font-family: 'Poppins', sans-serif; }
+  </style>
+</head>
+<body class="bg-slate-50 text-slate-800">
+
+<!-- NAVBAR -->
+<header id="navbar" class="fixed top-0 w-full z-50 transition-all duration-300 text-white py-4">
+  <div class="max-w-screen-xl mx-auto px-4 md:px-8 lg:px-12 flex items-center justify-between">
+    <a href="/" class="flex items-center gap-3">
+      <img src="/favicon.png" alt="Logo" class="w-10 h-10 bg-white rounded-xl p-1 shadow-sm object-contain">
+      <div>
+        <p class="font-bold leading-none uppercase text-lg">Al-Ittihadiyyah</p>
+      </div>
+    </a>
+    
+    <!-- Desktop Menu -->
+    <nav class="hidden md:flex items-center gap-8 text-sm font-medium">
+      <a href="/" class="hover:text-accent transition">Beranda</a>
+      <a href="/berita/" class="text-accent font-bold">Berita</a>
+      <div class="relative group">
+        <button class="hover:text-accent transition flex items-center gap-1 py-4">Akademik <i class="fa-solid fa-chevron-down text-xs"></i></button>
+        <div class="absolute top-full left-1/2 -translate-x-1/2 w-56 bg-white text-slate-800 rounded-xl shadow-xl border border-slate-100 overflow-hidden opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-300 transform origin-top">
+          <a href="/tamankanak-kanak/" class="block px-6 py-3 hover:bg-slate-50 hover:text-primary transition border-b border-slate-50">TK Islam</a>
+          <a href="/madrasahibtidaiyah/" class="block px-6 py-3 hover:bg-slate-50 hover:text-primary transition">Madrasah Ibtidaiyah</a>
+        </div>
+      </div>
+      <a href="/guru/" class="hover:text-accent transition">Guru & Staff</a>
+      <a href="/ppdbonline/" id="nav-cta" class="bg-accent text-secondary px-5 py-2 rounded-xl hover:brightness-110 hover:shadow-xl hover:-translate-y-0.5 transition shadow-lg">Pendaftaran Online</a>
+    </nav>
+
+    <!-- Mobile Menu Button -->
+    <button id="mobile-menu-btn" class="md:hidden text-white text-2xl focus:outline-none p-2">
+      <i class="fa-solid fa-bars"></i>
+    </button>
+  </div>
+
+  <!-- Mobile Menu Dropdown -->
+  <div id="mobile-menu" class="hidden md:hidden absolute top-full left-0 w-full bg-white/95 backdrop-blur-xl border-t border-slate-100 shadow-2xl flex-col p-4 gap-2 transition-all">
+    <a href="/" class="flex items-center gap-4 px-4 py-3 font-semibold text-slate-600 hover:text-primary hover:bg-slate-50 rounded-xl transition">
+      <i class="fa-solid fa-house w-5 text-center"></i> Beranda
+    </a>
+    <a href="/berita/" class="flex items-center gap-4 px-4 py-3 font-semibold text-primary bg-slate-50 rounded-xl transition">
+      <i class="fa-solid fa-newspaper w-5 text-center"></i> Berita
+    </a>
+    <div>
+      <button id="mobile-akademik-btn" class="w-full flex items-center justify-between px-4 py-3 font-semibold text-slate-600 hover:text-primary hover:bg-slate-50 rounded-xl transition text-left">
+        <div class="flex items-center gap-4">
+          <i class="fa-solid fa-graduation-cap w-5 text-center"></i> Akademik
+        </div>
+        <i id="mobile-akademik-icon" class="fa-solid fa-chevron-down text-xs transition-transform duration-300"></i>
+      </button>
+      <div id="mobile-akademik-menu" class="hidden flex-col gap-1 mt-1 pl-4">
+        <a href="/tamankanak-kanak/" class="flex items-center gap-4 px-4 py-2 font-medium text-slate-500 hover:text-primary hover:bg-slate-50 rounded-xl transition">
+          <i class="fa-solid fa-shapes w-5 text-center"></i> TK Islam
+        </a>
+        <a href="/madrasahibtidaiyah/" class="flex items-center gap-4 px-4 py-2 font-medium text-slate-500 hover:text-primary hover:bg-slate-50 rounded-xl transition">
+          <i class="fa-solid fa-book-open w-5 text-center"></i> Madrasah Ibtidaiyah
+        </a>
+      </div>
+    </div>
+    <a href="/guru/" class="flex items-center gap-4 px-4 py-3 font-semibold text-slate-600 hover:text-primary hover:bg-slate-50 rounded-xl transition">
+      <i class="fa-solid fa-chalkboard-user w-5 text-center"></i> Guru & Staff
+    </a>
+    <div class="pt-2 mt-2 border-t border-slate-100">
+      <a href="/ppdbonline/" class="flex items-center justify-center gap-2 w-full bg-accent text-secondary font-bold py-3 rounded-xl shadow-lg hover:shadow-xl hover:brightness-105 transition">
+        <i class="fa-solid fa-user-plus"></i> Pendaftaran Online
+      </a>
+    </div>
+  </div>
+</header>
+
+<!-- PAGE HEADER -->
+<section class="relative pt-32 pb-16 overflow-hidden">
+  <div class="absolute inset-0 bg-gradient-to-br from-primary via-secondary to-emerald-900"></div>
+  <div class="absolute inset-0 opacity-20 bg-[radial-gradient(circle_at_top,white,transparent_60%)]"></div>
+  <div class="relative max-w-screen-xl mx-auto px-4 md:px-8 lg:px-12 text-center text-white">
+    <h1 class="text-3xl md:text-4xl font-bold mb-4">Berita & Artikel</h1>
+    <p class="text-white/90 max-w-2xl mx-auto">Informasi terbaru seputar kegiatan sekolah, prestasi siswa, dan artikel edukatif.</p>
+  </div>
+</section>
+
+<!-- CONTENT -->
+<section class="py-16">
+  <div class="max-w-screen-xl mx-auto px-4 md:px-8 lg:px-12">
+    
+    <!-- Search Bar -->
+    <div class="max-w-md mx-auto mb-12 relative">
+      <i class="fa-solid fa-magnifying-glass absolute left-4 top-1/2 -translate-y-1/2 text-slate-400"></i>
+      <input type="text" id="search-news" placeholder="Cari berita..." class="w-full pl-12 pr-4 py-3 rounded-xl border border-slate-200 focus:outline-none focus:border-primary focus:ring-2 focus:ring-primary/20 transition shadow-sm">
+    </div>
+
+    <div id="news-container" class="grid md:grid-cols-3 gap-8">
+      <!-- News items will be rendered here by JS -->
+    </div>
+
+    <!-- Pagination -->
+    <div id="news-pagination" class="flex justify-center gap-2 mt-12">
+    </div>
+
+  </div>
+</section>
+
+<!-- FOOTER -->
+<footer class="bg-secondary text-white pt-16 pb-8">
+  <div class="max-w-screen-xl mx-auto px-4 md:px-8 lg:px-12">
+    <div class="border-t border-white/10 pt-8 text-center text-sm text-white/60">
+      <p>&copy; 2026 Yayasan Pendidikan Islam Al-Ittihadiyyah. All rights reserved.</p>
+    </div>
+  </div>
+</footer>
+
+<!-- CONFIG: URL Backend Laravel -->
+<script src="/js/config.js"></script>
+
+<script src="/js/utils.js"></script>
+<script src="/js/data.js"></script>
+<script src="/js/main.js"></script>
+
+</body>
+</html>

@@ -1,0 +1,155 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Detail Berita Al-Ittihadiyyah</title>
+  <link rel="icon" type="image/png" href="/favicon.png">
+
+  <!-- Tailwind CSS -->
+  <link href="/css/output.css" rel="stylesheet">
+
+  <!-- Google Font -->
+  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+  <!-- Font Awesome -->
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+
+  <style>
+    html { scroll-behavior: smooth; }
+    body { font-family: 'Poppins', sans-serif; }
+    /* Fix list style for dynamic content */
+    #news-detail-content ul { list-style-type: disc; padding-left: 1.5rem; margin-bottom: 1rem; }
+    #news-detail-content ol { list-style-type: decimal; padding-left: 1.5rem; margin-bottom: 1rem; }
+  </style>
+</head>
+<body class="bg-slate-50 text-slate-800">
+
+<!-- NAVBAR -->
+<header id="navbar" class="fixed top-0 w-full z-50 transition-all duration-300 text-white py-4">
+  <div class="max-w-screen-xl mx-auto px-4 md:px-8 lg:px-12 flex items-center justify-between">
+        <a href="/" class="flex items-center gap-3">
+      <img src="/favicon.png" alt="Logo" class="w-10 h-10 bg-white rounded-xl p-1 shadow-sm object-contain">
+      <div>
+        <p class="font-bold leading-none uppercase text-lg">Al-Ittihadiyyah</p>
+      </div>
+    </a>
+    
+    <!-- Desktop Menu -->
+    <nav class="hidden md:flex items-center gap-8 text-sm font-medium">
+      <a href="/" class="hover:text-accent transition">Beranda</a>
+      <a href="/berita/" class="text-accent font-bold">Berita</a>
+      <div class="relative group">
+        <button class="hover:text-accent transition flex items-center gap-1 py-4">Akademik <i class="fa-solid fa-chevron-down text-xs"></i></button>
+        <div class="absolute top-full left-1/2 -translate-x-1/2 w-56 bg-white text-slate-800 rounded-xl shadow-xl border border-slate-100 overflow-hidden opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-300 transform origin-top">
+          <a href="/tamankanak-kanak/" class="block px-6 py-3 hover:bg-slate-50 hover:text-primary transition border-b border-slate-50">TK Islam</a>
+          <a href="/madrasahibtidaiyah/" class="block px-6 py-3 hover:bg-slate-50 hover:text-primary transition">Madrasah Ibtidaiyah</a>
+        </div>
+      </div>
+      <a href="/guru/" class="hover:text-accent transition">Guru & Staff</a>
+      <a href="/ppdbonline/" id="nav-cta" class="bg-accent text-secondary px-5 py-2 rounded-xl hover:brightness-110 hover:shadow-xl hover:-translate-y-0.5 transition shadow-lg">Pendaftaran Online</a>
+    </nav>
+
+    <!-- Mobile Menu Button -->
+    <button id="mobile-menu-btn" class="md:hidden text-white text-2xl focus:outline-none p-2">
+      <i class="fa-solid fa-bars"></i>
+    </button>
+  </div>
+
+  <!-- Mobile Menu Dropdown -->
+  <div id="mobile-menu" class="hidden md:hidden absolute top-full left-0 w-full bg-white/95 backdrop-blur-xl border-t border-slate-100 shadow-2xl flex-col p-4 gap-2 transition-all">
+    <a href="/" class="flex items-center gap-4 px-4 py-3 font-semibold text-slate-600 hover:text-primary hover:bg-slate-50 rounded-xl transition">
+      <i class="fa-solid fa-house w-5 text-center"></i> Beranda
+    </a>
+    <a href="/berita/" class="flex items-center gap-4 px-4 py-3 font-semibold text-primary bg-slate-50 rounded-xl transition">
+      <i class="fa-solid fa-newspaper w-5 text-center"></i> Berita
+    </a>
+    <a href="/guru/" class="flex items-center gap-4 px-4 py-3 font-semibold text-slate-600 hover:text-primary hover:bg-slate-50 rounded-xl transition">
+      <i class="fa-solid fa-chalkboard-user w-5 text-center"></i> Guru & Staff
+    </a>
+    <div class="pt-2 mt-2 border-t border-slate-100">
+      <a href="/ppdbonline/" class="flex items-center justify-center gap-2 w-full bg-accent text-secondary font-bold py-3 rounded-xl shadow-lg hover:shadow-xl hover:brightness-105 transition">
+        <i class="fa-solid fa-user-plus"></i> Pendaftaran Online
+      </a>
+    </div>
+  </div>
+</header>
+
+<!-- PAGE HEADER -->
+<section class="relative pt-32 pb-16 overflow-hidden">
+  <div class="absolute inset-0 bg-gradient-to-br from-primary via-secondary to-emerald-900"></div>
+  <div class="absolute inset-0 opacity-20 bg-[radial-gradient(circle_at_top,white,transparent_60%)]"></div>
+  <div class="relative max-w-screen-xl mx-auto px-4 md:px-8 lg:px-12 text-center text-white">
+    <h1 id="news-detail-title" class="text-2xl md:text-4xl font-bold mb-4 leading-tight">Memuat Berita...</h1>
+    <div class="flex items-center justify-center gap-4 text-sm text-white/80">
+      <span id="news-detail-date"><i class="fa-regular fa-calendar mr-2"></i> -</span>
+    </div>
+  </div>
+</section>
+
+<!-- CONTENT -->
+<section class="py-16 bg-white">
+  <div class="max-w-screen-lg mx-auto px-4 md:px-8 lg:px-12">
+    
+    <div class="mb-10 rounded-3xl overflow-hidden shadow-lg">
+      <img id="news-detail-image" src="" alt="Detail Berita" class="w-full h-auto object-cover max-h-[500px] bg-slate-200">
+    </div>
+
+    <div id="news-detail-content" class="prose prose-lg prose-slate mx-auto">
+      <!-- Content will be injected here -->
+    </div>
+
+    <div class="mt-12 pt-8 border-t border-slate-100 text-center">
+      <a href="/berita/" class="inline-flex items-center gap-2 text-primary font-semibold hover:underline">
+        <i class="fa-solid fa-arrow-left"></i> Kembali ke Daftar Berita
+      </a>
+    </div>
+
+  </div>
+</section>
+
+<!-- FOOTER -->
+<footer class="bg-secondary text-white pt-16 pb-8">
+  <div class="max-w-screen-xl mx-auto px-4 md:px-8 lg:px-12">
+    <div class="grid md:grid-cols-3 gap-12 mb-12">
+      <!-- Identitas & Sosmed -->
+      <div class="text-center">
+        <div class="flex items-center justify-center gap-3 mb-6">
+           <img src="/favicon.png" alt="Logo" class="w-10 h-10 bg-white rounded-xl p-1 shadow-sm object-contain">
+           <span class="font-bold text-xl">Al-Ittihadiyyah</span>
+        </div>
+        <p class="text-white/80 text-sm leading-relaxed mb-6">
+          Membangun generasi Rabbani yang unggul dalam prestasi, berakhlak mulia, dan siap menghadapi tantangan global.
+        </p>
+      </div>
+
+      <!-- Kontak -->
+      <div class="text-center md:text-left md:justify-self-end md:col-span-2">
+        <h4 class="font-bold text-lg mb-6 text-white md:text-center">Hubungi Kami</h4>
+        <ul class="space-y-4 text-sm text-white/80 flex flex-col md:flex-row md:justify-center gap-8">
+          <li class="flex gap-3 items-center justify-center">
+            <i class="fa-solid fa-phone text-white"></i>
+            <span>(021) No. Telp</span>
+          </li>
+          <li class="flex gap-3 items-center justify-center">
+            <i class="fa-solid fa-envelope text-white"></i>
+            <span>Email Sekolah</span>
+          </li>
+        </ul>
+      </div>
+    </div>
+
+    <div class="border-t border-white/10 pt-8 text-center text-sm text-white/60">
+      <p>&copy; 2026 Yayasan Pendidikan Islam Al-Ittihadiyyah. All rights reserved.</p>
+    </div>
+  </div>
+</footer>
+
+<!-- CONFIG: URL Backend Laravel -->
+<script src="/js/config.js"></script>
+
+<script src="/js/utils.js"></script>
+<script src="/js/data.js"></script>
+<script src="/js/main.js"></script>
+
+</body>
+</html>
