@@ -51,6 +51,9 @@
       <button data-view="ppdb" id="btn-ppdb" class="nav-item w-full flex items-center gap-3 px-4 py-3 text-white/80 hover:bg-white/10 rounded-xl transition-all text-left">
         <i class="fa-solid fa-users w-5 text-center"></i> Data PPDB
       </button>
+      <button data-view="ppdb-page" id="btn-ppdb-page" class="nav-item w-full flex items-center gap-3 px-4 py-3 text-white/80 hover:bg-white/10 rounded-xl transition-all text-left">
+        <i class="fa-solid fa-pager w-5 text-center"></i> Halaman PPDB
+      </button>
       <button data-view="news" id="btn-news" class="nav-item w-full flex items-center gap-3 px-4 py-3 text-white/80 hover:bg-white/10 rounded-xl transition-all text-left">
         <i class="fa-solid fa-newspaper w-5 text-center"></i> Berita & Artikel
       </button>
@@ -439,40 +442,124 @@
         </div>
       </div>
 
+      <!-- VIEW: KELOLA HALAMAN PPDB -->
+      <div id="view-ppdb-page" class="view-section hidden space-y-6">
+        <div class="flex flex-col md:flex-row justify-between md:items-center gap-4">
+          <h3 class="text-2xl font-bold text-slate-700">Kelola Halaman PPDB</h3>
+          <button id="btn-save-ppdb-page-settings" class="w-full md:w-auto bg-primary text-white px-6 py-2 rounded-lg hover:bg-secondary transition shadow-lg shadow-primary/30">
+            Simpan Perubahan
+          </button>
+        </div>
+        <div class="bg-white p-6 md:p-8 rounded-2xl shadow-sm border border-slate-100">
+            <form id="form-ppdb-page-settings" class="space-y-8">
+                <!-- Section 1: Pengaturan Umum -->
+                <div class="space-y-4">
+                    <h4 class="font-bold text-primary border-b pb-2 text-lg">1. Pengaturan Umum</h4>
+                    <div class="grid md:grid-cols-2 gap-4">
+                        <div>
+                            <label for="setting-ppdb-academic-year" class="block text-sm font-medium text-slate-700 mb-1">Tahun Ajaran Aktif</label>
+                            <input type="text" id="setting-ppdb-academic-year" placeholder="Contoh: 2025/2026" class="w-full p-3 border border-slate-200 rounded-xl focus:outline-none focus:border-primary">
+                        </div>
+                        <div>
+                            <label for="setting-ppdb-contact-wa" class="block text-sm font-medium text-slate-700 mb-1">Nomor WA Kontak Panitia</label>
+                            <input type="text" id="setting-ppdb-contact-wa" placeholder="Contoh: 6281234567890" class="w-full p-3 border border-slate-200 rounded-xl focus:outline-none focus:border-primary">
+                        </div>
+                    </div>
+                    <div>
+                        <label for="setting-ppdb-notice" class="block text-sm font-medium text-slate-700 mb-1">Teks Pengumuman (Notice Bar)</label>
+                        <textarea id="setting-ppdb-notice" rows="2" class="w-full p-3 border border-slate-200 rounded-xl focus:outline-none focus:border-primary" placeholder="Pendaftaran Gelombang 1 telah dibuka!"></textarea>
+                    </div>
+                </div>
+
+                <!-- Section 2: Gelombang -->
+                <div class="space-y-4">
+                    <h4 class="font-bold text-primary border-b pb-2 text-lg">2. Pengaturan Gelombang PPDB</h4>
+                    <div class="grid md:grid-cols-2 gap-4">
+                        <div>
+                            <label for="setting-ppdb-wave-name" class="block text-sm font-medium text-slate-700 mb-1">Nama Gelombang</label>
+                            <input type="text" id="setting-ppdb-wave-name" placeholder="Contoh: Gelombang 1" class="w-full p-3 border border-slate-200 rounded-xl focus:outline-none focus:border-primary">
+                        </div>
+                        <div>
+                            <label for="setting-ppdb-wave-status" class="block text-sm font-medium text-slate-700 mb-1">Status Pendaftaran</label>
+                            <select id="setting-ppdb-wave-status" class="w-full p-3 border border-slate-200 rounded-xl focus:outline-none focus:border-primary bg-white">
+                                <option value="dibuka">Dibuka</option>
+                                <option value="ditutup">Ditutup</option>
+                            </select>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Section 3: Jadwal Penting -->
+                <div class="space-y-4">
+                    <h4 class="font-bold text-primary border-b pb-2 text-lg">3. Jadwal Penting</h4>
+                    <div class="grid md:grid-cols-3 gap-4">
+                        <div>
+                            <label for="setting-ppdb-schedule-registration" class="block text-sm font-medium text-slate-700 mb-1">Periode Pendaftaran</label>
+                            <input type="text" id="setting-ppdb-schedule-registration" placeholder="1 Okt - 31 Des 2025" class="w-full p-3 border border-slate-200 rounded-xl focus:outline-none focus:border-primary">
+                        </div>
+                        <div>
+                            <label for="setting-ppdb-schedule-closing" class="block text-sm font-medium text-slate-700 mb-1">Penutupan Pendaftaran</label>
+                            <input type="text" id="setting-ppdb-schedule-closing" placeholder="31 Desember 2025" class="w-full p-3 border border-slate-200 rounded-xl focus:outline-none focus:border-primary">
+                        </div>
+                        <div>
+                            <label for="setting-ppdb-schedule-announcement" class="block text-sm font-medium text-slate-700 mb-1">Pengumuman Hasil</label>
+                            <input type="text" id="setting-ppdb-schedule-announcement" placeholder="15 Januari 2026" class="w-full p-3 border border-slate-200 rounded-xl focus:outline-none focus:border-primary">
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Section 4: Biaya -->
+                <div class="space-y-4">
+                    <h4 class="font-bold text-primary border-b pb-2 text-lg">4. Biaya Pendaftaran</h4>
+                    <div class="grid md:grid-cols-2 gap-4">
+                        <div>
+                            <label for="setting-ppdb-fee-tk" class="block text-sm font-medium text-slate-700 mb-1">Biaya Pendaftaran TK</label>
+                            <input type="text" id="setting-ppdb-fee-tk" placeholder="Contoh: 150.000" class="w-full p-3 border border-slate-200 rounded-xl focus:outline-none focus:border-primary">
+                        </div>
+                        <div>
+                            <label for="setting-ppdb-fee-mi" class="block text-sm font-medium text-slate-700 mb-1">Biaya Pendaftaran MI</label>
+                            <input type="text" id="setting-ppdb-fee-mi" placeholder="Contoh: 200.000" class="w-full p-3 border border-slate-200 rounded-xl focus:outline-none focus:border-primary">
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Section 5: Gambar Hero -->
+                <div class="space-y-4">
+                    <h4 class="font-bold text-primary border-b pb-2 text-lg">5. Gambar Hero Slider</h4>
+                    
+                    <!-- Subsection: Upload Gambar Baru -->
+                    <div>
+                        <label class="block text-sm font-medium text-slate-700 mb-2">Upload Gambar Baru (Max 200KB per file)</label>
+                        <!-- Preview untuk gambar BARU -->
+                        <div id="ppdb-new-hero-images-preview" class="grid grid-cols-2 md:grid-cols-4 gap-4 mb-4">
+                            <!-- Staged images will be rendered here -->
+                        </div>
+                        <button type="button" id="btn-add-ppdb-hero-image" class="w-full bg-white border border-primary text-primary hover:bg-primary hover:text-white px-4 py-3 rounded-lg text-sm transition font-medium flex items-center justify-center gap-2">
+                            <i class="fa-solid fa-plus-circle"></i>
+                            Tambah Foto ke Slider
+                        </button>
+                        <input type="file" id="setting-ppdb-hero-images" accept="image/*" class="hidden">
+                    </div>
+
+                    <!-- Subsection: Gambar Terupload -->
+                    <div>
+                        <label class="block text-sm font-medium text-slate-700 mb-2">Gambar Terupload Saat Ini</label>
+                        <div id="ppdb-existing-hero-images-grid" class="grid grid-cols-2 md:grid-cols-4 gap-4">
+                            <!-- Existing images will be rendered here by JS -->
+                        </div>
+                        <p id="ppdb-no-existing-images" class="hidden text-sm text-slate-500 bg-slate-50 p-4 rounded-lg border">Belum ada gambar hero yang diupload.</p>
+                    </div>
+                </div>
+            </form>
+        </div>
+      </div>
+
       <!-- VIEW: SETTINGS (Hidden by default) -->
       <div id="view-settings" class="view-section hidden space-y-6">
         <h3 class="text-2xl font-bold text-slate-700">Pengaturan Sistem</h3>
         <div class="bg-white p-8 rounded-2xl shadow-sm border border-slate-100 max-w-2xl">
-          <form class="space-y-4">
-            <div>
-              <label for="setting-academic-year" class="block text-sm font-medium text-slate-700 mb-1">Tahun Ajaran Aktif</label>
-              <input type="text" id="setting-academic-year" placeholder="Contoh: 2025/2026" class="w-full p-3 border rounded-xl">
-            </div>
-            
-            <div class="border-t border-slate-100 pt-4 mt-4">
-              <h4 class="font-bold text-slate-700 mb-3">Pengaturan Gelombang PPDB</h4>
-              <div class="space-y-4">
-                <div>
-                  <label for="setting-wave-name" class="block text-sm font-medium text-slate-700 mb-1">Nama Gelombang</label>
-                  <input type="text" id="setting-wave-name" placeholder="Contoh: Gelombang 1" class="w-full p-3 border rounded-xl">
-                </div>
-                <div>
-                  <label for="setting-wave-period" class="block text-sm font-medium text-slate-700 mb-1">Periode Pendaftaran</label>
-                  <input type="text" id="setting-wave-period" placeholder="Contoh: 1 Okt - 31 Des 2025" class="w-full p-3 border rounded-xl">
-                </div>
-                <div>
-                  <label for="setting-wave-status" class="block text-sm font-medium text-slate-700 mb-1">Status Pendaftaran</label>
-                  <select id="setting-wave-status" class="w-full p-3 border rounded-xl">
-                    <option value="dibuka">Dibuka</option>
-                    <option value="ditutup">Ditutup</option>
-                  </select>
-                </div>
-              </div>
-            </div>
-
-            <div class="pt-4">
-              <button type="button" id="btn-save-settings" class="bg-primary text-white px-6 py-2 rounded-xl hover:bg-secondary">Simpan Perubahan</button>
-            </div>
+          <form id="form-general-settings" class="space-y-4">
+            <p class="text-slate-500">Tidak ada pengaturan umum saat ini.</p>
           </form>
         </div>
       </div>

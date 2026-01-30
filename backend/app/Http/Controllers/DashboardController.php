@@ -9,12 +9,11 @@ class DashboardController extends Controller
     public function index()
     {
         // Mengambil semua statistik dalam satu query untuk efisiensi (Conditional Aggregation)
-        $stats = Ppdb::toBase()
-            ->selectRaw("count(*) as total")
+        $stats = Ppdb::selectRaw("count(*) as total")
             ->selectRaw("count(case when jenjang = 'TK' then 1 end) as total_tk")
             ->selectRaw("count(case when jenjang = 'MI' then 1 end) as total_mi")
-            ->selectRaw("count(case when status = 'diterima' then 1 end) as diterima")
-            ->selectRaw("count(case when status = 'pending' then 1 end) as pending")
+            ->selectRaw("count(case when status = 'Diterima' then 1 end) as diterima")
+            ->selectRaw("count(case when status IN ('Menunggu Pembayaran', 'Menunggu Verifikasi', 'Terverifikasi') then 1 end) as pending")
             ->first();
 
         // hitung persentase (hindari bagi 0)

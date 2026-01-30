@@ -1,5 +1,6 @@
 <?php
 
+use Illuminate\Support\Facades\Response;
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\NewsController;
 use App\Http\Controllers\PpdbController;
@@ -7,12 +8,12 @@ use App\Http\Controllers\GaleriController;
 use App\Http\Controllers\DashboardController;
 use App\Http\Controllers\PrestasiController;
 use App\Http\Controllers\GuruStaffController;
-use App\Http\Controllers\SettingController;
 use App\Http\Controllers\AuthController; // Import AuthController
+use App\Http\Controllers\PpdbPageController; // Ganti SettingController
 use App\Http\Controllers\AkademikController; // Ganti PageController jadi AkademikController
 
 Route::get('/test', function () {
-    return response()->json([
+    return Response::json([
         'status' => 'API jalan'
     ]);
 });
@@ -46,8 +47,8 @@ Route::get('/guru/{id}', [GuruStaffController::class, 'show']);
 Route::get('/prestasi', [PrestasiController::class, 'index']); // Filter jenjang via query string ?jenjang=TK
 Route::get('/prestasi/{id}', [PrestasiController::class, 'show']); // Detail prestasi (URL disederhanakan)
 
-// 6. SETTINGS (Cek Status PPDB & Download Brosur)
-Route::get('/settings', [SettingController::class, 'index']); // Ganti 'show' jadi 'index'
+// 6. PPDB PAGE SETTINGS
+Route::get('/ppdb-page', [PpdbPageController::class, 'index']);
 
 // 7. AKADEMIK (TK, MI - Info Kurikulum, Biaya, dll)
 Route::get('/akademik/{jenjang}', [AkademikController::class, 'show']);
@@ -88,8 +89,8 @@ Route::prefix('admin')->middleware('auth:sanctum')->group(function () {
     Route::post('/ppdb/{id}', [PpdbController::class, 'update']);
     Route::delete('/ppdb/{id}', [PpdbController::class, 'destroy']);
 
-    // MANAJEMEN SETTINGS
-    Route::post('/settings', [SettingController::class, 'update']);
+    // MANAJEMEN HALAMAN PPDB
+    Route::post('/ppdb-page', [PpdbPageController::class, 'store']);
 
     // MANAJEMEN AKADEMIK
     Route::post('/akademik/{jenjang}', [AkademikController::class, 'update']);

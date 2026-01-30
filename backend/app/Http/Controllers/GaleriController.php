@@ -20,7 +20,7 @@ class GaleriController extends Controller
         // Validasi input
         $request->validate([
             'judul'  => 'nullable|string|max:255',
-            'gambar' => 'required|image|mimes:jpeg,png,jpg,gif|max:2048', // Max 2MB
+            'gambar' => 'required|image|max:2048', // Max 2MB
         ]);
 
         // Upload gambar

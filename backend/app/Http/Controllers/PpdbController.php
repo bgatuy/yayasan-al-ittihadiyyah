@@ -32,13 +32,14 @@ class PpdbController extends Controller
     {
         $validatedData = $request->validate([
             'nama_lengkap'   => 'required|string|max:255',
+            'nama_panggilan' => 'required|string|max:100',
             'jenis_kelamin'  => 'required|in:L,P',
             'jenjang'        => 'required|in:TK,MI',
             'tempat_lahir'   => 'required|string',
             'tanggal_lahir'  => 'required|date',
             'nama_orang_tua' => 'required|string',
             'nomor_wa'       => 'required|string',
-            'email'          => 'nullable|email',
+            'email'          => 'required|email',
             'asal_sekolah'   => 'required_if:jenjang,MI|nullable|string', // Hanya wajib jika jenjang MI
             'gelombang'      => 'required|string',
             'alamat'         => 'required|string',
@@ -106,6 +107,7 @@ class PpdbController extends Controller
         // 'sometimes' berarti validasi hanya berjalan jika field ada di request.
         $validatedData = $request->validate([
             'nama_lengkap'   => 'sometimes|required|string|max:255',
+            'nama_panggilan' => 'sometimes|required|string|max:100',
             'jenis_kelamin'  => 'sometimes|required|in:L,P',
             'jenjang'        => 'sometimes|required|in:TK,MI',
             'tempat_lahir'   => 'sometimes|required|string',

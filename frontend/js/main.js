@@ -157,7 +157,7 @@ function initPrestasiSlider() {
 // --- GLOBAL INFO PENDAFTARAN (Floating Widget) ---
 // Ditampilkan di semua halaman (kecuali PPDB) jika status pendaftaran "Dibuka"
 document.addEventListener('DOMContentLoaded', async () => {
-  const settings = window.DataStore ? await window.DataStore.getSettings() : {};
+  const settings = window.DataStore ? await window.DataStore.getPpdbPageSettings() : {};
   const ppdbStatus = settings.status_ppdb || 'ditutup';
   const ppdbName = settings.nama_gelombang || 'Gelombang 1';
   
@@ -202,8 +202,8 @@ document.addEventListener('DOMContentLoaded', async () => {
 
 // --- GLOBAL SETTINGS (Kontak WA & Tahun Ajaran) ---
 document.addEventListener('DOMContentLoaded', async () => {
-  const settings = window.DataStore ? await window.DataStore.getSettings() : {};
-  const waNumber = settings.wa_number || '0812-3456-7890';
+  const settings = window.DataStore ? await window.DataStore.getPpdbPageSettings() : {};
+  const waNumber = settings.ppdb_contact_wa || '0812-3456-7890';
   const academicYear = settings.tahun_ajaran || '2025/2026';
 
   // Update WhatsApp Link & Text

@@ -75,21 +75,109 @@ document.addEventListener('DOMContentLoaded', async () => {
     renderPaymentView(id);
   };
 
+  // Fungsi untuk inisialisasi Swiper.js pada hero slider
+  // Dipindahkan dari index.html ke sini untuk memastikan fungsi tersedia saat dipanggil.
+  function initializeHeroSlider(slideCount = 0) {
+    new Swiper('.hero-slider', {
+      // Aktifkan loop hanya jika ada lebih dari 1 slide untuk mencegah error.
+      loop: slideCount > 1,
+      effect: 'fade',
+      autoplay: {
+        delay: 5000,
+        disableOnInteraction: false,
+      },
+      // Tambahkan navigasi panah
+      navigation: {
+        nextEl: '.hero-slider-next',
+        prevEl: '.hero-slider-prev',
+      },
+    });
+  }
+
+  // --- RENDER KONTEN DINAMIS (HERO, JADWAL, BIAYA) ---
+  // Fungsi ini dipanggil sekali saat halaman dimuat untuk mengisi konten
+  // yang diatur dari panel admin, seperti gambar hero, jadwal, dan biaya.
+  (async function renderDynamicPpdbContent() {
+    const settings = window.DataStore ? await window.DataStore.getPpdbPageSettings() : {};
+    if (!settings) return;
+
+    // 1. Render Hero Images (Slider)
+    const heroSliderWrapper = document.getElementById('ppdb-hero-slider');
+    if (heroSliderWrapper && settings.ppdb_hero_images && Array.isArray(settings.ppdb_hero_images)) {
+      const images = settings.ppdb_hero_images;
+      if (images.length > 0) {
+        heroSliderWrapper.innerHTML = images.map(imagePath => `
+          <div class="swiper-slide">
+            <img src="${window.utils.getStorageUrl(imagePath)}" alt="Info PPDB">
+          </div>
+        `).join('');
+        
+        // Initialize Swiper.js after slides are added to the DOM
+        if (typeof initializeHeroSlider === 'function') {
+          initializeHeroSlider(images.length);
+        }
+      }
+    }
+
+    // 2. Render Jadwal Penting
+    const scheduleReg = document.getElementById('schedule-date-registration');
+    const scheduleClose = document.getElementById('schedule-date-closing');
+    const scheduleAnnounce = document.getElementById('schedule-date-announcement');
+    
+    if (scheduleReg && settings.periode_pendaftaran) scheduleReg.textContent = settings.periode_pendaftaran;
+    if (scheduleClose && settings.ppdb_schedule_closing) scheduleClose.textContent = settings.ppdb_schedule_closing;
+    if (scheduleAnnounce && settings.ppdb_schedule_announcement) scheduleAnnounce.textContent = settings.ppdb_schedule_announcement;
+
+    // 3. Render Biaya Pendaftaran
+    const feeTkDisplay = document.getElementById('fee-display-tk');
+    const feeMiDisplay = document.getElementById('fee-display-mi');
+
+    if (feeTkDisplay && settings.ppdb_fee_tk) {
+      feeTkDisplay.textContent = `Rp ${new Intl.NumberFormat('id-ID').format(settings.ppdb_fee_tk)}`;
+    }
+    if (feeMiDisplay && settings.ppdb_fee_mi) {
+      feeMiDisplay.textContent = `Rp ${new Intl.NumberFormat('id-ID').format(settings.ppdb_fee_mi)}`;
+    }
+
+    // 4. Render Notice Bar
+    const noticeBar = document.getElementById('notice-bar-container');
+    const noticeText = document.getElementById('ppdb-announcement');
+    if (noticeBar && noticeText) {
+      // Tampilkan bar hanya jika status 'dibuka' dan ada teks pengumuman
+      if (settings.status_ppdb === 'dibuka' && settings.ppdb_notice) {
+        noticeText.textContent = settings.ppdb_notice;
+        noticeBar.classList.remove('hidden');
+      } else {
+        // Sembunyikan jika ditutup atau tidak ada teks
+        noticeBar.classList.add('hidden');
+      }
+    }
+
+    // 5. Render Contact WhatsApp
+    const waLink = document.getElementById('contact-wa-link');
+    const waNumber = document.getElementById('contact-wa-number');
+    if (waLink && waNumber && settings.ppdb_contact_wa) {
+      const contactNumber = settings.ppdb_contact_wa;
+      // Pastikan nomor untuk link hanya berisi angka
+      const linkNumber = contactNumber.replace(/[^0-9]/g, '');
+      waLink.href = `https://wa.me/${linkNumber}`;
+      waNumber.textContent = contactNumber; // Tampilkan nomor sesuai yang diinput admin
+    }
+  })();
+
   // --- INITIAL VIEW LOGIC (ANTI-FLICKER) ---
   // This function determines which view to show on page load.
-  // It runs immediately to prevent the default view from flickering.
   (async function initializePpdbView() {
     const hash = window.location.hash;
     const urlParams = new URLSearchParams(window.location.search);
     const viewParam = urlParams.get('view');
     const idParam = urlParams.get('id');
-    const pendingRegId = localStorage.getItem('ppdb_current_reg_id');
 
-    // Priority 0: Handle URL hash for check/payment views
+    // Priority 1: Handle URL hash for deep linking
     if (hash.startsWith('#payment/')) {
-      const regIdFromHash = hash.split('/')[1];
-      if (regIdFromHash) {
-        await showPaymentViewFromHash(regIdFromHash); // Call directly, no setTimeout needed now
+      const regId = hash.split('/')[1];
+      if (regId) {
+        goToPaymentPage(regId);
         return;
       }
     } else if (hash === '#check') {
@@ -97,34 +185,36 @@ document.addEventListener('DOMContentLoaded', async () => {
       return;
     }
 
-    // Priority 1: Direct URL parameters for deep linking
+    // Priority 2: Direct URL parameters (legacy support)
     if (viewParam === 'payment' && idParam) {
       goToPaymentPage(idParam);
       return;
-    }
-    if (viewParam === 'check') {
+    } else if (viewParam === 'check') {
       switchPpdbTab('check');
       return;
     }
     
-    // Priority 2: Resume a pending registration from localStorage
+    // Priority 3: Resume a pending registration from localStorage
+    const pendingRegId = localStorage.getItem('ppdb_current_reg_id');
     if (pendingRegId) {
       let pendingReg = null;
       try {
+        // Use the public, safe endpoint
         pendingReg = await window.DataStore.checkPpdbStatus(pendingRegId);
       } catch (error) {
-        console.error(`Auto-resume check failed for ID ${pendingRegId}:`, error);
-        if (error.message && error.message.toLowerCase().includes('not found')) {
+        console.warn(`Auto-resume check failed for ID ${pendingRegId}:`, error.message);
+        // If ID is not found on server, it's stale. Remove it.
+        if (error.message && error.message.toLowerCase().includes('ditemukan')) { // "tidak ditemukan"
           localStorage.removeItem('ppdb_current_reg_id');
         }
       }
       
+      // If the registration is still in a payment-related state, go to payment page.
       if (pendingReg && ['Menunggu Pembayaran', 'Menunggu Verifikasi', 'Terverifikasi'].includes(pendingReg.status)) {
-        // If there's a pending payment, go directly to the payment page.
         goToPaymentPage(pendingRegId);
         return;
       } else {
-        // If status is final (Diterima, etc.) or not found, clear the stored ID.
+        // If status is final (Diterima, etc.) or not found, the stored ID is no longer relevant for auto-resume.
         localStorage.removeItem('ppdb_current_reg_id');
       }
     }
@@ -132,159 +222,6 @@ document.addEventListener('DOMContentLoaded', async () => {
     // Default Fallback: Show the main registration form.
     switchPpdbTab('register');
   })();
-
-  const btnDaftar = document.getElementById('btn-daftar');
-  if (btnDaftar) {
-    btnDaftar.addEventListener('click', async () => {
-      // Ambil Data Input
-      const jenjangValue = document.querySelector('input[name="jenjang"]:checked')?.value;
-      const nameValue = document.getElementById('reg-name').value.trim();
-      const genderValue = document.querySelector('input[name="jk"]:checked')?.value;
-      const birthplaceValue = document.getElementById('reg-birthplace').value.trim();
-      const birthdateValue = document.getElementById('reg-birthdate').value;
-      const parentValue = document.getElementById('reg-parent').value.trim();
-      const phoneValue = document.getElementById('reg-phone').value.trim();
-      const emailValue = document.getElementById('reg-email').value.trim();
-      const addressValue = document.getElementById('reg-address').value.trim();
-      let schoolValue = document.getElementById('reg-school').value.trim();
-
-      // Validasi Lengkap (Wajib Semua)
-      let missingFields = [];
-      if (!jenjangValue) missingFields.push("Jenjang");
-      if (!nameValue) missingFields.push("Nama Lengkap");
-      if (!genderValue) missingFields.push("Jenis Kelamin");
-      if (!birthplaceValue) missingFields.push("Tempat Lahir");
-      if (!birthdateValue) missingFields.push("Tanggal Lahir");
-      if (!parentValue) missingFields.push("Nama Orang Tua");
-      if (!addressValue) missingFields.push("Alamat");
-      if (!phoneValue) missingFields.push("No. WhatsApp");
-      if (!emailValue) missingFields.push("Email");
-      
-      // Validasi Asal Sekolah (Wajib untuk MI)
-      if (jenjangValue === 'MI' && !schoolValue) {
-         missingFields.push("Asal Sekolah");
-      }
-
-      if (missingFields.length > 0) {
-        const modalAlert = document.getElementById('modal-alert-ppdb');
-        const alertMsg = document.getElementById('alert-message-ppdb');
-        const msgText = "Mohon lengkapi data berikut: " + missingFields.join(", ");
-
-        if (modalAlert) {
-            if(alertMsg) alertMsg.textContent = msgText;
-            modalAlert.classList.remove('hidden');
-            modalAlert.classList.add('flex');
-        } else {
-            alert(msgText);
-        }
-        return;
-      }
-
-      if (!schoolValue) schoolValue = '-'; // Default jika kosong (misal TK)
-      
-      const settings = await window.DataStore.getSettings();
-
-      // Buat FormData untuk dikirim ke backend
-      const formData = new FormData();
-      formData.append('nama_lengkap', nameValue);
-      formData.append('jenis_kelamin', genderValue);
-      formData.append('jenjang', jenjangValue);
-      formData.append('tempat_lahir', birthplaceValue);
-      formData.append('tanggal_lahir', birthdateValue);
-      formData.append('nama_orang_tua', parentValue);
-      formData.append('nomor_wa', phoneValue);
-      formData.append('email', emailValue);
-      formData.append('alamat', addressValue);
-      formData.append('asal_sekolah', schoolValue);
-      formData.append('gelombang', settings.nama_gelombang || 'Gelombang 1');
-      // bukti_bayar tidak dikirim saat pendaftaran awal
-
-      // Simpan via DataStore
-      const response = await window.DataStore.registerPpdb(formData);
-      
-      // Ambil ID dari response backend
-      const newId = response.data.id;
-      
-      // Simpan ID pendaftaran di localStorage untuk kemudahan akses
-      localStorage.setItem('ppdb_current_reg_id', newId);
-
-      // Tampilkan modal sukses pendaftaran
-      const modalSuccess = document.getElementById('modal-success-ppdb');
-      const successIdDisplay = document.getElementById('success-reg-id');
-      if (modalSuccess && successIdDisplay) {
-        successIdDisplay.textContent = newId;
-        window.utils.toggleModal('modal-success-ppdb', true);
-      }
-    });
-  }
-
-  // Listener untuk tombol "Lanjutkan Pembayaran" di modal sukses pendaftaran
-  document.getElementById('btn-go-to-payment')?.addEventListener('click', () => {
-    const regId = localStorage.getItem('ppdb_current_reg_id');
-    if (regId) goToPaymentPage(regId);
-  });
-
-  document.getElementById('btn-close-alert-ppdb')?.addEventListener('click', () => {
-    btnCloseAlert.addEventListener('click', () => {
-        const modal = document.getElementById('modal-alert-ppdb');
-        if (modal) {
-            modal.classList.add('hidden');
-            modal.classList.remove('flex');
-        }
-    });
-  });
-
-  // Logika: Sembunyikan Asal Sekolah jika Jenjang TK dipilih
-  const radioJenjang = document.querySelectorAll('input[name="jenjang"]');
-  const fieldAsalSekolah = document.getElementById('field-asal-sekolah');
-
-  function toggleAsalSekolah() {
-    const selected = document.querySelector('input[name="jenjang"]:checked');
-    if (selected && selected.value === 'TK') {
-      fieldAsalSekolah.classList.add('hidden');
-    } else {
-      fieldAsalSekolah.classList.remove('hidden');
-    }
-  }
-
-  radioJenjang.forEach(radio => radio.addEventListener('change', toggleAsalSekolah));
-  toggleAsalSekolah(); // Cek status awal saat halaman dimuat
-
-  // --- LOGIKA BANNER GELOMBANG (Dari Pengaturan Admin) ---
-  const settings = window.DataStore ? await window.DataStore.getSettings() : {};
-  
-  const waveName = settings.nama_gelombang || 'Gelombang 1';
-  const wavePeriod = settings.periode_pendaftaran || '1 Oktober - 31 Desember 2025';
-  const waveStatus = settings.status_ppdb || 'ditutup';
-
-  const banner = document.getElementById('info-wave-banner');
-  const iconBox = document.getElementById('info-wave-icon');
-  const title = document.getElementById('info-wave-title');
-  const desc = document.getElementById('info-wave-desc');
-  const period = document.getElementById('info-wave-period');
-
-  if (banner && title && period) {
-    if (waveStatus === 'ditutup') {
-      // Tampilan jika pendaftaran DITUTUP
-      banner.className = 'bg-red-50 border border-red-100 rounded-2xl p-4 mb-8 flex items-start gap-4';
-      iconBox.className = 'bg-red-100 text-red-600 w-10 h-10 rounded-full flex items-center justify-center flex-shrink-0';
-      title.className = 'font-bold text-red-800';
-      title.textContent = 'Pendaftaran Ditutup';
-      desc.className = 'text-sm text-red-600 mt-1';
-      desc.textContent = 'Mohon maaf, pendaftaran saat ini sedang ditutup. Nantikan informasi gelombang berikutnya.';
-      
-      // Disable tombol daftar
-      if (btnDaftar) {
-        btnDaftar.disabled = true;
-        btnDaftar.classList.add('opacity-50', 'cursor-not-allowed');
-        btnDaftar.textContent = 'Pendaftaran Ditutup';
-      }
-    } else {
-      // Tampilan jika pendaftaran DIBUKA (Default)
-      title.textContent = `Pendaftaran ${waveName} Dibuka!`;
-      period.textContent = wavePeriod;
-    }
-  }
 
   // --- LOGIKA CEK STATUS ---
   const checkForm = document.getElementById('check-status-form');
@@ -557,79 +494,6 @@ document.addEventListener('DOMContentLoaded', async () => {
               btnConfirmPayment.disabled = false;
           }
       });
-  }
-
-  // Called from success modal. Sets hash; ppdb.js handles view switch.
-  window.setPaymentHashFromSuccessModal = function() {
-    const regId = document.getElementById('success-reg-id').textContent;
-    if (regId && regId !== 'REG-XXXX') {
-      window.location.hash = `payment/${regId}`;
-    }
-  }
-
-  // Replaces original goToPaymentPage() call from result card.
-  window.goToPaymentPageWithHash = function() {
-    const regId = document.getElementById('result-reg-id').textContent;
-    if (regId) {
-      window.location.hash = `payment/${regId}`;
-      showPaymentViewFromHash(regId);
-    }
-  }
-
-  // Main function to display the payment view from an ID
-  window.showPaymentViewFromHash = async function(regId) {
-    if (!regId) return;
-
-    document.getElementById('view-register').style.display = 'none';
-    document.getElementById('view-check').style.display = 'none';
-    document.getElementById('view-payment').style.display = 'block';
-
-    try {
-      const registration = await window.DataStore.getRegistrationById(regId);
-      if (!registration) {
-        alert('ID Pendaftaran tidak ditemukan.');
-        window.location.hash = '#check';
-        switchPpdbTab('check');
-        document.getElementById('check-id').value = regId;
-        return;
-      }
-
-      document.getElementById('payment-reg-id-display').textContent = registration.id;
-      const paymentStepUpload = document.getElementById('payment-step-upload');
-      const paymentStepWaiting = document.getElementById('payment-step-waiting');
-      paymentStepUpload.style.display = 'none';
-      paymentStepWaiting.style.display = 'none';
-
-      if (registration.status === 'Menunggu Pembayaran') {
-        paymentStepUpload.style.display = 'block';
-      } else if (['Menunggu Verifikasi', 'Terverifikasi'].includes(registration.status)) {
-        paymentStepWaiting.style.display = 'block';
-        const waitingIcon = document.getElementById('waiting-icon');
-        const waitingTitle = document.getElementById('waiting-title');
-        const waitingMessage = document.getElementById('waiting-message');
-        
-        if (registration.status === 'Menunggu Verifikasi') {
-          waitingIcon.innerHTML = '<i class="fa-solid fa-hourglass-half"></i>';
-          waitingIcon.className = 'w-20 h-20 bg-blue-100 text-blue-600 rounded-full flex items-center justify-center mx-auto text-3xl mb-4';
-          waitingTitle.textContent = 'Menunggu Verifikasi';
-          waitingMessage.textContent = 'Terima kasih! Bukti pembayaran Anda sedang kami periksa. Silakan cek halaman ini secara berkala.';
-        } else { // Terverifikasi
-          waitingIcon.innerHTML = '<i class="fa-solid fa-check"></i>';
-          waitingIcon.className = 'w-20 h-20 bg-green-100 text-green-600 rounded-full flex items-center justify-center mx-auto text-3xl mb-4';
-          waitingTitle.textContent = 'Pembayaran Terverifikasi';
-          waitingMessage.textContent = 'Pembayaran Anda telah kami terima. Pendaftaran Anda telah terverifikasi.';
-        }
-      } else {
-        alert(`Status pendaftaran Anda saat ini adalah "${registration.status}". Anda akan diarahkan ke halaman Cek Status.`);
-        window.location.hash = '#check';
-        window.location.reload();
-      }
-    } catch (error) {
-      console.error('Gagal menampilkan halaman pembayaran:', error);
-      alert('Terjadi kesalahan saat memuat data pembayaran. Silakan coba lagi.');
-      window.location.hash = '';
-      window.location.reload();
-    }
   }
 
   window.copyRegistrationId = function(button) {

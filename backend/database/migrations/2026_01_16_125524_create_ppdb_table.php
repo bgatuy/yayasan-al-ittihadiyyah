@@ -14,8 +14,9 @@ return new class extends Migration
         Schema::create('ppdb', function (Blueprint $table) {
             $table->string('id')->primary(); // Custom ID: REG-20240116001
             $table->string('nama_lengkap');
-            $table->string('jenis_kelamin'); // L / P
-            $table->string('jenjang'); // TK / MI
+            $table->string('nama_panggilan');
+            $table->enum('jenis_kelamin', ['L', 'P']);
+            $table->enum('jenjang', ['TK', 'MI']);
             $table->string('tempat_lahir');
             $table->date('tanggal_lahir');
             $table->string('nama_orang_tua');
@@ -23,8 +24,8 @@ return new class extends Migration
             $table->string('email')->nullable();
             $table->string('asal_sekolah')->nullable();
             $table->text('alamat');
-            $table->string('gelombang')->nullable();
-            $table->string('status')->default('Menunggu Pembayaran'); // Status: Menunggu Pembayaran, Menunggu Verifikasi, Terverifikasi, Diterima, Tidak Diterima
+            $table->string('gelombang');
+            $table->enum('status', ['Menunggu Pembayaran', 'Menunggu Verifikasi', 'Terverifikasi', 'Diterima', 'Tidak Diterima'])->default('Menunggu Pembayaran');
             $table->string('bukti_bayar')->nullable(); // Path gambar
             $table->timestamps();
         });

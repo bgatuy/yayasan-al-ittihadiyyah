@@ -5,7 +5,15 @@
   // Fungsi pusat untuk semua komunikasi API.
   // Secara otomatis menambahkan header otentikasi untuk rute admin.
   async function apiRequest(endpoint, method = 'GET', body = null, isFormData = false) {
-    const url = `${window.APP_CONFIG.API_BASE_URL}${endpoint}`;
+    let url = `${window.APP_CONFIG.API_BASE_URL}${endpoint}`;
+    
+    // --- CACHE BUSTING ---
+    // Menambahkan parameter unik ke setiap GET request untuk memaksa browser
+    // mengambil data terbaru dari server, bukan dari cache. Ini sangat penting
+    // untuk memastikan perubahan di admin langsung terlihat di halaman publik.
+    if (method === 'GET') {
+      url += (url.includes('?') ? '&' : '?') + `_=${new Date().getTime()}`;
+    }
     
     // Ambil token dari localStorage (atau di mana pun auth.js menyimpannya)
     const token = window.Auth ? window.Auth.getAuthToken() : null;
@@ -80,7 +88,7 @@
     login: (credentials) => apiRequest('/login', 'POST', credentials),
 
     // --- PUBLIC ENDPOINTS ---
-    getSettings: () => apiRequest('/settings'),
+    getPpdbPageSettings: () => apiRequest('/ppdb-page'),
     getNews: (page = 1, search = '') => apiRequest(`/news?page=${page}&search=${search}`),
     getNewsById: (id) => apiRequest(`/news/${id}`),
     getNewsDetail: (slug) => apiRequest(`/news/${slug}`), // Kept for potential future use by slug
@@ -130,7 +138,11 @@
       return apiRequest('/admin/guru', 'POST', formData, true);
     },
     deleteTeacher: (id) => apiRequest(`/admin/guru/${id}`, 'DELETE'),
-    saveSettings: (settingsData) => apiRequest('/admin/settings', 'POST', settingsData),
+    savePpdbPageSettings: (settingsData) => {
+      // Deteksi otomatis jika data yang dikirim adalah FormData (untuk file upload)
+      const isForm = settingsData instanceof FormData;
+      return apiRequest('/admin/ppdb-page', 'POST', settingsData, isForm);
+    },
     saveAcademicTK: (data) => apiRequest('/admin/akademik/tk', 'POST', data, true),
     saveAcademicMI: (data) => apiRequest('/admin/akademik/mi', 'POST', data, true),
   };

@@ -5,6 +5,27 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 
+/**
+ * @mixin \Illuminate\Database\Eloquent\Builder
+ * @property string $id
+ * @property string $nama_lengkap
+ * @property string $nama_panggilan
+ * @property string $jenis_kelamin
+ * @property string $jenjang
+ * @property string $tempat_lahir
+ * @property string $tanggal_lahir
+ * @property string $nama_orang_tua
+ * @property string $nomor_wa
+ * @property ?string $email
+ * @property ?string $asal_sekolah
+ * @property string $alamat
+ * @property string $gelombang
+ * @property string $status
+ * @property ?string $bukti_bayar
+ * @property ?\Illuminate\Support\Carbon $created_at
+ * @property ?\Illuminate\Support\Carbon $updated_at
+ * @property-read ?string $bukti_bayar_url
+ */
 class Ppdb extends Model
 {
     use HasFactory;
@@ -18,6 +39,7 @@ class Ppdb extends Model
     protected $fillable = [
         'id',
         'nama_lengkap',
+        'nama_panggilan',
         'jenis_kelamin',
         'jenjang',
         'tempat_lahir',
@@ -33,6 +55,8 @@ class Ppdb extends Model
     ];
 
     protected $appends = ['bukti_bayar_url'];
+
+    // The 'bukti_bayar_url' is an appended attribute, not a direct column.
 
     // Accessor untuk URL bukti bayar
     public function getBuktiBayarUrlAttribute()

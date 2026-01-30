@@ -12,6 +12,11 @@ function switchView(viewId) {
   if (viewId === 'ppdb' && typeof window.refreshPpdbTable === 'function') {
     window.refreshPpdbTable();
   }
+
+  // Muat data saat membuka menu Kelola Halaman PPDB
+  if (viewId === 'ppdb-page') {
+    loadPpdbPageSettings();
+  }
   
   // Close pages submenu when switching to another view
   const pagesSubmenu = document.getElementById('pages-submenu');
@@ -226,6 +231,10 @@ document.addEventListener('DOMContentLoaded', () => {
     button.addEventListener('click', () => {
       const viewName = button.dataset.view;
       if (viewName) {
+        // Khusus untuk tombol submenu, jangan ganti view utama
+        if (button.closest('#pages-submenu')) {
+            return;
+        }
         switchView(viewName);
       }
     });
@@ -235,6 +244,11 @@ document.addEventListener('DOMContentLoaded', () => {
   let filteredData = []; // Akan diisi saat renderTable dipanggil atau filter
   let currentPage = 1;
   const itemsPerPage = 5;
+  let dashboardStats = {}; // Cache for dashboard stats
+
+  // State untuk kelola gambar hero PPDB
+  let deletedPpdbHeroImagePaths = [];
+  let newPpdbHeroImages = []; // Array untuk menampung file gambar baru
 
   const tbody = document.getElementById('ppdb-tbody');
   const paginationInfo = document.getElementById('pagination-info');
@@ -244,7 +258,10 @@ document.addEventListener('DOMContentLoaded', () => {
   // Expose fungsi refresh ke global agar bisa dipanggil switchView
   window.refreshPpdbTable = async () => {
     // 1. Fetch Data Terbaru
-    ppdbData = await window.DataStore.getPpdb();
+    [ppdbData, dashboardStats] = await Promise.all([
+        window.DataStore.getPpdb(),
+        window.DataStore.getDashboardStats()
+    ]);
 
     // 2. Reset filter ke data terbaru (pertahankan pencarian jika ada)
     if (searchInput && searchInput.value) {
@@ -340,13 +357,12 @@ document.addEventListener('DOMContentLoaded', () => {
     if (!tbody) return;
     tbody.innerHTML = '';
 
-    // Ambil 5 data terbaru (anggap array sudah urut atau ambil 5 pertama)
-    const recentItems = ppdbData.slice(0, 5);
+    // Ambil 5 data terbaru dari endpoint dashboard
+    const recentItems = dashboardStats.pendaftar_terbaru || [];
 
     recentItems.forEach(item => {
       let statusClass = '';
-      if (item.status === 'Diterima') statusClass = 'bg-green-100 text-green-800';
-      else if (item.status === 'Terverifikasi') statusClass = 'bg-green-100 text-green-800';
+      if (item.status === 'Diterima' || item.status === 'Terverifikasi') statusClass = 'bg-green-100 text-green-800';
       else if (['Menunggu', 'Menunggu Pembayaran', 'Menunggu Verifikasi'].includes(item.status)) statusClass = 'bg-yellow-100 text-yellow-800';
       else statusClass = 'bg-red-100 text-red-800';
 
@@ -364,14 +380,10 @@ document.addEventListener('DOMContentLoaded', () => {
   }
 
   function updateDashboardStats() {
-    const total = ppdbData.length;
-    const tk = ppdbData.filter(i => i.jenjang === 'TK').length;
-    const mi = ppdbData.filter(i => i.jenjang === 'MI').length;
-    
-    const accepted = ppdbData.filter(i => i.status === 'Diterima').length;
-    const pending = ppdbData.filter(i => ['Menunggu', 'Menunggu Pembayaran', 'Menunggu Verifikasi', 'Terverifikasi'].includes(i.status)).length;
+    if (!dashboardStats.statistik) return;
     
     // Update Cards
+    const { total_pendaftar: total, pendaftar_tk: tk, pendaftar_mi: mi } = dashboardStats.statistik;
     const elTotal = document.getElementById('stat-total');
     const elTk = document.getElementById('stat-tk');
     const elMi = document.getElementById('stat-mi');
@@ -381,8 +393,8 @@ document.addEventListener('DOMContentLoaded', () => {
     if(elMi) elMi.textContent = mi;
 
     // Update Progress Bars
-    const acceptedPct = total === 0 ? 0 : Math.round((accepted / total) * 100);
-    const pendingPct = total === 0 ? 0 : Math.round((pending / total) * 100);
+    const acceptedPct = dashboardStats.status_penerimaan?.diterima || 0;
+    const pendingPct = dashboardStats.status_penerimaan?.menunggu || 0;
 
     const elAccText = document.getElementById('stat-accepted-text');
     const elAccBar = document.getElementById('stat-accepted-bar');
@@ -464,49 +476,197 @@ document.addEventListener('DOMContentLoaded', () => {
       });
   }
 
-  // 2. Fitur Simpan Pengaturan
-  const btnSaveSettings = document.getElementById('btn-save-settings');
-  
-  // Load Settings saat halaman dimuat
-  const inputAcademicYear = document.getElementById('setting-academic-year');
-  const inputWaveName = document.getElementById('setting-wave-name');
-  const inputWavePeriod = document.getElementById('setting-wave-period');
-  const selectWaveStatus = document.getElementById('setting-wave-status');
+  // --- PENGELOLAAN HALAMAN PPDB ---
+  // Helper untuk format angka
+  const formatNumberInput = (value) => {
+    if (!value) return '';
+    // Hapus semua karakter non-digit, lalu format ulang
+    const numberString = value.toString().replace(/[^0-9]/g, '');
+    return new Intl.NumberFormat('id-ID').format(numberString);
+  };
+  const unformatNumberInput = (formattedValue) => {
+    return formattedValue.replace(/\./g, '');
+  };
 
-  // Load Settings dari Backend
-  (async () => {
-      const settings = await window.DataStore.getSettings();
-      if (settings) {
-          if (inputAcademicYear) inputAcademicYear.value = settings.tahun_ajaran || '2025/2026';
-          if (inputWaveName) inputWaveName.value = settings.nama_gelombang || 'Gelombang 1';
-          if (inputWavePeriod) inputWavePeriod.value = settings.periode_pendaftaran || '1 Oktober - 31 Desember 2025';
-          if (selectWaveStatus) selectWaveStatus.value = settings.status_ppdb || 'ditutup';
+  window.loadPpdbPageSettings = async () => {
+    // Reset state saat memuat view
+    deletedPpdbHeroImagePaths = [];
+    // Revoke object URL lama untuk mencegah memory leak
+    newPpdbHeroImages.forEach(item => URL.revokeObjectURL(item.previewUrl));
+    newPpdbHeroImages = [];
+    const heroFileInput = document.getElementById('setting-ppdb-hero-images');
+    if (heroFileInput) heroFileInput.value = '';
+    // Also clear the new image preview area
+    const newPreviewContainer = document.getElementById('ppdb-new-hero-images-preview');
+    if (newPreviewContainer) newPreviewContainer.innerHTML = '';
+
+    const settings = await window.DataStore.getPpdbPageSettings();
+    const existingImagesGrid = document.getElementById('ppdb-existing-hero-images-grid');
+    const noImagesMessage = document.getElementById('ppdb-no-existing-images');
+    
+    if (settings) {
+        document.getElementById('setting-ppdb-academic-year').value = settings.tahun_ajaran || '';
+        document.getElementById('setting-ppdb-contact-wa').value = settings.ppdb_contact_wa || '';
+        document.getElementById('setting-ppdb-notice').value = settings.ppdb_notice || '';
+        document.getElementById('setting-ppdb-wave-name').value = settings.nama_gelombang || '';
+        document.getElementById('setting-ppdb-wave-status').value = settings.status_ppdb || 'ditutup';
+        document.getElementById('setting-ppdb-schedule-registration').value = settings.periode_pendaftaran || '';
+        document.getElementById('setting-ppdb-schedule-closing').value = settings.ppdb_schedule_closing || '';
+        document.getElementById('setting-ppdb-schedule-announcement').value = settings.ppdb_schedule_announcement || '';
+        document.getElementById('setting-ppdb-fee-tk').value = formatNumberInput(settings.ppdb_fee_tk);
+        document.getElementById('setting-ppdb-fee-mi').value = formatNumberInput(settings.ppdb_fee_mi);
+
+        // Render existing hero images
+        existingImagesGrid.innerHTML = '';
+        if (settings.ppdb_hero_images && Array.isArray(settings.ppdb_hero_images) && settings.ppdb_hero_images.length > 0) {
+            noImagesMessage.classList.add('hidden');
+            settings.ppdb_hero_images.forEach(imagePath => {
+                const div = document.createElement('div');
+                div.className = 'ppdb-hero-image-item relative group aspect-video bg-slate-100 rounded-lg overflow-hidden shadow-sm';
+                div.innerHTML = `
+                        <img src="${window.utils.getStorageUrl(imagePath)}" class="w-full h-full object-cover">
+                        <div class="absolute inset-0 bg-black/60 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center">
+                            <button type="button" class="btn-delete-ppdb-hero-image w-10 h-10 rounded-full bg-red-600 text-white hover:bg-red-700 transition" data-path="${imagePath}" title="Hapus Foto">
+                                <i class="fa-solid fa-trash-can"></i>
+                            </button>
+                        </div>
+                    </div>
+                `;
+                existingImagesGrid.appendChild(div);
+            });
+        } else {
+            // Tampilkan prompt jika tidak ada gambar
+            noImagesMessage.classList.remove('hidden');
+        }
+    }
+  };
+
+  async function savePpdbPageSettings() {
+      const formData = new FormData();
+      formData.append('tahun_ajaran', document.getElementById('setting-ppdb-academic-year').value);
+      formData.append('ppdb_contact_wa', document.getElementById('setting-ppdb-contact-wa').value);
+      formData.append('ppdb_notice', document.getElementById('setting-ppdb-notice').value);
+      formData.append('nama_gelombang', document.getElementById('setting-ppdb-wave-name').value);
+      formData.append('status_ppdb', document.getElementById('setting-ppdb-wave-status').value);
+      formData.append('periode_pendaftaran', document.getElementById('setting-ppdb-schedule-registration').value);
+      formData.append('ppdb_schedule_closing', document.getElementById('setting-ppdb-schedule-closing').value);
+      formData.append('ppdb_schedule_announcement', document.getElementById('setting-ppdb-schedule-announcement').value);
+      formData.append('ppdb_fee_tk', unformatNumberInput(document.getElementById('setting-ppdb-fee-tk').value));
+      formData.append('ppdb_fee_mi', unformatNumberInput(document.getElementById('setting-ppdb-fee-mi').value));
+
+      // 1. Tambahkan file gambar BARU yang akan diupload
+      if (newPpdbHeroImages.length > 0) {
+          newPpdbHeroImages.forEach(item => {
+              formData.append('ppdb_hero_images[]', item.file);
+          });
       }
-  })();
 
-  if (btnSaveSettings) {
-    btnSaveSettings.addEventListener('click', async () => {
-      const data = {
-          tahun_ajaran: inputAcademicYear ? inputAcademicYear.value : '',
-          nama_gelombang: inputWaveName ? inputWaveName.value : '',
-          periode_pendaftaran: inputWavePeriod ? inputWavePeriod.value : '',
-          status_ppdb: selectWaveStatus ? selectWaveStatus.value : ''
-      };
+      // 2. Tambahkan path gambar LAMA yang akan dihapus
+      if (deletedPpdbHeroImagePaths.length > 0) {
+          deletedPpdbHeroImagePaths.forEach(path => {
+              formData.append('deleted_hero_images[]', path); // PHP akan membacanya sebagai array
+          }
+          );
+      }
+
 
       try {
-        await window.DataStore.saveSettings(data);
-
+        await window.DataStore.savePpdbPageSettings(formData);
         document.getElementById('success-title').textContent = 'Berhasil Disimpan!';
-        document.getElementById('success-message').textContent = 'Pengaturan sistem telah berhasil diperbarui.';
+        document.getElementById('success-message').textContent = 'Pengaturan halaman PPDB telah diperbarui.';
         window.utils.toggleModal('modal-success');
+        loadPpdbPageSettings(); // Muat ulang data untuk menampilkan state terbaru
       } catch (error) {
         console.error('Gagal menyimpan pengaturan:', error);
         document.getElementById('alert-title').textContent = 'Gagal Menyimpan';
         document.getElementById('alert-message').textContent = error.message || 'Terjadi kesalahan saat menyimpan pengaturan. Silakan coba lagi.';
         window.utils.toggleModal('modal-alert');
       }
-    });
   }
+
+  const btnSavePpdbPageSettings = document.getElementById('btn-save-ppdb-page-settings');
+  if (btnSavePpdbPageSettings) {
+      btnSavePpdbPageSettings.addEventListener('click', savePpdbPageSettings);
+  }
+
+  // --- Logika Interaktif untuk Input Biaya ---
+  const feeTkInput = document.getElementById('setting-ppdb-fee-tk');
+  const feeMiInput = document.getElementById('setting-ppdb-fee-mi');
+
+  const handleFeeInput = (e) => {
+    e.target.value = formatNumberInput(e.target.value);
+  };
+
+  if (feeTkInput) feeTkInput.addEventListener('input', handleFeeInput);
+  if (feeMiInput) feeMiInput.addEventListener('input', handleFeeInput);
+
+  // --- Logika Interaktif untuk Upload Gambar Hero PPDB (Staging) ---
+  const btnAddHeroImage = document.getElementById('btn-add-ppdb-hero-image');
+  const heroFileInput = document.getElementById('setting-ppdb-hero-images');
+  const newHeroPreviewContainer = document.getElementById('ppdb-new-hero-images-preview');
+
+  // Fungsi untuk render preview dari gambar yang di-staging
+  function renderNewHeroPreviews() {
+      if (!newHeroPreviewContainer) return;
+      newHeroPreviewContainer.innerHTML = ''; // Hapus preview lama
+
+      newPpdbHeroImages.forEach((item, index) => {
+          const div = document.createElement('div');
+          div.className = 'new-image-preview relative group aspect-video bg-slate-100 rounded-lg overflow-hidden shadow-sm';
+          div.innerHTML = `
+              <img src="${item.previewUrl}" class="w-full h-full object-cover">
+              <div class="absolute inset-0 bg-black/50 flex items-center justify-center p-2">
+                  <p class="text-white text-xs font-bold text-center">BARU</p>
+              </div>
+              <button type="button" class="btn-remove-new-ppdb-hero-image absolute top-1 right-1 w-6 h-6 rounded-full bg-red-600 text-white hover:bg-red-700 transition text-xs flex items-center justify-center" data-index="${index}" title="Batal Unggah">
+                  <i class="fa-solid fa-xmark"></i>
+              </button>
+          `;
+          newHeroPreviewContainer.appendChild(div);
+      });
+  }
+
+  // Event listener untuk tombol "Tambah Foto"
+  if (btnAddHeroImage && heroFileInput) {
+      btnAddHeroImage.addEventListener('click', () => {
+          heroFileInput.click();
+      });
+  }
+
+  // Event listener untuk input file itu sendiri
+  if (heroFileInput) {
+      heroFileInput.addEventListener('change', (e) => {
+          const file = e.target.files[0];
+          if (!file) return;
+
+          // Validasi sisi klien
+          const maxFileSize = 200 * 1024; // 200KB
+          if (file.size > maxFileSize) {
+              document.getElementById('alert-title').textContent = 'Ukuran Gambar Terlalu Besar';
+              document.getElementById('alert-message').textContent = `File "${file.name}" melebihi batas 200KB.`;
+              window.utils.toggleModal('modal-alert');
+              heroFileInput.value = ''; // Reset input
+              return;
+          }
+
+          // Tambahkan ke array staging dan render ulang preview
+          newPpdbHeroImages.push({ file: file, previewUrl: URL.createObjectURL(file) });
+          renderNewHeroPreviews();
+
+          // Reset input file agar bisa memilih file yang sama lagi jika dihapus
+          heroFileInput.value = '';
+      });
+  }
+  // 2. Fitur Simpan Pengaturan (Umum - jika ada)
+  // const btnSaveSettings = document.getElementById('btn-save-settings');
+  // if (btnSaveSettings) {
+  //   btnSaveSettings.addEventListener('click', async () => {
+  //     // Logika untuk menyimpan pengaturan umum lainnya bisa ditambahkan di sini
+  //     document.getElementById('success-title').textContent = 'Berhasil Disimpan!';
+  //     document.getElementById('success-message').textContent = 'Pengaturan sistem telah berhasil diperbarui.';
+  //     window.utils.toggleModal('modal-success');
+  //   });
+  // }
 
   // 3. Fitur Tambah Berita (Modal)
   const btnAddNews = document.getElementById('btn-add-news');
@@ -601,40 +761,79 @@ document.addEventListener('DOMContentLoaded', () => {
         window.utils.toggleModal('modal-confirm');
     }
 
+    // Hapus Gambar Hero PPDB (yang sudah ada)
+    const deletePpdbHeroImageBtn = e.target.closest('.btn-delete-ppdb-hero-image');
+    if (deletePpdbHeroImageBtn) {
+        const pathToDelete = deletePpdbHeroImageBtn.dataset.path;
+        if (pathToDelete) {
+            // 1. Add to the deletion list
+            if (!deletedPpdbHeroImagePaths.includes(pathToDelete)) {
+                deletedPpdbHeroImagePaths.push(pathToDelete);
+            }
+            
+            // 2. Remove the element from the DOM
+            const imageItem = deletePpdbHeroImageBtn.closest('.ppdb-hero-image-item');
+            if (imageItem) {
+                imageItem.remove();
+            }
+
+            // 3. Check if we need to show the upload prompt
+            const existingImagesGrid = document.getElementById('ppdb-existing-hero-images-grid');
+            const noImagesMessage = document.getElementById('ppdb-no-existing-images');
+            if (existingImagesGrid && noImagesMessage && existingImagesGrid.childElementCount === 0) {
+                noImagesMessage.classList.remove('hidden');
+            }
+        }
+    }
+
+    // Hapus Gambar Hero PPDB BARU (yang belum di-upload)
+    const removeNewPpdbHeroImageBtn = e.target.closest('.btn-remove-new-ppdb-hero-image');
+    if (removeNewPpdbHeroImageBtn) {
+        const indexToRemove = parseInt(removeNewPpdbHeroImageBtn.dataset.index, 10);
+        if (!isNaN(indexToRemove) && newPpdbHeroImages[indexToRemove]) {
+            // Revoke object URL untuk mencegah memory leak
+            URL.revokeObjectURL(newPpdbHeroImages[indexToRemove].previewUrl);
+            // Hapus dari array
+            newPpdbHeroImages.splice(indexToRemove, 1);
+            // Render ulang preview
+            renderNewHeroPreviews();
+        }
+    }
+
     // Edit Berita
     const editNewsBtn = e.target.closest('.btn-edit-news');
-if (editNewsBtn) {
-  const id = parseInt(editNewsBtn.dataset.id);
-  const newsItem = await window.DataStore.getNewsById(id); // Mengambil detail berita langsung berdasarkan ID
-  if (!newsItem) return;
+    if (editNewsBtn) {
+      const id = parseInt(editNewsBtn.dataset.id);
+      const newsItem = await window.DataStore.getNewsById(id); // Mengambil detail berita langsung berdasarkan ID
+      if (!newsItem) return;
 
-  document.getElementById('news-id-hidden').value = newsItem.id;
-  document.getElementById('news-title').value = newsItem.title;
-  document.getElementById('news-content-editor').innerHTML =
-    newsItem.content || newsItem.desc || '';
-  document.getElementById('news-image-preview').src = window.utils.getStorageUrl(newsItem.image || newsItem.gambar || '');
-  document.getElementById('news-image-preview-container').classList.remove('hidden');
-  document.getElementById('news-upload-prompt').classList.add('hidden');
+      document.getElementById('news-id-hidden').value = newsItem.id;
+      document.getElementById('news-title').value = newsItem.title;
+      document.getElementById('news-content-editor').innerHTML =
+        newsItem.content || newsItem.desc || '';
+      document.getElementById('news-image-preview').src = window.utils.getStorageUrl(newsItem.image || newsItem.gambar || '');
+      document.getElementById('news-image-preview-container').classList.remove('hidden');
+      document.getElementById('news-upload-prompt').classList.add('hidden');
 
-  // Konversi tanggal
-  const months = {
-    Jan: '01', Feb: '02', Mar: '03', Apr: '04',
-    Mei: '05', Jun: '06', Jul: '07', Agu: '08',
-    Sep: '09', Okt: '10', Nov: '11', Des: '12'
-  };
+      // Konversi tanggal
+      const months = {
+        Jan: '01', Feb: '02', Mar: '03', Apr: '04',
+        Mei: '05', Jun: '06', Jul: '07', Agu: '08',
+        Sep: '09', Okt: '10', Nov: '11', Des: '12'
+      };
 
-  let parts = [];
-  if (newsItem.date) {
-    parts = newsItem.date.split(' ');
-  }
+      let parts = [];
+      if (newsItem.date) {
+        parts = newsItem.date.split(' ');
+      }
 
-  if (parts.length === 3 && months[parts[1]]) {
-    document.getElementById('news-date').value =
-      `${parts[2]}-${months[parts[1]]}-${parts[0].padStart(2, '0')}`;
-  }
+      if (parts.length === 3 && months[parts[1]]) {
+        document.getElementById('news-date').value =
+          `${parts[2]}-${months[parts[1]]}-${parts[0].padStart(2, '0')}`;
+      }
 
-  window.utils.toggleModal('modal-news');
-}
+      window.utils.toggleModal('modal-news');
+    }
 
 
     // Edit Guru
@@ -819,7 +1018,7 @@ if (editNewsBtn) {
         const formData = new FormData();
         // The error "The PUT method is not supported" indicates the backend route
         // for updates is defined with POST, not PUT. We must match the backend.
-        formData.append('_method', 'POST');
+        formData.append('_method', 'PUT');
         formData.append('status', newStatus);
 
         await window.DataStore.updatePpdb(id, formData);
@@ -1377,7 +1576,7 @@ window.saveAcademicPage = async function() {
             // The `[]` syntax tells PHP to create an array
             formData.append('deleted_achievements[]', id);
         });
-      }
+    }
     
     try {
         if (key === 'tk') await window.DataStore.saveAcademicTK(formData);
