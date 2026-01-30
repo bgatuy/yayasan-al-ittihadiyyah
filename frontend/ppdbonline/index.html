@@ -17,10 +17,10 @@
   <style>
     body { font-family: 'Poppins', sans-serif; }
 
-    /* Efek "Zoom Out" di Mobile */
+    /* Efek "Zoom Out" di Mobile agar layout lebih proporsional */
     @media (max-width: 767px) {
       html {
-        font-size: 81.25%; /* Setara 13px jika base 16px. Memberi efek ~80% zoom out */
+        font-size: 81.25%; 
       }
     }
     .hero-slider .swiper-slide img {
@@ -36,7 +36,7 @@
     }
   </style>
 </head>
-<body class="bg-slate-50 text-slate-800">
+<body class="bg-slate-50 text-slate-800 overflow-x-hidden w-full">
 
 <!-- NAVBAR -->
 <header class="bg-secondary shadow-sm sticky top-0 z-50">
@@ -81,18 +81,18 @@
 
 <main>
    <!-- HERO SECTION -->
-  <section class="bg-secondary text-white">
-    <div class="max-w-screen-xl mx-auto px-4 md:px-8 lg:px-12 grid md:grid-cols-2 items-center gap-12 py-16 md:py-20">
+  <section class="bg-secondary text-white overflow-hidden">
+    <div class="max-w-screen-xl mx-auto px-4 md:px-8 lg:px-12 grid md:grid-cols-2 items-center gap-8 md:gap-12 py-12 md:py-20 w-full">
       <!-- Left: Text Content -->
       <div class="text-center md:text-left">
-        <h1 class="text-4xl md:text-5xl lg:text-6xl font-bold mb-4 leading-tight">Selamat Datang di PPDB Online</h1>
+        <h1 class="text-3xl sm:text-4xl md:text-5xl lg:text-6xl font-bold mb-4 leading-tight">Selamat Datang di PPDB Online</h1>
         <p class="text-lg md:text-xl text-white/80 max-w-3xl mx-auto md:mx-0 mb-8">Yayasan Pendidikan Islam <span class="dynamic-school-name">Al-Ittihadiyyah</span> Tahun Ajaran <span class="dynamic-academic-year">2025/2026</span></p>
         <div class="flex flex-col sm:flex-row gap-4 justify-center md:justify-start">
-          <a href="form.html" class="bg-primary hover:bg-primary/90 text-white font-bold py-3 px-8 rounded-xl text-lg transition shadow-lg">Daftar Sekarang</a>
+          <a href="form.html" class="bg-accent hover:brightness-110 text-secondary font-bold py-3 px-8 rounded-xl text-lg transition shadow-lg">Daftar Sekarang</a>
         </div>
       </div>
       <!-- Right: Slider -->
-      <div class="w-full max-w-md mx-auto md:max-w-none relative group">
+      <div class="w-full max-w-md mx-auto md:max-w-none relative group min-w-0">
         <div class="swiper-container hero-slider rounded-2xl overflow-hidden shadow-2xl aspect-[4/3]">
           <div id="ppdb-hero-slider" class="swiper-wrapper">
             <!-- Slides will be dynamically injected here by JavaScript -->
@@ -178,7 +178,7 @@
       </div>
       <div class="grid md:grid-cols-2 gap-8 max-w-4xl mx-auto">
         <!-- TK Card -->
-        <div class="bg-slate-50 p-8 rounded-2xl border border-slate-200/80">
+        <div class="bg-slate-50 p-6 md:p-8 rounded-2xl border border-slate-200/80">
           <h3 class="text-2xl font-bold text-primary mb-4">Taman Kanak-Kanak (TK)</h3>
           <ul class="space-y-3 text-slate-600">
             <li class="flex items-start gap-3"><i class="fa-solid fa-child text-primary mt-1"></i><span><strong>Usia Minimal:</strong> 5 Tahun</span></li>
@@ -186,7 +186,7 @@
           </ul>
         </div>
         <!-- MI Card -->
-        <div class="bg-slate-50 p-8 rounded-2xl border border-slate-200/80">
+        <div class="bg-slate-50 p-6 md:p-8 rounded-2xl border border-slate-200/80">
           <h3 class="text-2xl font-bold text-primary mb-4">Madrasah Ibtidaiyah (MI)</h3>
           <ul class="space-y-3 text-slate-600">
             <li class="flex items-start gap-3"><i class="fa-solid fa-children text-primary mt-1"></i><span><strong>Usia Minimal:</strong> 6 Tahun</span></li>
