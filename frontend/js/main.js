@@ -446,8 +446,6 @@ document.addEventListener('DOMContentLoaded', async () => {
       if (savedData) {
         // Map backend snake_case to frontend variables
         const heroImage = savedData.gambar_utama || "";
-        const heroDesc = savedData.deskripsi_kurikulum || "";
-        const curriculumPoints = savedData.poin_unggulan || "";
         const schedule = savedData.jadwal_harian || "";
         const ekskul = savedData.ekstrakurikuler || "";
         const achievements = savedData.prestasi || [];
@@ -456,25 +454,7 @@ document.addEventListener('DOMContentLoaded', async () => {
 
         // 1. Hero Section
         const heroImgEl = document.getElementById('page-hero-image');
-        const heroDescEl = document.getElementById('page-hero-desc');
         if (heroImgEl && heroImage) heroImgEl.src = window.utils.getStorageUrl(heroImage);
-        if (heroDescEl && heroDesc) heroDescEl.innerHTML = heroDesc;
-
-        // 1.5 Curriculum Points
-        const curriculumListEl = document.getElementById('page-curriculum-list');
-        if (curriculumListEl && curriculumPoints) {
-            const lines = curriculumPoints.split('\n');
-            // Helper icons mapping based on keywords
-            const icons = { 'tahfidz': 'fa-quran', 'digital': 'fa-laptop-code', 'bahasa': 'fa-language', 'sentra': 'fa-star', 'hafalan': 'fa-book-open', 'karakter': 'fa-user-check' };
-            
-            curriculumListEl.innerHTML = lines.map(line => {
-                const [title, desc] = line.split('|').map(s => s.trim());
-                if (!title) return '';
-                let iconClass = 'fa-check'; // Default icon
-                for (const key in icons) { if (title.toLowerCase().includes(key)) iconClass = icons[key]; }
-                return `<div class="flex gap-4"><div class="w-10 h-10 rounded-full bg-primary/10 text-primary flex items-center justify-center flex-shrink-0"><i class="fa-solid ${iconClass}"></i></div><div><h4 class="font-bold text-slate-800">${title}</h4><p class="text-sm text-slate-600">${desc || ''}</p></div></div>`;
-            }).join('');
-        }
 
         // 2. Jadwal
         const scheduleListEl = document.getElementById('page-schedule-list');

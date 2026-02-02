@@ -110,7 +110,13 @@
     // Admin PPDB
     getPpdb: () => apiRequest('/admin/ppdb'),
     getPpdbDetail: (id) => apiRequest(`/admin/ppdb/${id}`),
-    updatePpdb: (id, formData) => apiRequest(`/admin/ppdb/${id}`, 'POST', formData, true),
+    updatePpdb: (id, formData) => {
+      // Backend route didefinisikan sebagai POST, jadi kita harus menghapus _method=PUT jika ada
+      if (formData instanceof FormData && formData.has('_method')) {
+        formData.delete('_method');
+      }
+      return apiRequest(`/admin/ppdb/${id}`, 'POST', formData, true);
+    },
     deletePpdb: (id) => apiRequest(`/admin/ppdb/${id}`, 'DELETE'),
 
     // Admin News

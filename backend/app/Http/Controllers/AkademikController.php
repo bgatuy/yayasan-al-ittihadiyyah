@@ -39,14 +39,12 @@ class AkademikController extends Controller
         // Gunakan transaksi database untuk memastikan semua operasi berhasil atau gagal bersamaan
         return DB::transaction(function () use ($request, $jenjang) {
             $validated = $request->validate([
-                'hero_desc' => 'nullable|string',
-                'kurikulum' => 'nullable|string',
+                'hero_image' => 'nullable|image|max:2048',
+                'delete_hero_image' => 'nullable|string',
                 'jadwal' => 'nullable|string',
                 'ekskul' => 'nullable|string',
                 'biaya_masuk' => 'nullable|string',
                 'biaya_bulanan' => 'nullable|string',
-                'hero_image' => 'nullable|image|max:2048',
-                'delete_hero_image' => 'nullable|string',
                 'prestasi' => 'nullable|array',
                 'prestasi.*.id' => 'nullable|integer|exists:prestasi,id',
                 'prestasi.*.nama' => 'required_with:prestasi|string',
@@ -60,8 +58,6 @@ class AkademikController extends Controller
             // 1. Update data utama Akademik
             $akademik = Akademik::firstOrNew(['jenjang' => $jenjang]);
             $akademik->fill([
-                'deskripsi_kurikulum' => $validated['hero_desc'] ?? null,
-                'poin_unggulan' => $validated['kurikulum'] ?? null,
                 'jadwal_harian' => $validated['jadwal'] ?? null,
                 'ekstrakurikuler' => $validated['ekskul'] ?? null,
                 'biaya_masuk' => $validated['biaya_masuk'] ?? null,
@@ -70,13 +66,11 @@ class AkademikController extends Controller
 
             // Handle image update/deletion
             if ($request->hasFile('hero_image')) {
-                // Jika ada file baru, hapus yang lama (jika ada) dan simpan yang baru
                 if ($akademik->gambar_utama && Storage::disk('public')->exists($akademik->gambar_utama)) {
                     Storage::disk('public')->delete($akademik->gambar_utama);
                 }
                 $akademik->gambar_utama = $request->file('hero_image')->store('akademik', 'public');
             } elseif ($request->input('delete_hero_image') === 'true') {
-                // Jika ada flag untuk hapus, hapus file lama dan set null di DB
                 if ($akademik->gambar_utama && Storage::disk('public')->exists($akademik->gambar_utama)) {
                     Storage::disk('public')->delete($akademik->gambar_utama);
                 }
@@ -88,6 +82,7 @@ class AkademikController extends Controller
             if (!empty($validated['prestasi'])) {
                 foreach ($validated['prestasi'] as $index => $prestasiData) {
                     $prestasiFile = $request->file("prestasi.{$index}.image"); // Frontend mengirim 'image'
+                    $prestasiId = $prestasiData['id'] ?? null;
 
                     $dataToUpdate = [
                         'nama_siswa' => $prestasiData['nama'], // Peta ke kolom 'nama_siswa'
@@ -98,18 +93,17 @@ class AkademikController extends Controller
 
                     // Jika ada file baru yang diupload
                     if ($prestasiFile) {
+                        // Hapus gambar lama jika ada file baru dan ini adalah proses update
+                        if ($prestasiId) {
+                            $existingPrestasi = Prestasi::find($prestasiId);
+                            if ($existingPrestasi && $existingPrestasi->gambar && Storage::disk('public')->exists($existingPrestasi->gambar)) {
+                                Storage::disk('public')->delete($existingPrestasi->gambar);
+                            }
+                        }
                         $dataToUpdate['gambar'] = $prestasiFile->store('prestasi', 'public'); // Peta ke kolom 'gambar'
                     }
 
-                    $prestasi = Prestasi::updateOrCreate(['id' => $prestasiData['id'] ?? null], $dataToUpdate);
-
-                    // Hapus gambar lama jika ada file baru dan ini adalah proses update
-                    if ($prestasiFile && isset($prestasiData['id'])) {
-                        $oldImagePath = Prestasi::find($prestasiData['id'])->getOriginal('gambar');
-                        if ($oldImagePath && $oldImagePath !== $prestasi->gambar && Storage::disk('public')->exists($oldImagePath)) {
-                            Storage::disk('public')->delete($oldImagePath);
-                        }
-                    }
+                    Prestasi::updateOrCreate(['id' => $prestasiId], $dataToUpdate);
                 }
             }
 

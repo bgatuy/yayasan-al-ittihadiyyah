@@ -4,6 +4,7 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
+use Carbon\Carbon;
 
 /**
  * @mixin \Illuminate\Database\Eloquent\Builder
@@ -25,6 +26,7 @@ use Illuminate\Database\Eloquent\Model;
  * @property ?\Illuminate\Support\Carbon $created_at
  * @property ?\Illuminate\Support\Carbon $updated_at
  * @property-read ?string $bukti_bayar_url
+ * @property-read string $ttl
  */
 class Ppdb extends Model
 {
@@ -54,7 +56,7 @@ class Ppdb extends Model
         'bukti_bayar',
     ];
 
-    protected $appends = ['bukti_bayar_url'];
+    protected $appends = ['bukti_bayar_url', 'ttl'];
 
     // The 'bukti_bayar_url' is an appended attribute, not a direct column.
 
@@ -62,5 +64,11 @@ class Ppdb extends Model
     public function getBuktiBayarUrlAttribute()
     {
         return $this->bukti_bayar ? url('storage/' . $this->bukti_bayar) : null;
+    }
+
+    // Accessor untuk TTL (Tempat, Tanggal Lahir)
+    public function getTtlAttribute()
+    {
+        return $this->tempat_lahir . ', ' . Carbon::parse($this->tanggal_lahir)->locale('id')->translatedFormat('d F Y');
     }
 }

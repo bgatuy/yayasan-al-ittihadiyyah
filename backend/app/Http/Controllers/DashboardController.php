@@ -23,13 +23,7 @@ class DashboardController extends Controller
         // pendaftar terbaru (5)
         $terbaru = Ppdb::latest()
             ->limit(5)
-            ->get([
-                'id',
-                'nama_lengkap',
-                'jenjang',
-                'status',
-                'created_at'
-            ]);
+            ->get(); // Ambil semua kolom agar detail modal di dashboard lengkap (termasuk alamat, ttl, dll)
 
         return response()->json([
             'statistik' => [
@@ -42,6 +36,9 @@ class DashboardController extends Controller
                 'menunggu' => $persenPending,
             ],
             'pendaftar_terbaru' => $terbaru
-        ]);
+        ])
+        ->header('Cache-Control', 'no-cache, no-store, must-revalidate')
+        ->header('Pragma', 'no-cache')
+        ->header('Expires', '0');
     }
 }

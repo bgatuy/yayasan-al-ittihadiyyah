@@ -288,6 +288,58 @@ document.addEventListener('DOMContentLoaded', () => {
     }
   });
 
+  // --- HELPER: BUKA MODAL DETAIL (Refactoring) ---
+  // Fungsi ini menyatukan logika detail agar konsisten antara Tabel dan Notifikasi
+  const openDetailModal = (data) => {
+      if (!data) return;
+
+      document.getElementById('detail-name').textContent = data.nama_lengkap;
+      document.getElementById('detail-id').textContent = data.id;
+      document.getElementById('detail-level').textContent = data.jenjang === 'MI' ? 'Madrasah Ibtidaiyah' : 'Taman Kanak-Kanak';
+      document.getElementById('detail-nickname').textContent = data.nama_panggilan || '-';
+      
+      const tglLahir = data.tanggal_lahir ? new Date(data.tanggal_lahir).toLocaleDateString('id-ID', { day: 'numeric', month: 'long', year: 'numeric' }) : '';
+      document.getElementById('detail-ttl').textContent = `${data.tempat_lahir || ''}, ${tglLahir}`;
+
+      document.getElementById('detail-gender').textContent = data.jenis_kelamin === 'L' ? 'Laki-laki' : 'Perempuan';
+      document.getElementById('detail-wave').textContent = data.gelombang;
+      document.getElementById('detail-address').textContent = data.alamat || '-';
+      document.getElementById('detail-school').textContent = data.asal_sekolah || '-';
+      
+      document.getElementById('detail-parent').textContent = data.nama_orang_tua;
+      document.getElementById('detail-phone').textContent = data.nomor_wa;
+      document.getElementById('detail-email').textContent = data.email;
+      
+      // Set value select status dan simpan ID di tombol simpan
+      const statusSelect = document.getElementById('detail-status-select');
+      if(statusSelect) statusSelect.value = data.status;
+      
+      const saveBtn = document.getElementById('btn-save-status');
+      if(saveBtn) saveBtn.dataset.id = data.id;
+      
+      // Tampilkan Bukti Pembayaran
+      const paymentContainer = document.getElementById('detail-payment-container');
+      if(paymentContainer) {
+          paymentContainer.innerHTML = '';
+          if (data.bukti_bayar) {
+              const imgWrapper = document.createElement('div');
+              imgWrapper.className = 'relative group cursor-pointer inline-block';
+              imgWrapper.onclick = () => window.viewFullImage(window.utils.getStorageUrl(data.bukti_bayar));
+              imgWrapper.innerHTML = `
+                  <img src="${window.utils.getStorageUrl(data.bukti_bayar)}" class="max-h-64 mx-auto rounded-lg shadow-sm border border-slate-200" alt="Bukti Transfer">
+                  <div class="absolute inset-0 bg-black/0 group-hover:bg-black/10 transition flex items-center justify-center rounded-lg">
+                      <i class="fa-solid fa-magnifying-glass-plus text-white opacity-0 group-hover:opacity-100 text-3xl drop-shadow-md transition"></i>
+                  </div>
+              `;
+              paymentContainer.appendChild(imgWrapper);
+          } else {
+              paymentContainer.innerHTML = `<p class="text-slate-500 italic text-sm"><i class="fa-solid fa-circle-xmark mr-1"></i> Belum ada bukti pembayaran.</p>`;
+          }
+      }
+
+      window.utils.toggleModal('modal-detail');
+  };
+
   // Sinkronisasi Filter Gelombang dengan Data & Pengaturan
   function populateWaveFilter() {
     const filterWave = document.getElementById('filter-wave');
@@ -866,40 +918,7 @@ document.addEventListener('DOMContentLoaded', () => {
       const data = ppdbData.find(item => item.id === id);
       
       if (data) {
-        document.getElementById('detail-name').textContent = data.nama_lengkap;
-        document.getElementById('detail-id').textContent = data.id;
-        document.getElementById('detail-level').textContent = data.jenjang === 'MI' ? 'Madrasah Ibtidaiyah' : 'Taman Kanak-Kanak';
-        document.getElementById('detail-gender').textContent = data.jenis_kelamin === 'L' ? 'Laki-laki' : 'Perempuan';
-        document.getElementById('detail-wave').textContent = data.gelombang;
-        document.getElementById('detail-address').textContent = data.address;
-        document.getElementById('detail-school').textContent = data.asal_sekolah;
-        document.getElementById('detail-parent').textContent = data.nama_orang_tua;
-        document.getElementById('detail-phone').textContent = data.nomor_wa;
-        document.getElementById('detail-email').textContent = data.email;
-        
-        // Set value select status dan simpan ID di tombol simpan
-        document.getElementById('detail-status-select').value = data.status;
-        document.getElementById('btn-save-status').dataset.id = data.id;
-        
-        // Tampilkan Bukti Pembayaran
-        const paymentContainer = document.getElementById('detail-payment-container');
-        paymentContainer.innerHTML = '';
-        if (data.bukti_bayar) {
-            const imgWrapper = document.createElement('div');
-            imgWrapper.className = 'relative group cursor-pointer inline-block';
-            imgWrapper.onclick = () => window.viewFullImage(window.utils.getStorageUrl(data.bukti_bayar));
-            imgWrapper.innerHTML = `
-                <img src="${window.utils.getStorageUrl(data.bukti_bayar)}" class="max-h-64 mx-auto rounded-lg shadow-sm border border-slate-200" alt="Bukti Transfer">
-                <div class="absolute inset-0 bg-black/0 group-hover:bg-black/10 transition flex items-center justify-center rounded-lg">
-                    <i class="fa-solid fa-magnifying-glass-plus text-white opacity-0 group-hover:opacity-100 text-3xl drop-shadow-md transition"></i>
-                </div>
-            `;
-            paymentContainer.appendChild(imgWrapper);
-        } else {
-            paymentContainer.innerHTML = `<p class="text-slate-500 italic text-sm"><i class="fa-solid fa-circle-xmark mr-1"></i> Belum ada bukti pembayaran.</p>`;
-        }
-
-        window.utils.toggleModal('modal-detail');
+        openDetailModal(data);
       }
     }
   });
@@ -1018,7 +1037,7 @@ document.addEventListener('DOMContentLoaded', () => {
         const formData = new FormData();
         // The error "The PUT method is not supported" indicates the backend route
         // for updates is defined with POST, not PUT. We must match the backend.
-        formData.append('_method', 'PUT');
+        // formData.append('_method', 'PUT'); // Removed: Backend expects pure POST
         formData.append('status', newStatus);
 
         await window.DataStore.updatePpdb(id, formData);
@@ -1122,42 +1141,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 updateNotifications(); // Update badge & list secara langsung
             }
             
-            // Buka modal detail
-            const data = item;
-             if (data) {
-                document.getElementById('detail-name').textContent = data.nama_lengkap;
-                document.getElementById('detail-id').textContent = data.id;
-                document.getElementById('detail-level').textContent = data.jenjang === 'MI' ? 'Madrasah Ibtidaiyah' : 'Taman Kanak-Kanak';
-                document.getElementById('detail-gender').textContent = data.jenis_kelamin === 'L' ? 'Laki-laki' : 'Perempuan';
-                document.getElementById('detail-wave').textContent = data.gelombang;
-                document.getElementById('detail-address').textContent = data.address;
-                document.getElementById('detail-school').textContent = data.asal_sekolah;
-                document.getElementById('detail-parent').textContent = data.nama_orang_tua;
-                document.getElementById('detail-phone').textContent = data.nomor_wa;
-                document.getElementById('detail-email').textContent = data.email;
-                document.getElementById('detail-status-select').value = data.status;
-                document.getElementById('btn-save-status').dataset.id = data.id;
-                
-                // Tampilkan Bukti Pembayaran
-                const paymentContainer = document.getElementById('detail-payment-container');
-                paymentContainer.innerHTML = '';
-                if (data.bukti_bayar) {
-                    const imgWrapper = document.createElement('div');
-                    imgWrapper.className = 'relative group cursor-pointer inline-block';
-                    imgWrapper.onclick = () => window.viewFullImage(window.utils.getStorageUrl(data.bukti_bayar));
-                    imgWrapper.innerHTML = `
-                        <img src="${window.utils.getStorageUrl(data.bukti_bayar)}" class="max-h-64 mx-auto rounded-lg shadow-sm border border-slate-200" alt="Bukti Transfer">
-                        <div class="absolute inset-0 bg-black/0 group-hover:bg-black/10 transition flex items-center justify-center rounded-lg">
-                            <i class="fa-solid fa-magnifying-glass-plus text-white opacity-0 group-hover:opacity-100 text-3xl drop-shadow-md transition"></i>
-                        </div>
-                    `;
-                    paymentContainer.appendChild(imgWrapper);
-                } else {
-                    paymentContainer.innerHTML = `<p class="text-slate-500 italic text-sm"><i class="fa-solid fa-circle-xmark mr-1"></i> Belum ada bukti pembayaran.</p>`;
-                }
-
-                window.utils.toggleModal('modal-detail');
-            }
+            openDetailModal(item);
         });
         notificationList.appendChild(div);
       });
@@ -1489,8 +1473,6 @@ window.openAcademicEditor = async function(key, title) {
     
     // Map data from backend (snake_case) to UI
     const heroImage = savedData.gambar_utama || "";
-    const heroDesc = savedData.deskripsi_kurikulum || "";
-    const curriculumPoints = savedData.poin_unggulan || "";
     const schedule = savedData.jadwal_harian || "";
     const ekskul = savedData.ekstrakurikuler || "";
     const biayaMasuk = savedData.biaya_masuk || "";
@@ -1516,8 +1498,6 @@ window.openAcademicEditor = async function(key, title) {
         document.getElementById('academic-image-preview-container').classList.add('hidden');
         document.getElementById('academic-upload-prompt').classList.remove('hidden');
     }
-    document.getElementById('academic-hero-desc-editor').innerHTML = heroDesc;
-    document.getElementById('academic-curriculum-points').value = curriculumPoints;
     document.getElementById('academic-schedule').value = schedule;
     document.getElementById('academic-ekskul').value = ekskul;
     document.getElementById('academic-biaya-masuk').value = biayaMasuk;
@@ -1536,8 +1516,6 @@ window.saveAcademicPage = async function() {
     const formData = new FormData();
 
     // Append main page data
-    formData.append('hero_desc', document.getElementById('academic-hero-desc-editor').innerHTML); // deskripsi_kurikulum
-    formData.append('kurikulum', document.getElementById('academic-curriculum-points').value); // poin_unggulan
     formData.append('jadwal', document.getElementById('academic-schedule').value); // jadwal_harian
     formData.append('ekskul', document.getElementById('academic-ekskul').value); // ekstrakurikuler
     formData.append('biaya_masuk', document.getElementById('academic-biaya-masuk').value);

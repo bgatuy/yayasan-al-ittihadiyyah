@@ -88,7 +88,11 @@
         <h1 class="text-3xl sm:text-4xl md:text-5xl lg:text-6xl font-bold mb-4 leading-tight">Selamat Datang di PPDB Online</h1>
         <p class="text-lg md:text-xl text-white/80 max-w-3xl mx-auto md:mx-0 mb-8">Yayasan Pendidikan Islam <span class="dynamic-school-name">Al-Ittihadiyyah</span> Tahun Ajaran <span class="dynamic-academic-year">2025/2026</span></p>
         <div class="flex flex-col sm:flex-row gap-4 justify-center md:justify-start">
-          <a href="form.html" class="bg-accent hover:brightness-110 text-secondary font-bold py-3 px-8 rounded-xl text-lg transition shadow-lg">Daftar Sekarang</a>
+          <a href="form.html" class="bg-accent hover:brightness-110 text-secondary font-bold py-3 px-8 rounded-xl text-lg transition shadow-lg">
+            Daftar Sekarang</a>
+          <a href="form.html#check" class="inline-flex items-center justify-center gap-2 bg-white/10 text-white font-bold py-3 px-8 rounded-xl text-lg hover:bg-white/20 transition border border-white/20 backdrop-blur-sm">
+           Cek Status Pendaftaran
+        </a>
         </div>
       </div>
       <!-- Right: Slider -->
@@ -205,24 +209,94 @@
         <p class="text-slate-500 mt-2">Jawaban untuk pertanyaan yang sering diajukan.</p>
       </div>
       <div class="space-y-4">
-        <!-- FAQ Item 1 -->
+        <!-- FAQ Item 1: Syarat Dokumen -->
         <div class="faq-item bg-white rounded-xl shadow-sm border border-slate-100 overflow-hidden">
-          <button class="faq-question w-full flex justify-between items-center text-left p-5 font-semibold text-slate-700 hover:bg-slate-50">
-            <span>Dokumen apa saja yang perlu disiapkan untuk daftar ulang?</span>
+          <button class="faq-question w-full flex justify-between items-center text-left p-5 font-semibold text-slate-700 hover:bg-slate-50 transition-colors">
+            <span>Apa saja syarat dokumen yang harus disiapkan?</span>
             <i class="fa-solid fa-chevron-down transition-transform text-slate-400"></i>
           </button>
-          <div class="faq-answer hidden p-5 pt-0 text-slate-600">
-            <p>Informasi mengenai dokumen yang diperlukan akan diumumkan bersamaan dengan pengumuman hasil seleksi. Anda dapat memeriksanya di halaman "Cek Status Pendaftaran" setelah dinyatakan lulus.</p>
+          <div class="faq-answer hidden p-5 pt-0 text-slate-600 text-sm leading-relaxed border-t border-slate-50">
+            <p class="mb-2">Untuk pendaftaran awal secara online, Anda cukup mengisi formulir data diri. Namun, untuk proses <strong>Daftar Ulang</strong> (setelah dinyatakan diterima), mohon siapkan dokumen fisik berikut:</p>
+            <ul class="space-y-2 mt-2">
+              <li class="flex items-start gap-2">
+                <i class="fa-solid fa-check text-green-500 mt-0.5"></i>
+                <span>Fotokopi Akta Kelahiran Calon Siswa (2 lembar)</span>
+              </li>
+              <li class="flex items-start gap-2">
+                <i class="fa-solid fa-check text-green-500 mt-0.5"></i>
+                <span>Fotokopi Kartu Keluarga (KK) (2 lembar)</span>
+              </li>
+              <li class="flex items-start gap-2">
+                <i class="fa-solid fa-check text-green-500 mt-0.5"></i>
+                <span>Fotokopi KTP Kedua Orang Tua (Ayah & Ibu)</span>
+              </li>
+              <li class="flex items-start gap-2">
+                <i class="fa-solid fa-check text-green-500 mt-0.5"></i>
+                <span>Pas Foto berwarna ukuran 3x4 (4 lembar)</span>
+              </li>
+              <li class="flex items-start gap-2">
+                <i class="fa-solid fa-check text-green-500 mt-0.5"></i>
+                <span>Ijazah/Surat Keterangan Lulus dari sekolah sebelumnya (khusus pendaftar MI)</span>
+              </li>
+            </ul>
           </div>
         </div>
-        <!-- FAQ Item 2 -->
+
+        <!-- FAQ Item 2: Alur Pendaftaran -->
         <div class="faq-item bg-white rounded-xl shadow-sm border border-slate-100 overflow-hidden">
-          <button class="faq-question w-full flex justify-between items-center text-left p-5 font-semibold text-slate-700 hover:bg-slate-50">
-            <span>Bagaimana cara melihat pengumuman hasil seleksi?</span>
+          <button class="faq-question w-full flex justify-between items-center text-left p-5 font-semibold text-slate-700 hover:bg-slate-50 transition-colors">
+            <span>Bagaimana alur pendaftaran online ini?</span>
             <i class="fa-solid fa-chevron-down transition-transform text-slate-400"></i>
           </button>
-          <div class="faq-answer hidden p-5 pt-0 text-slate-600">
-            <p>Anda dapat melihat hasil seleksi dengan mengunjungi halaman ini dan mengklik tombol "Cek Status Pendaftaran" di bagian atas, atau melalui menu navigasi. Masukkan ID Pendaftaran yang Anda dapatkan saat berhasil mendaftar.</p>
+          <div class="faq-answer hidden p-5 pt-0 text-slate-600 text-sm leading-relaxed border-t border-slate-50">
+            <ul class="space-y-2 mt-2">
+              <li class="flex items-start gap-2">
+                <i class="fa-solid fa-circle-chevron-right text-primary mt-0.5"></i>
+                <span>Klik tombol <strong>"Daftar Sekarang"</strong> dan isi formulir data diri siswa & orang tua.</span>
+              </li>
+              <li class="flex items-start gap-2">
+                <i class="fa-solid fa-circle-chevron-right text-primary mt-0.5"></i>
+                <span>Simpan <strong>ID Pendaftaran</strong> yang muncul setelah submit formulir.</span>
+              </li>
+              <li class="flex items-start gap-2">
+                <i class="fa-solid fa-circle-chevron-right text-primary mt-0.5"></i>
+                <span>Lakukan pembayaran biaya pendaftaran ke nomor rekening yang tertera.</span>
+              </li>
+              <li class="flex items-start gap-2">
+                <i class="fa-solid fa-circle-chevron-right text-primary mt-0.5"></i>
+                <span>Upload bukti pembayaran melalui menu <strong>"Cek Status"</strong>.</span>
+              </li>
+              <li class="flex items-start gap-2">
+                <i class="fa-solid fa-circle-chevron-right text-primary mt-0.5"></i>
+                <span>Tunggu verifikasi admin (1x24 jam kerja).</span>
+              </li>
+              <li class="flex items-start gap-2">
+                <i class="fa-solid fa-circle-chevron-right text-primary mt-0.5"></i>
+                <span>Cek hasil seleksi secara berkala di website ini.</span>
+              </li>
+            </ul>
+          </div>
+        </div>
+
+        <!-- FAQ Item 3: Lupa ID -->
+        <div class="faq-item bg-white rounded-xl shadow-sm border border-slate-100 overflow-hidden">
+          <button class="faq-question w-full flex justify-between items-center text-left p-5 font-semibold text-slate-700 hover:bg-slate-50 transition-colors">
+            <span>Saya lupa ID Pendaftaran saya, bagaimana solusinya?</span>
+            <i class="fa-solid fa-chevron-down transition-transform text-slate-400"></i>
+          </button>
+          <div class="faq-answer hidden p-5 pt-0 text-slate-600 text-sm leading-relaxed border-t border-slate-50">
+            <p>Jangan khawatir. Silakan hubungi admin kami melalui tombol <strong>WhatsApp</strong> di bawah dengan menyebutkan Nama Lengkap Siswa dan Tanggal Lahir. Admin kami akan membantu mengecek data pendaftaran Anda.</p>
+          </div>
+        </div>
+
+        <!-- FAQ Item 4: Tes Seleksi -->
+        <div class="faq-item bg-white rounded-xl shadow-sm border border-slate-100 overflow-hidden">
+          <button class="faq-question w-full flex justify-between items-center text-left p-5 font-semibold text-slate-700 hover:bg-slate-50 transition-colors">
+            <span>Apakah ada tes seleksi masuk?</span>
+            <i class="fa-solid fa-chevron-down transition-transform text-slate-400"></i>
+          </button>
+          <div class="faq-answer hidden p-5 pt-0 text-slate-600 text-sm leading-relaxed border-t border-slate-50">
+            <p>Untuk jenjang <strong>TK</strong>, seleksi berupa observasi tumbuh kembang anak (kematangan emosi & kemandirian). Sedangkan untuk jenjang <strong>MI</strong>, terdapat tes pemetaan kemampuan dasar (Calistung dasar & mengaji) untuk penempatan kelas. Kami mengutamakan komitmen orang tua dalam bekerjasama mendidik anak.</p>
           </div>
         </div>
       </div>
@@ -234,7 +308,7 @@
     <div class="max-w-screen-xl mx-auto px-4 md:px-8 lg:px-12">
       <div class="max-w-2xl mx-auto bg-primary text-white rounded-3xl p-8 md:p-12 text-center shadow-2xl shadow-primary/30">
         <h2 class="text-3xl font-bold mb-4">Butuh Bantuan?</h2>
-        <p class="text-white/80 mb-8">Jangan ragu untuk menghubungi panitia PPDB kami jika Anda memiliki pertanyaan lebih lanjut.</p>
+        <p class="text-white/80 mb-8">Jangan ragu untuk menghubungi panitia PPDB kami di hari Senin-Jumat jam 08:00-16:00 WIB jika Anda memiliki pertanyaan lebih lanjut.</p>
         <div class="inline-block bg-white text-secondary rounded-xl p-4 shadow-lg min-w-[280px]">
           <p class="font-bold text-lg">Admin PPDB</p>
           <a id="contact-wa-link" href="#" target="_blank" class="flex items-center justify-center gap-3 mt-2 text-lg font-semibold hover:text-primary transition">
@@ -246,7 +320,26 @@
       </div>
     </div>
   </section>
-  
+
+<!-- CTA SECTION -->
+  <section class="py-20 bg-primary text-white relative overflow-hidden">
+    <!-- Background Pattern -->
+    <div class="absolute inset-0 opacity-10 bg-[radial-gradient(circle_at_center,white,transparent_70%)]"></div>
+    
+    <div class="max-w-screen-xl mx-auto px-4 md:px-8 lg:px-12 text-center relative z-10">
+      <h2 class="text-3xl md:text-4xl font-bold mb-6">Mari Bergabung Bersama Kami</h2>
+      <p class="text-white/90 text-lg mb-8 max-w-2xl mx-auto">Wujudkan masa depan cerah buah hati Anda dengan pendidikan berkualitas di Al-Ittihadiyyah.</p>
+      <div class="flex flex-col sm:flex-row gap-4 justify-center">
+        <a href="form.html" class="inline-flex items-center justify-center gap-2 bg-accent text-secondary font-bold py-3 px-8 rounded-xl text-lg hover:brightness-110 transition shadow-lg hover:shadow-xl hover:-translate-y-1">
+           Daftar Sekarang
+        </a>
+        <a href="form.html#check" class="inline-flex items-center justify-center gap-2 bg-white/10 text-white font-bold py-3 px-8 rounded-xl text-lg hover:bg-white/20 transition border border-white/20 backdrop-blur-sm">
+           Cek Status Pendaftaran
+        </a>
+      </div>
+    </div>
+  </section>
+
 <!-- FOOTER -->
 <footer class="bg-secondary text-white pt-16 pb-8">
   <div class="max-w-screen-xl mx-auto px-4 md:px-8 lg:px-12">

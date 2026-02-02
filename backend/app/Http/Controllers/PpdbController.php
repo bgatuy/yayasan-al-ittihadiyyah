@@ -13,7 +13,10 @@ class PpdbController extends Controller
     public function index()
     {
         $data = Ppdb::latest()->get();
-        return response()->json($data); // Endpoint ini untuk admin, mengembalikan semua data.
+        return response()->json($data) // Endpoint ini untuk admin, mengembalikan semua data.
+            ->header('Cache-Control', 'no-cache, no-store, must-revalidate')
+            ->header('Pragma', 'no-cache')
+            ->header('Expires', '0');
     }
 
     // Cek status pendaftaran (Public)
@@ -24,7 +27,23 @@ class PpdbController extends Controller
         // as `find()` assumes an integer primary key by default.
         $ppdb = Ppdb::where('id', $id)->first();
         if (!$ppdb) return response()->json(['message' => 'Data tidak ditemukan'], 404);
-        return response()->json($ppdb->only(['id', 'nama_lengkap', 'jenjang', 'status', 'gelombang', 'created_at']));
+        
+        return response()->json([
+            'id' => $ppdb->id,
+            'nama_lengkap' => $ppdb->nama_lengkap,
+            'nama_panggilan' => $ppdb->nama_panggilan,
+            'jenjang' => $ppdb->jenjang,
+            'status' => $ppdb->status,
+            'gelombang' => $ppdb->gelombang,
+            'created_at' => $ppdb->created_at,
+            'tempat_lahir' => $ppdb->tempat_lahir,
+            'tanggal_lahir' => $ppdb->tanggal_lahir,
+            'alamat' => $ppdb->alamat,
+            'ttl' => $ppdb->ttl,
+        ])
+        ->header('Cache-Control', 'no-cache, no-store, must-revalidate')
+        ->header('Pragma', 'no-cache')
+        ->header('Expires', '0');
     }
 
     // Form Pendaftaran (Public)
@@ -68,7 +87,10 @@ class PpdbController extends Controller
     {
         $ppdb = Ppdb::where('id', $id)->first();
         if (!$ppdb) return response()->json(['message' => 'Data tidak ditemukan'], 404);
-        return response()->json($ppdb);
+        return response()->json($ppdb)
+            ->header('Cache-Control', 'no-cache, no-store, must-revalidate')
+            ->header('Pragma', 'no-cache')
+            ->header('Expires', '0');
     }
 
     // Upload bukti pembayaran (Public)
