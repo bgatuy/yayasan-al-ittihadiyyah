@@ -524,19 +524,48 @@ document.addEventListener('DOMContentLoaded', async () => {
         }
 
         // 5. Biaya
-        const renderFees = (elementId, dataString) => {
+        const renderFees = (elementId, dataString, totalLabel = 'Total') => {
             const el = document.getElementById(elementId);
-            if (el && dataString) {
-                const lines = dataString.split('\n');
-                el.innerHTML = lines.map(line => {
-                    const [item, price] = line.split('|').map(s => s.trim());
-                    if (!item) return '';
-                    return `<li class="flex justify-between gap-4 border-b border-slate-200 pb-2"><span>${item}</span><span class="font-bold text-slate-800">${price || ''}</span></li>`;
-                }).join('');
+            if (!el) return;
+
+            if (!dataString || dataString.trim() === '') {
+                el.innerHTML = '<li class="text-slate-500 text-sm">Data biaya belum tersedia.</li>';
+                return;
             }
+
+            const items = dataString.split('\n').filter(line => line.trim() !== '');
+            let totalAmount = 0;
+
+            const itemHtml = items.map(item => {
+                const [name, priceStr] = item.split('|').map(s => s.trim());
+                
+                if (priceStr) {
+                    const priceNum = parseInt(priceStr.replace(/[^0-9]/g, ''), 10);
+                    if (!isNaN(priceNum)) {
+                        totalAmount += priceNum;
+                    }
+                }
+
+                return `
+                  <li class="flex justify-between gap-4 border-b border-slate-200 pb-2">
+                    <span>${name || ''}</span>
+                    <span class="font-bold text-slate-800">${priceStr || 'Rp 0'}</span>
+                  </li>
+                `;
+            }).join('');
+
+            const formattedTotal = `Rp ${new Intl.NumberFormat('id-ID').format(totalAmount)}`;
+            const totalHtml = `
+                <li class="flex justify-between pt-2 text-lg font-bold text-primary">
+                  <span>${totalLabel}</span>
+                  <span>${formattedTotal}</span>
+                </li>
+            `;
+
+            el.innerHTML = itemHtml + totalHtml;
         };
-        renderFees('page-biaya-masuk', biayaMasuk);
-        renderFees('page-biaya-bulanan', biayaBulanan);
+        renderFees('page-biaya-masuk', biayaMasuk, 'Total');
+        renderFees('page-biaya-bulanan', biayaBulanan, 'Total / Bulan');
       }
   }
 });
