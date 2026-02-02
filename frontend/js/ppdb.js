@@ -269,9 +269,9 @@ document.addEventListener('DOMContentLoaded', async () => {
                 header.classList.add('bg-green-50');
                 icon.classList.add('bg-green-100', 'text-green-600');
                 icon.innerHTML = '<i class="fa-solid fa-check"></i>';
-                statusText.textContent = 'DITERIMA';
+                statusText.textContent = 'LULUS SELEKSI';
                 statusText.className = 'text-xl font-bold text-green-700';
-                messageText.textContent = 'Selamat! Anda dinyatakan lulus seleksi.';
+                messageText.textContent = 'Selamat! Anda dinyatakan lulus seleksi. Silakan Unduh Surat Penerimaan untuk proses Daftar Ulang.';
                 
                 actionDiv.classList.remove('hidden');
                 actionDiv.innerHTML = `<button onclick="downloadAcceptancePDF('${result.id}', '${result.nama_lengkap}', '${result.jenjang}', '${result.gelombang}')" class="block w-full bg-primary text-white text-center font-bold py-3 rounded-xl hover:bg-secondary transition shadow-lg shadow-primary/30"><i class="fa-solid fa-file-pdf mr-2"></i> Unduh Surat Penerimaan</button>`;
@@ -279,9 +279,9 @@ document.addEventListener('DOMContentLoaded', async () => {
                 header.classList.add('bg-green-50');
                 icon.classList.add('bg-green-100', 'text-green-600');
                 icon.innerHTML = '<i class="fa-solid fa-clipboard-check"></i>';
-                statusText.textContent = 'TERVERIFIKASI';
+                statusText.textContent = 'PEMBAYARAN TERVERIFIKASI';
                 statusText.className = 'text-xl font-bold text-green-700';
-                messageText.textContent = 'Pembayaran Anda telah diverifikasi. Silakan tunggu pengumuman hasil seleksi.';
+                messageText.textContent = 'Data Anda sedang dalam tahap seleksi. Silakan cek pengumuman hasil seleksi di menu "Cek Status Pendaftaran" secara berkala.';
                 
                 actionDiv.classList.remove('hidden');
                 // FIX: Evaluate the date expression within the template literal by wrapping it in ${...}
@@ -318,7 +318,7 @@ document.addEventListener('DOMContentLoaded', async () => {
                 icon.innerHTML = '<i class="fa-solid fa-hourglass-half"></i>';
                 statusText.textContent = result.status.toUpperCase();
                 statusText.className = 'text-xl font-bold text-yellow-700';
-                messageText.textContent = 'Bukti pembayaran Anda sedang dalam proses verifikasi oleh admin.';
+                messageText.textContent = 'Bukti pembayaran sedang diverifikasi. Silakan cek status pendaftaran secara berkala.';
             }
 
             resultCard.classList.remove('hidden');
@@ -350,7 +350,7 @@ document.addEventListener('DOMContentLoaded', async () => {
     // Sembunyikan semua view dulu
     uploadView.classList.add('hidden');
     waitingView.classList.add('hidden');
-    idDisplay.textContent = id.toUpperCase();
+    if (idDisplay) idDisplay.textContent = id.toUpperCase();
 
     try {
       // Panggil endpoint baru untuk cek status
@@ -364,16 +364,52 @@ document.addEventListener('DOMContentLoaded', async () => {
         document.getElementById('upload-placeholder').classList.remove('hidden');
         // Tampilkan view upload
         uploadView.classList.remove('hidden');
-      } else if (status === 'Menunggu Verifikasi') {
-        document.getElementById('waiting-icon').innerHTML = '<i class="fa-solid fa-hourglass-half"></i>';
-        document.getElementById('waiting-title').textContent = 'Menunggu Verifikasi';
-        document.getElementById('waiting-message').textContent = 'Terima kasih! Bukti pembayaran Anda sedang kami periksa. Silakan cek halaman ini atau halaman "Cek Status" secara berkala.';
+      } else if (status === 'Menunggu Verifikasi' || status === 'Terverifikasi') {
+        // --- START: NEW LOGIC FOR CONSISTENT UI ---
+        // Populate Data
+        document.getElementById('payment-result-name').textContent = data.nama_lengkap;
+        document.getElementById('payment-result-level').textContent = data.jenjang === 'MI' ? 'Madrasah Ibtidaiyah' : 'TK Islam';
+        document.getElementById('payment-result-reg-id').textContent = data.id;
+        document.getElementById('payment-result-wave').textContent = data.gelombang;
+
+        // Styling Status
+        const header = document.getElementById('payment-result-header');
+        const icon = document.getElementById('payment-result-icon');
+        const statusText = document.getElementById('payment-result-status');
+        const messageText = document.getElementById('payment-result-message');
+        
+        // Reset classes
+        header.className = 'p-6 text-center border-b border-slate-200 transition-colors duration-300';
+        icon.className = 'w-16 h-16 rounded-full flex items-center justify-center mx-auto text-3xl shadow-sm mb-3 transition-colors duration-300';
+
+        if (status === 'Menunggu Verifikasi') {
+            header.classList.add('bg-yellow-50');
+            icon.classList.add('bg-yellow-100', 'text-yellow-600');
+            icon.innerHTML = '<i class="fa-solid fa-hourglass-half"></i>';
+            statusText.textContent = 'MENUNGGU VERIFIKASI';
+            statusText.className = 'text-xl font-bold text-yellow-700';
+            messageText.textContent = 'Bukti pembayaran telah diterima dan sedang diverifikasi. Silakan cek status pendaftaran secara berkala. ';
+        } else { // Terverifikasi
+            header.classList.add('bg-green-50');
+            icon.classList.add('bg-green-100', 'text-green-600');
+            icon.innerHTML = '<i class="fa-solid fa-clipboard-check"></i>';
+            statusText.textContent = 'PEMBAYARAN TERVERIFIKASI';
+            statusText.className = 'text-xl font-bold text-green-700';
+            messageText.textContent = 'Pembayaran telah diverifikasi. Silakan unduh bukti pembayaran di menu "Cek Status Pendaftaran".';
+        }
+
+        // Setup CTA button
+        const ctaButton = document.getElementById('btn-go-to-check-status');
+        if (ctaButton) {
+            ctaButton.onclick = () => {
+                switchPpdbTab('check');
+                document.getElementById('check-id').value = id;
+            };
+        }
+
+        // Show the waiting view
         waitingView.classList.remove('hidden');
-      } else if (status === 'Terverifikasi') {
-        document.getElementById('waiting-icon').innerHTML = '<i class="fa-solid fa-clipboard-check"></i>';
-        document.getElementById('waiting-title').textContent = 'Pembayaran Terverifikasi';
-        document.getElementById('waiting-message').textContent = 'Pembayaran Anda telah berhasil diverifikasi. Saat ini data Anda sedang dalam proses seleksi. Hasil akhir akan diumumkan di halaman "Cek Status".';
-        waitingView.classList.remove('hidden');
+        // --- END: NEW LOGIC ---
       } else if (status === 'Diterima' || status === 'Tidak Diterima') {
         // Jika sudah ada hasil, arahkan ke halaman Cek Status
         switchPpdbTab('check');

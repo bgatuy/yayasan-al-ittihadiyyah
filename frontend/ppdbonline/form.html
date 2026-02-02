@@ -88,12 +88,12 @@
       <div class="flex items-start w-full p-3 mb-8 md:mb-12">
         <div class="step-indicator flex flex-col items-center flex-1" data-step="1">
           <div class="indicator-circle w-10 h-10 flex items-center justify-center rounded-full bg-primary text-white font-semibold">1</div>
-          <p class="indicator-text mt-2 text-sm font-medium text-primary text-center">Data Siswa</p>
+          <p class="indicator-text mt-2 text-sm font-medium text-primary text-center">Data Calon Peserta Didik Baru</p>
         </div>
         <div class="indicator-connector flex-1 h-1 bg-slate-200 mx-2 mt-5"></div>
         <div class="step-indicator flex flex-col items-center flex-1" data-step="2">
           <div class="indicator-circle w-10 h-10 flex items-center justify-center rounded-full bg-slate-200 text-slate-500 font-semibold">2</div>
-          <p class="indicator-text mt-2 text-sm text-slate-400 text-center">Data Wali</p>
+          <p class="indicator-text mt-2 text-sm text-slate-400 text-center">Data Orang Tua / Wali</p>
         </div>
         <div class="indicator-connector flex-1 h-1 bg-slate-200 mx-2 mt-5"></div>
         <div class="step-indicator flex flex-col items-center flex-1" data-step="3">
@@ -384,12 +384,40 @@
         </div>
 
         <!-- STATE: Menunggu Verifikasi / Terverifikasi -->
-        <div id="payment-step-waiting" class="hidden text-center p-8">
-          <div id="waiting-icon" class="w-20 h-20 bg-blue-100 text-blue-600 rounded-full flex items-center justify-center mx-auto text-3xl mb-4">
-            <i class="fa-solid fa-hourglass-half"></i>
+        <div id="payment-step-waiting" class="hidden w-full max-w-md mx-auto animate-[fade-in_0.3s]">
+          <div class="bg-white rounded-3xl shadow-xl border border-slate-100 overflow-hidden">
+            <div id="payment-result-header" class="bg-slate-100 p-6 text-center border-b border-slate-200">
+              <div id="payment-result-icon" class="w-16 h-16 bg-white rounded-full flex items-center justify-center mx-auto text-3xl shadow-sm mb-3">
+                <i class="fa-solid fa-question"></i>
+              </div>
+              <h3 id="payment-result-status" class="text-xl font-bold text-slate-800">Status</h3>
+              <p id="payment-result-message" class="text-sm text-slate-500 mt-1">Pesan status...</p>
+            </div>
+            <div class="p-6 space-y-4">
+              <div class="flex justify-between border-b border-slate-50 pb-3">
+                <span class="text-slate-500 text-sm">Nama Siswa</span>
+                <span id="payment-result-name" class="font-bold text-slate-800 text-right">Nama</span>
+              </div>
+              <div class="flex justify-between border-b border-slate-50 pb-3">
+                <span class="text-slate-500 text-sm">Jenjang</span>
+                <span id="payment-result-level" class="font-medium text-slate-800">Jenjang</span>
+              </div>
+              <div class="flex justify-between border-b border-slate-50 pb-3">
+                <span class="text-slate-500 text-sm">ID Pendaftaran</span>
+                <span id="payment-result-reg-id" class="font-bold text-slate-800 font-mono">ID</span>
+              </div>
+              <div class="flex justify-between">
+                <span class="text-slate-500 text-sm">Gel. Pendaftaran</span>
+                <span id="payment-result-wave" class="font-medium text-slate-800">Gelombang</span>
+              </div>
+              <div id="payment-result-action" class="pt-4">
+                <!-- Tombol Aksi Dinamis -->
+                <button id="btn-go-to-check-status" class="w-full bg-primary text-white font-bold py-3 rounded-xl hover:bg-secondary transition shadow-lg shadow-primary/30">
+                  Cek Status Pendaftaran
+                </button>
+              </div>
+            </div>
           </div>
-          <h2 id="waiting-title" class="text-2xl font-bold text-slate-800">Menunggu Verifikasi</h2>
-          <p id="waiting-message" class="text-slate-600 mt-2 max-w-sm mx-auto">Terima kasih! Bukti pembayaran Anda sedang kami periksa. Silakan cek halaman ini secara berkala.</p>
         </div>
 
       </div>
