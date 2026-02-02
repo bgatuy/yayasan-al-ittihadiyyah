@@ -234,11 +234,16 @@ document.addEventListener('DOMContentLoaded', async () => {
             return;
         }
         
-        // [FIX] Gunakan endpoint publik yang aman untuk cek status, bukan endpoint admin.
-        // Ini lebih aman, efisien, dan memperbaiki error 401 di halaman publik.
         let result = null;
+        let settings = {}; // Inisialisasi objek settings
         try {
-            result = await window.DataStore.checkPpdbStatus(inputId);
+            // [FIX] Gunakan endpoint publik yang aman untuk cek status, bukan endpoint admin.
+            // Ini lebih aman, efisien, dan memperbaiki error 401 di halaman publik.
+            // Ambil data siswa dan pengaturan PPDB secara bersamaan untuk efisiensi.
+            [result, settings] = await Promise.all([
+                window.DataStore.checkPpdbStatus(inputId),
+                window.DataStore.getPpdbPageSettings()
+            ]);
         } catch (error) {
             console.error("Error saat cek status:", error);
             result = null;
@@ -287,7 +292,10 @@ document.addEventListener('DOMContentLoaded', async () => {
                 // FIX: Evaluate the date expression within the template literal by wrapping it in ${...}
                 // and adding quotes so it's passed as a string in the onclick handler.
                 const dateString = new Date(result.created_at).toLocaleDateString('id-ID');
-                actionDiv.innerHTML = `<button onclick="downloadReceiptPDF('${result.id}', '${result.nama_lengkap}', '${result.jenjang}', '150.000', '${dateString}')" class="block w-full bg-primary text-white text-center font-bold py-3 rounded-xl hover:bg-secondary transition shadow-lg shadow-primary/30"><i class="fa-solid fa-file-pdf mr-2"></i> Unduh Bukti Pembayaran</button>`;
+                // Tentukan biaya berdasarkan jenjang dari data settings yang sudah diambil
+                const fee = result.jenjang === 'TK' ? settings.ppdb_fee_tk : settings.ppdb_fee_mi;
+                const formattedFee = new Intl.NumberFormat('id-ID').format(fee || 0);
+                actionDiv.innerHTML = `<button onclick="downloadReceiptPDF('${result.id}', '${result.nama_lengkap}', '${result.jenjang}', '${formattedFee}', '${dateString}')" class="block w-full bg-primary text-white text-center font-bold py-3 rounded-xl hover:bg-secondary transition shadow-lg shadow-primary/30"><i class="fa-solid fa-file-pdf mr-2"></i> Unduh Bukti Pembayaran</button>`;
             } else if (result.status === 'Tidak Diterima') { // STATUS: TIDAK DITERIMA
                 header.classList.add('bg-red-50');
                 icon.classList.add('bg-red-100', 'text-red-600');
@@ -353,11 +361,21 @@ document.addEventListener('DOMContentLoaded', async () => {
     if (idDisplay) idDisplay.textContent = id.toUpperCase();
 
     try {
-      // Panggil endpoint baru untuk cek status
-      const data = await window.DataStore.checkPpdbStatus(id);
+      // Panggil endpoint untuk cek status siswa dan pengaturan PPDB secara bersamaan
+      const [data, settings] = await Promise.all([
+          window.DataStore.checkPpdbStatus(id),
+          window.DataStore.getPpdbPageSettings()
+      ]);
       const status = data.status;
 
       if (status === 'Menunggu Pembayaran') {
+        // Tentukan biaya pendaftaran berdasarkan jenjang siswa
+        const fee = data.jenjang === 'TK' ? settings.ppdb_fee_tk : settings.ppdb_fee_mi;
+        const formattedFee = new Intl.NumberFormat('id-ID').format(fee || 0);
+        
+        // Update tampilan biaya di halaman
+        document.getElementById('payment-fee-display').textContent = `Rp ${formattedFee}`;
+
         // Reset form upload
         document.getElementById('payment-proof').value = '';
         document.getElementById('payment-preview-img').classList.add('hidden');
@@ -535,33 +553,78 @@ document.addEventListener('DOMContentLoaded', async () => {
   window.copyRegistrationId = function(button) {
     const idElement = document.getElementById('success-reg-id');
     const idToCopy = idElement.textContent;
-    
-    navigator.clipboard.writeText(idToCopy).then(() => {
+
+    const showSuccess = () => {
       const originalIcon = button.innerHTML;
       button.innerHTML = `<i class="fa-solid fa-check text-green-500 text-xl"></i>`;
-      
       setTimeout(() => {
         button.innerHTML = originalIcon;
       }, 2000);
-    }).catch(err => {
+    };
+
+    const showError = (err) => {
       console.error('Gagal menyalin ID:', err);
       alert('Gagal menyalin ID. Mohon salin secara manual.');
-    });
+    };
+
+    // Modern way: Clipboard API (only works in secure contexts - HTTPS)
+    if (navigator.clipboard && window.isSecureContext) {
+      navigator.clipboard.writeText(idToCopy).then(showSuccess).catch(showError);
+    } else {
+      // Fallback for insecure contexts (HTTP) or older browsers
+      const textArea = document.createElement("textarea");
+      textArea.value = idToCopy;
+      textArea.style.position = "fixed";
+      textArea.style.left = "-9999px";
+      document.body.appendChild(textArea);
+      textArea.focus();
+      textArea.select();
+      try {
+        document.execCommand('copy');
+        showSuccess();
+      } catch (err) {
+        showError(err);
+      }
+      document.body.removeChild(textArea);
+    }
   }
 
   window.copyAccountNumber = function(button) {
     const accountNumber = '7123456789';
-    navigator.clipboard.writeText(accountNumber).then(() => {
+
+    const showSuccess = () => {
       const originalIcon = button.innerHTML;
       button.innerHTML = `<i class="fa-solid fa-check text-green-500 text-lg"></i>`;
-      
       setTimeout(() => {
         button.innerHTML = originalIcon;
       }, 2000);
-    }).catch(err => {
+    };
+
+    const showError = (err) => {
       console.error('Gagal menyalin nomor rekening:', err);
       alert('Gagal menyalin nomor rekening. Mohon salin secara manual.');
-    });
+    };
+
+    // Modern way: Clipboard API (only works in secure contexts - HTTPS)
+    if (navigator.clipboard && window.isSecureContext) {
+      navigator.clipboard.writeText(accountNumber).then(showSuccess).catch(showError);
+    } else {
+      // Fallback for insecure contexts (HTTP) or older browsers
+      const textArea = document.createElement("textarea");
+      textArea.value = accountNumber;
+      textArea.style.position = "fixed";
+      textArea.style.left = "-9999px";
+      document.body.appendChild(textArea);
+      textArea.focus();
+      textArea.select();
+      try {
+        document.execCommand('copy');
+        showSuccess();
+      } catch (err) {
+        showError(err);
+      }
+      document.body.removeChild(textArea);
+    }
   }
 
   // --- PDF DOWNLOAD FUNCTIONS ---
