@@ -9,14 +9,8 @@ use App\Http\Controllers\DashboardController;
 use App\Http\Controllers\PrestasiController;
 use App\Http\Controllers\GuruStaffController;
 use App\Http\Controllers\AuthController; // Import AuthController
-use App\Http\Controllers\PpdbPageController; // Ganti SettingController
-use App\Http\Controllers\AkademikController; // Ganti PageController jadi AkademikController
-
-Route::get('/test', function () {
-    return Response::json([
-        'status' => 'API jalan'
-    ]);
-});
+use App\Http\Controllers\PpdbPageController;
+use App\Http\Controllers\AkademikController;
 
 /*
  |--------------------------------------------------------------------------
@@ -29,7 +23,7 @@ Route::post('/login', [AuthController::class, 'login']);
 
 // 1. BERITA
 Route::get('/news', [NewsController::class, 'index']);
-Route::get('/news/{id}', [NewsController::class, 'show']); // Diubah dari {slug} ke {id} agar sesuai controller
+Route::get('/news/{id}', [NewsController::class, 'show']);
 
 // 2. PPDB (Pendaftaran)
 Route::post('/ppdb', [PpdbController::class, 'store']); // Endpoint pendaftaran
@@ -79,8 +73,8 @@ Route::prefix('admin')->middleware('auth:sanctum')->group(function () {
     Route::delete('/guru/{id}', [GuruStaffController::class, 'destroy']);
 
     // MANAJEMEN PRESTASI
-    Route::post('/prestasi', [PrestasiController::class, 'store']); // Dibuat konsisten, jenjang ada di body
-    Route::post('/prestasi/{id}', [PrestasiController::class, 'update']); // Dibuat konsisten
+    Route::post('/prestasi', [PrestasiController::class, 'store']);
+    Route::post('/prestasi/{id}', [PrestasiController::class, 'update']);
     Route::delete('/prestasi/{id}', [PrestasiController::class, 'destroy']);
 
     // MANAJEMEN PPDB

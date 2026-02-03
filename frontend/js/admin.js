@@ -709,16 +709,6 @@ document.addEventListener('DOMContentLoaded', () => {
           heroFileInput.value = '';
       });
   }
-  // 2. Fitur Simpan Pengaturan (Umum - jika ada)
-  // const btnSaveSettings = document.getElementById('btn-save-settings');
-  // if (btnSaveSettings) {
-  //   btnSaveSettings.addEventListener('click', async () => {
-  //     // Logika untuk menyimpan pengaturan umum lainnya bisa ditambahkan di sini
-  //     document.getElementById('success-title').textContent = 'Berhasil Disimpan!';
-  //     document.getElementById('success-message').textContent = 'Pengaturan sistem telah berhasil diperbarui.';
-  //     window.utils.toggleModal('modal-success');
-  //   });
-  // }
 
   // 3. Fitur Tambah Berita (Modal)
   const btnAddNews = document.getElementById('btn-add-news');
@@ -1035,9 +1025,6 @@ document.addEventListener('DOMContentLoaded', () => {
       if (itemIndex !== -1) {
         // Update via DataStore
         const formData = new FormData();
-        // The error "The PUT method is not supported" indicates the backend route
-        // for updates is defined with POST, not PUT. We must match the backend.
-        // formData.append('_method', 'PUT'); // Removed: Backend expects pure POST
         formData.append('status', newStatus);
 
         await window.DataStore.updatePpdb(id, formData);

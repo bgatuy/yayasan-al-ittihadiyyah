@@ -30,29 +30,46 @@ document.addEventListener('DOMContentLoaded', () => {
 
 (function() {
     const TOKEN_KEY = 'admin_auth_token';
+    const USER_KEY = 'admin_user_data';
 
     window.Auth = {
         setAuthToken: (token) => {
             localStorage.setItem(TOKEN_KEY, token);
         },
 
+        setUserData: (user) => {
+            if (user) {
+                localStorage.setItem(USER_KEY, JSON.stringify(user));
+            }
+        },
+
         getAuthToken: () => {
             return localStorage.getItem(TOKEN_KEY);
+        },
+
+        getUserData: () => {
+            const user = localStorage.getItem(USER_KEY);
+            return user ? JSON.parse(user) : null;
         },
 
         removeAuthToken: () => {
             localStorage.removeItem(TOKEN_KEY);
         },
 
+        removeUserData: () => {
+            localStorage.removeItem(USER_KEY);
+        },
+
         // Fungsi untuk login ke backend
         login: async (email, password) => {
             try {
                 const response = await window.DataStore.login({ email, password });
-                if (response.token) {
+                if (response.token && response.user) {
                     window.Auth.setAuthToken(response.token);
+                    window.Auth.setUserData(response.user);
                     return response;
                 } else {
-                    throw new Error('Token tidak diterima dari server.');
+                    throw new Error('Token atau data pengguna tidak diterima dari server.');
                 }
             } catch (error) {
                 throw error; // Lempar error agar bisa ditangkap di form login
@@ -62,6 +79,7 @@ document.addEventListener('DOMContentLoaded', () => {
         // Fungsi untuk logout
         logout: () => {
             window.Auth.removeAuthToken();
+            window.Auth.removeUserData();
             // Opsional: panggil API logout di backend jika ada
             window.location.href = '/admin/login.html';
         },

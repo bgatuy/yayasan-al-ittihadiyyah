@@ -20,8 +20,4 @@
     API_BASE_URL: apiBaseUrl,
     STORAGE_BASE_URL: storageBaseUrl,
   };
-
-  console.log('Environment:', isLocal ? 'Development (Local)' : 'Production');
-  console.log('API Base URL:', window.APP_CONFIG.API_BASE_URL);
-  console.log('Storage Base URL:', window.APP_CONFIG.STORAGE_BASE_URL);
 })();
