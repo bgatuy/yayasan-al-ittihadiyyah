@@ -21,9 +21,11 @@ class DashboardController extends Controller
         $persenPending  = $stats->total > 0 ? round(($stats->pending / $stats->total) * 100) : 0;
 
         // pendaftar terbaru (5)
+        // [REVERT] Mengembalikan data lengkap untuk 5 pendaftar terbaru.
+        // Panel admin membutuhkan ini untuk menampilkan modal detail.
         $terbaru = Ppdb::latest()
             ->limit(5)
-            ->get(); // Ambil semua kolom agar detail modal di dashboard lengkap (termasuk alamat, ttl, dll)
+            ->get();
 
         return response()->json([
             'statistik' => [

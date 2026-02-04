@@ -12,8 +12,10 @@ class PpdbController extends Controller
     // Menampilkan semua data (untuk Admin)
     public function index()
     {
+        // [REVERT] Mengembalikan semua data. Panel admin membutuhkan data lengkap
+        // untuk menampilkan detail siswa tanpa membuat request API baru.
         $data = Ppdb::latest()->get();
-        return response()->json($data) // Endpoint ini untuk admin, mengembalikan semua data.
+        return response()->json($data)
             ->header('Cache-Control', 'no-cache, no-store, must-revalidate')
             ->header('Pragma', 'no-cache')
             ->header('Expires', '0');
@@ -31,15 +33,10 @@ class PpdbController extends Controller
         return response()->json([
             'id' => $ppdb->id,
             'nama_lengkap' => $ppdb->nama_lengkap,
-            'nama_panggilan' => $ppdb->nama_panggilan,
             'jenjang' => $ppdb->jenjang,
             'status' => $ppdb->status,
             'gelombang' => $ppdb->gelombang,
             'created_at' => $ppdb->created_at,
-            'tempat_lahir' => $ppdb->tempat_lahir,
-            'tanggal_lahir' => $ppdb->tanggal_lahir,
-            'alamat' => $ppdb->alamat,
-            'ttl' => $ppdb->ttl,
         ])
         ->header('Cache-Control', 'no-cache, no-store, must-revalidate')
         ->header('Pragma', 'no-cache')

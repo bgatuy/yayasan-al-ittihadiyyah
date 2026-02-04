@@ -7,14 +7,6 @@
   async function apiRequest(endpoint, method = 'GET', body = null, isFormData = false) {
     let url = `${window.APP_CONFIG.API_BASE_URL}${endpoint}`;
     
-    // --- CACHE BUSTING ---
-    // Menambahkan parameter unik ke setiap GET request untuk memaksa browser
-    // mengambil data terbaru dari server, bukan dari cache. Ini sangat penting
-    // untuk memastikan perubahan di admin langsung terlihat di halaman publik.
-    if (method === 'GET') {
-      url += (url.includes('?') ? '&' : '?') + `_=${new Date().getTime()}`;
-    }
-    
     // Ambil token dari localStorage (atau di mana pun auth.js menyimpannya)
     const token = window.Auth ? window.Auth.getAuthToken() : null;
 
@@ -47,32 +39,41 @@
       const response = await fetch(url, options);
 
       if (response.status === 401) {
-        const isAnAdminPage = window.location.pathname.includes('/admin/');
-        
-        // Selalu hapus token jika ada error 401, menandakan sesi tidak valid.
-        if (window.Auth) {
-            window.Auth.logout();
-        }
+        const isLoginPage = window.location.pathname.endsWith('/login.html');
 
-        // Jika pengguna berada di halaman admin, redirect paksa ke halaman login.
-        if (isAnAdminPage) {
-            window.location.href = '/admin/login.html';
-            // Mengembalikan promise yang tidak pernah resolve untuk menghentikan eksekusi lebih lanjut.
-            return new Promise(() => {});
-        }
+        // Handle 401 untuk token yang kedaluwarsa di halaman mana pun KECUALI halaman login itu sendiri.
+        // 401 di halaman login berarti kredensial salah, yang harus ditangani oleh alur error normal di bawah.
+        if (!isLoginPage) {
+            const isAnAdminPage = window.location.pathname.includes('/admin/');
 
-        // Jika di halaman publik, jangan lempar error fatal. Ini mencegah crash
-        // jika ada skrip di halaman publik yang salah memanggil endpoint admin.
-        console.error(`Unauthorized access attempt from a public page to ${endpoint}.`);
-        // Kembalikan null agar promise resolve dan tidak menyebabkan error "Uncaught".
-        return null;
+            // Untuk halaman admin mana pun, 401 yang tidak terduga berarti sesi telah berakhir. Logout.
+            if (isAnAdminPage) {
+                if (window.Auth) {
+                    window.Auth.logout(); // Fungsi ini menangani redirect.
+                }
+                // Hentikan eksekusi lebih lanjut.
+                return new Promise(() => {});
+            }
+
+            // Untuk halaman publik, cukup catat error dan berhenti.
+            console.error(`Unauthorized access attempt from a public page to ${endpoint}.`);
+            return null;
+        }
       }
 
       const data = await response.json();
 
       if (!response.ok) {
-        throw new Error(data.message || 'Terjadi kesalahan pada server.');
+        const err = new Error(data.message || 'Terjadi kesalahan pada server.');
+
+        // 🔥 teruskan retry_after kalau ada (untuk throttle login)
+        if (data.retry_after) {
+          err.retry_after = data.retry_after;
+        }
+
+        throw err;
       }
+
 
       return data;
     } catch (error) {

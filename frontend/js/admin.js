@@ -507,6 +507,9 @@ document.addEventListener('DOMContentLoaded', () => {
   // Initial Render
   renderTable();
   renderDashboardTable();
+  // Panggil fungsi untuk memulai idle timeout
+  setupIdleTimeout();
+
   updateDashboardStats();
   renderAdminNews();
   renderAdminGallery();
@@ -1325,6 +1328,61 @@ document.addEventListener('DOMContentLoaded', () => {
       achFileInput.addEventListener('change', () => previewAchievementImage(achFileInput));
   }
 });
+
+/**
+ * Mengelola Idle Timeout untuk sesi admin.
+ * Menampilkan modal setelah 30 menit tidak aktif.
+ */
+function setupIdleTimeout() {
+    // Timeout diatur ke 30 menit.
+    const IDLE_TIMEOUT_MS = 30 * 60 * 1000; 
+
+    let idleTimer;
+
+    const modal = document.getElementById('modal-session-timeout');
+    if (!modal) {
+        console.warn('Modal session timeout tidak ditemukan. Fitur idle timeout dinonaktifkan.');
+        return;
+    }
+
+    const btnOk = document.getElementById('btn-session-expired-ok');
+
+    const forceLogout = () => {
+        if (window.Auth) {
+            window.Auth.logout();
+        } else {
+            console.error("Auth object not found. Cannot logout.");
+        }
+    };
+
+    const activityEvents = ['mousemove', 'keydown', 'scroll', 'click'];
+
+    const showSessionExpiredModal = () => {
+        // Hentikan timer dan listener aktivitas karena sesi sudah berakhir
+        clearTimeout(idleTimer);
+        activityEvents.forEach(event => {
+            window.removeEventListener(event, resetIdleTimer, { passive: true });
+        });
+
+        // Tampilkan modal
+        modal.classList.remove('hidden');
+        modal.classList.add('flex');
+    };
+
+    const resetIdleTimer = () => {
+        clearTimeout(idleTimer);
+        idleTimer = setTimeout(showSessionExpiredModal, IDLE_TIMEOUT_MS);
+    };
+
+    // Event listeners untuk mendeteksi aktivitas dan mereset timer
+    activityEvents.forEach(event => {
+        window.addEventListener(event, resetIdleTimer, { passive: true });
+    });
+
+    if (btnOk) btnOk.addEventListener('click', forceLogout);
+
+    resetIdleTimer();
+}
 
 // --- LOGOUT FUNCTION ---
 const btnLogout = document.getElementById('btn-logout');

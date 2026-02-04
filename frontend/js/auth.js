@@ -1,3 +1,28 @@
+function startLoginCountdown(seconds) {
+    const msg = document.getElementById('login-error-message');
+    const btn = document.getElementById('btn-login');
+
+    btn.disabled = true;
+
+    let s = seconds;
+
+    const timer = setInterval(() => {
+        msg.textContent = `Terlalu banyak percobaan login. Coba lagi dalam ${s} detik.`;
+        msg.classList.remove('hidden');
+
+        s--;
+
+        if (s < 0) {
+            clearInterval(timer);
+            btn.disabled = false;
+            btn.textContent = 'Login';
+            msg.textContent = '';
+            msg.classList.add('hidden');
+        }
+    }, 1000);
+}
+
+
 document.addEventListener('DOMContentLoaded', () => {
     const loginForm = document.getElementById('login-form');
     const loginErrorMessage = document.getElementById('login-error-message');
@@ -5,6 +30,7 @@ document.addEventListener('DOMContentLoaded', () => {
     if (loginForm) {
         loginForm.addEventListener('submit', async (e) => {
             e.preventDefault();
+
             const email = document.getElementById('email').value;
             const password = document.getElementById('password').value;
             const btnLogin = document.getElementById('btn-login');
@@ -15,18 +41,29 @@ document.addEventListener('DOMContentLoaded', () => {
 
             try {
                 await window.Auth.login(email, password);
-                // Redirect ke halaman admin setelah login berhasil
                 window.location.href = '/admin/';
             } catch (error) {
                 console.error('Login failed:', error);
-                loginErrorMessage.textContent = error.message || 'Login gagal. Periksa email dan password Anda.';
+
+                // 🔴 THROTTLE — jalankan countdown
+                if (error.retry_after) {
+                    startLoginCountdown(error.retry_after);
+                    btnLogin.textContent = 'Login';
+                    return;
+                }
+
+                // ❌ ERROR BIASA
+                loginErrorMessage.textContent =
+                    error.message || 'Login gagal. Periksa email dan password Anda.';
                 loginErrorMessage.classList.remove('hidden');
+
                 btnLogin.disabled = false;
                 btnLogin.textContent = 'Login';
             }
         });
     }
 });
+
 
 (function() {
     const TOKEN_KEY = 'admin_auth_token';
@@ -60,27 +97,21 @@ document.addEventListener('DOMContentLoaded', () => {
             localStorage.removeItem(USER_KEY);
         },
 
-        // Fungsi untuk login ke backend
         login: async (email, password) => {
-            try {
-                const response = await window.DataStore.login({ email, password });
-                if (response.token && response.user) {
-                    window.Auth.setAuthToken(response.token);
-                    window.Auth.setUserData(response.user);
-                    return response;
-                } else {
-                    throw new Error('Token atau data pengguna tidak diterima dari server.');
-                }
-            } catch (error) {
-                throw error; // Lempar error agar bisa ditangkap di form login
+            const response = await window.DataStore.login({ email, password });
+
+            if (response.token && response.user) {
+                window.Auth.setAuthToken(response.token);
+                window.Auth.setUserData(response.user);
+                return response;
             }
+
+            throw new Error('Token atau data pengguna tidak diterima dari server.');
         },
 
-        // Fungsi untuk logout
         logout: () => {
             window.Auth.removeAuthToken();
             window.Auth.removeUserData();
-            // Opsional: panggil API logout di backend jika ada
             window.location.href = '/admin/login.html';
         },
     };

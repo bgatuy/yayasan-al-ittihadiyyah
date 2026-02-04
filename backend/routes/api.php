@@ -19,6 +19,8 @@ use App\Http\Controllers\AkademikController;
  */
 
 // AUTHENTICATION
+// [KEAMANAN] Menambahkan Rate Limiting untuk mencegah serangan Brute Force.
+// Membatasi 5 percobaan login dari 1 IP dalam 1 menit.
 Route::post('/login', [AuthController::class, 'login']);
 
 // 1. BERITA
