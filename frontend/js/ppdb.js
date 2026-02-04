@@ -213,8 +213,14 @@ document.addEventListener('DOMContentLoaded', async () => {
       if (pendingReg && ['Menunggu Pembayaran', 'Menunggu Verifikasi', 'Terverifikasi'].includes(pendingReg.status)) {
         goToPaymentPage(pendingRegId);
         return;
+      } else if (pendingReg && ['Diterima', 'Tidak Diterima'].includes(pendingReg.status)) {
+        // Jika status sudah final (Diterima/Tidak), langsung arahkan ke halaman cek status
+        localStorage.removeItem('ppdb_current_reg_id'); // Hapus ID dari local storage karena proses selesai
+        switchPpdbTab('check');
+        document.getElementById('check-id').value = pendingRegId; // Hanya isi ID, tidak otomatis submit
+        return;
       } else {
-        // If status is final (Diterima, etc.) or not found, the stored ID is no longer relevant for auto-resume.
+        // Jika status tidak ditemukan atau kasus lain, ID tidak lagi relevan.
         localStorage.removeItem('ppdb_current_reg_id');
       }
     }
