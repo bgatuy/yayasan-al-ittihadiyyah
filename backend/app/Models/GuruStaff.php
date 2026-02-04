@@ -16,6 +16,7 @@ class GuruStaff extends Model
         'jabatan',
         'pendidikan',
         'mata_pelajaran',
+        'masa_bakti',
         'quote',
         'foto',
     ];

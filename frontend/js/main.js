@@ -635,33 +635,66 @@ document.addEventListener('DOMContentLoaded', async () => {
 
   // --- RENDER GURU & STAFF (Halaman Guru) ---
   const teacherContainer = document.getElementById('teacher-list-container');
+  const headmasterSection = document.getElementById('headmaster-section');
 
-  if (teacherContainer) {
-    const teachersData = window.DataStore ? await window.DataStore.getTeachers() : [];
+  if (teacherContainer && headmasterSection) {
+    try {
+        const teachersData = await (window.DataStore ? window.DataStore.getTeachers() : []);
 
-    if (teachersData && teachersData.length > 0) {
-      teacherContainer.innerHTML = teachersData.map(item => `
-            <div class="bg-white p-6 rounded-2xl shadow-sm border border-slate-100 hover:shadow-md transition flex flex-col sm:flex-row gap-6 items-start">
-                <img src="${window.utils.getStorageUrl(item.foto)}" alt="${item.nama}" class="w-24 h-32 object-cover rounded-xl shadow-sm flex-shrink-0 mx-auto sm:mx-0 bg-slate-100">
-                <div class="flex-1 w-full text-center sm:text-left">
-                  <h4 class="text-lg font-bold text-slate-800 mb-1">${item.nama}</h4>
-                  <p class="text-primary text-sm font-medium mb-4">${item.jabatan}</p>
-                  <div class="bg-slate-50 rounded-xl p-3 text-sm space-y-2 text-left">
-                    <div class="flex justify-between">
-                      <span class="text-slate-500">Pendidikan</span>
-                      <span class="font-medium">${item.pendidikan}</span>
+        // 1. Cari Kepala Sekolah
+        const headmaster = teachersData.find(t => t.jabatan && t.jabatan.toLowerCase().includes('kepala sekolah'));
+
+        // 2. Filter guru & staff lainnya
+        const staff = teachersData.filter(t => !headmaster || t.id !== headmaster.id);
+
+        // 3. Tampilkan data Kepala Sekolah jika ada
+        if (headmaster) {
+            document.getElementById('headmaster-name').textContent = headmaster.nama || '-';
+            document.getElementById('headmaster-education').textContent = headmaster.pendidikan || '-';
+            document.getElementById('headmaster-subject').textContent = headmaster.mata_pelajaran || '-';
+            document.getElementById('headmaster-masa-bakti').textContent = headmaster.masa_bakti || '-';
+            document.getElementById('headmaster-quote').textContent = `"${headmaster.quote || ''}"`;
+            document.getElementById('headmaster-image').src = headmaster.foto ? window.utils.getStorageUrl(headmaster.foto) : 'https://placehold.co/400x500/E8E8E8/AAAAAA?text=Foto+Profil';
+            
+            // Tampilkan section Kepala Sekolah
+            headmasterSection.style.display = 'flex';
+        }
+
+        // 4. Render sisa guru dan staff
+        if (staff.length > 0) {
+            teacherContainer.innerHTML = staff.map(item => {
+                const imageUrl = item.foto ? window.utils.getStorageUrl(item.foto) : 'https://placehold.co/240x320/E8E8E8/AAAAAA?text=Foto';
+                return `
+                    <div class="bg-white p-6 rounded-2xl shadow-sm border border-slate-100 hover:shadow-md transition flex flex-col sm:flex-row gap-6 items-start">
+                        <img src="${imageUrl}" alt="${item.nama}" class="w-24 h-32 object-cover rounded-xl shadow-sm flex-shrink-0 mx-auto sm:mx-0 bg-slate-100">
+                        <div class="flex-1 w-full text-center sm:text-left">
+                          <h4 class="text-lg font-bold text-slate-800 mb-1">${item.nama}</h4>
+                          <p class="text-primary text-sm font-medium mb-4">${item.jabatan}</p>
+                          <div class="bg-slate-50 rounded-xl p-3 text-sm space-y-2 text-left">
+                            <div class="flex justify-between">
+                              <span class="text-slate-500">Pendidikan</span>
+                              <span class="font-medium">${item.pendidikan || '-'}</span>
+                            </div>
+                            <div class="flex justify-between">
+                              <span class="text-slate-500">Mata Pelajaran</span>
+                              <span class="font-medium">${item.mata_pelajaran || '-'}</span>
+                            </div>
+                            <div class="flex justify-between">
+                              <span class="text-slate-500">Masa Bakti</span>
+                              <span class="font-medium">${item.masa_bakti || '-'}</span>
+                            </div>
+                          </div>
+                          <p class="text-xs text-slate-500 mt-3 italic">"${item.quote || ''}"</p>
+                        </div>
                     </div>
-                    <div class="flex justify-between">
-                      <span class="text-slate-500">Mata Pelajaran</span>
-                      <span class="font-medium">${item.mata_pelajaran}</span>
-                    </div>
-                  </div>
-                  <p class="text-xs text-slate-500 mt-3 italic">"${item.quote || ''}"</p>
-                </div>
-            </div>
-        `).join('');
-    } else {
-      teacherContainer.innerHTML = '<div class="col-span-full text-center py-10 text-slate-500">Belum ada data guru.</div>';
+                `;
+            }).join('');
+        } else {
+            teacherContainer.innerHTML = '<div class="col-span-full text-center py-10 text-slate-500">Belum ada data guru & staff lainnya.</div>';
+        }
+    } catch (error) {
+        console.error('Gagal memuat data guru:', error);
+        teacherContainer.innerHTML = '<div class="col-span-full text-center py-10 text-slate-500">Gagal memuat data guru. Silakan coba lagi nanti.</div>';
     }
   }
 });

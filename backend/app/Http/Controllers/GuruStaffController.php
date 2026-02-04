@@ -22,6 +22,7 @@ class GuruStaffController extends Controller
             'jabatan'        => 'required|string|max:255',
             'pendidikan'     => 'required|string|max:255',
             'mata_pelajaran' => 'nullable|string|max:255',
+            'masa_bakti'     => 'nullable|string|max:255',
             'quote'          => 'nullable|string|max:500',
             'image'          => 'nullable|image|mimes:jpeg,png,jpg|max:2048', // Terima 'image' dari frontend
         ]);
@@ -59,6 +60,7 @@ class GuruStaffController extends Controller
             'jabatan'        => 'required|string|max:255',
             'pendidikan'     => 'required|string|max:255',
             'mata_pelajaran' => 'nullable|string|max:255',
+            'masa_bakti'     => 'nullable|string|max:255',
             'quote'          => 'nullable|string|max:500',
             'image'          => 'nullable|image|mimes:jpeg,png,jpg|max:2048', // Terima 'image' dari frontend
         ]);

@@ -17,6 +17,7 @@ return new class extends Migration
             $table->string('jabatan');
             $table->string('pendidikan');
             $table->string('mata_pelajaran')->nullable();
+            $table->string('masa_bakti')->nullable(); // Masa Bakti
             $table->string('quote')->nullable();
             $table->string('foto')->nullable(); // path gambar
             $table->timestamps();

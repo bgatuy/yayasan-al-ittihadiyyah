@@ -137,8 +137,9 @@
     saveTeacher: (formData) => {
       const id = formData.get('id');
       if (id) {
-        // admin.js already adds _method: 'PUT', but we ensure it here.
-        if (!formData.has('_method')) formData.append('_method', 'PUT');
+        // The backend route for update is POST /admin/guru/{id}, not PUT.
+        // We ensure the _method field is not sent, following the pattern from updatePpdb.
+        if (formData.has('_method')) formData.delete('_method');
         return apiRequest(`/admin/guru/${id}`, 'POST', formData, true);
       }
       return apiRequest('/admin/guru', 'POST', formData, true);

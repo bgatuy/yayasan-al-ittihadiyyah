@@ -162,6 +162,7 @@ window.saveTeacher = async function() {
   const jabatan = document.getElementById('teacher-position').value;
   const pendidikan = document.getElementById('teacher-education').value;
   const mata_pelajaran = document.getElementById('teacher-subject').value;
+  const masa_bakti = document.getElementById('teacher-masa-bakti').value;
   const quote = document.getElementById('teacher-quote').value;
   const fileInput = document.getElementById('teacher-image-input');
 
@@ -178,10 +179,10 @@ window.saveTeacher = async function() {
   formData.append('jabatan', jabatan);
   formData.append('pendidikan', pendidikan);
   formData.append('mata_pelajaran', mata_pelajaran);
+  formData.append('masa_bakti', masa_bakti);
   formData.append('quote', quote);
   if (id) {
     formData.append('id', id);
-    formData.append('_method', 'PUT'); // Fix: Add method spoofing for update
   }
 
   if (fileInput.files && fileInput.files[0]) {
@@ -747,6 +748,7 @@ document.addEventListener('DOMContentLoaded', () => {
       document.getElementById('teacher-position').value = '';
       document.getElementById('teacher-education').value = '';
       document.getElementById('teacher-subject').value = '';
+      document.getElementById('teacher-masa-bakti').value = '';
       document.getElementById('teacher-quote').value = '';
       document.getElementById('teacher-image-input').value = '';
       document.getElementById('teacher-image-preview-container').classList.add('hidden');
@@ -890,6 +892,7 @@ document.addEventListener('DOMContentLoaded', () => {
         document.getElementById('teacher-position').value = item.jabatan;
         document.getElementById('teacher-education').value = item.pendidikan;
         document.getElementById('teacher-subject').value = item.mata_pelajaran || '';
+        document.getElementById('teacher-masa-bakti').value = item.masa_bakti || '';
         document.getElementById('teacher-quote').value = item.quote || '';
         
         document.getElementById('teacher-image-preview').src = window.utils.getStorageUrl(item.foto);
