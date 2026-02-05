@@ -284,8 +284,12 @@ document.addEventListener('DOMContentLoaded', async () => {
                 statusText.className = 'text-xl font-bold text-green-700';
                 messageText.textContent = 'Selamat! Anda dinyatakan lulus seleksi. Silakan Unduh Surat Penerimaan untuk proses Daftar Ulang.';
                 
+                // Ambil tahun ajaran dari settings untuk PDF
+                const academicYear = settings.tahun_ajaran || '2025/2026';
+
                 actionDiv.classList.remove('hidden');
-                actionDiv.innerHTML = `<button onclick="downloadAcceptancePDF('${result.id}', '${result.nama_lengkap}', '${result.jenjang}', '${result.gelombang}')" class="block w-full bg-primary text-white text-center font-bold py-3 rounded-xl hover:bg-secondary transition shadow-lg shadow-primary/30"><i class="fa-solid fa-file-pdf mr-2"></i> Unduh Surat Penerimaan</button>`;
+                // Perbarui tombol untuk menyertakan tahun ajaran
+                actionDiv.innerHTML = `<button onclick="downloadAcceptancePDF('${result.id}', '${result.nama_lengkap}', '${result.jenjang}', '${result.gelombang}', '${academicYear}')" class="block w-full bg-primary text-white text-center font-bold py-3 rounded-xl hover:bg-secondary transition shadow-lg shadow-primary/30"><i class="fa-solid fa-file-pdf mr-2"></i> Unduh Surat Penerimaan</button>`;
             } else if (result.status === 'Terverifikasi') { // STATUS: TERVERIFIKASI
                 header.classList.add('bg-green-50');
                 icon.classList.add('bg-green-100', 'text-green-600');
@@ -634,16 +638,14 @@ document.addEventListener('DOMContentLoaded', async () => {
   }
 
   // --- PDF DOWNLOAD FUNCTIONS ---
-  window.downloadAcceptancePDF = function(id, name, level, wave) {
+  window.downloadAcceptancePDF = function(id, name, level, wave, academicYear) {
       // Cek ketersediaan library jsPDF
       const jsPDF = window.jspdf ? window.jspdf.jsPDF : window.jsPDF;
       if (!jsPDF) {
           alert("Library jsPDF tidak ditemukan. Pastikan script sudah dimuat.");
           return;
       }
-
       const levelName = level === 'MI' ? 'Madrasah Ibtidaiyah' : 'TK Islam';
-      const academicYear = localStorage.getItem('ppdb_academic_year') || '2025/2026';
       
       const doc = new jsPDF('p', 'mm', 'a4');
 

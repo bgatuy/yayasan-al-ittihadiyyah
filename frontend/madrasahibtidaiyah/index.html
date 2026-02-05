@@ -48,10 +48,10 @@
       <a href="/" class="hover:text-accent transition">Beranda</a>
       <a href="/berita/" class="hover:text-accent transition">Berita</a>
       <div class="relative group">
-        <button class="text-accent font-bold flex items-center gap-1 py-4">Akademik <i class="fa-solid fa-chevron-down text-xs"></i></button>
+        <button class="hover:text-accent transition flex items-center gap-1 py-4">Akademik <i class="fa-solid fa-chevron-down text-xs"></i></button>
         <div class="absolute top-full left-1/2 -translate-x-1/2 w-56 bg-white text-slate-800 rounded-xl shadow-xl border border-slate-100 overflow-hidden opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-300 transform origin-top">
-          <a href="/tamankanak-kanak/" class="block px-6 py-3 hover:bg-slate-50 hover:text-primary transition border-b border-slate-50">TK Islam</a>
-          <a href="/madrasahibtidaiyah/" class="block px-6 py-3 bg-slate-50 text-primary font-semibold">Madrasah Ibtidaiyah</a>
+          <a href="/tamankanak-kanak/" class="block px-6 py-3 hover:bg-slate-50 hover:text-primary transition border-b border-slate-100">TK Islam</a>
+          <a href="/madrasahibtidaiyah/" class="block px-6 py-3 hover:bg-slate-50 hover:text-primary transition">Madrasah Ibtidaiyah</a>
         </div>
       </div>
       <a href="/guru/" class="hover:text-accent transition">Guru & Staff</a>
@@ -73,7 +73,7 @@
       <i class="fa-solid fa-newspaper w-5 text-center"></i> Berita
     </a>
     <div>
-      <button id="mobile-akademik-btn" class="w-full flex items-center justify-between px-4 py-3 font-semibold text-primary bg-slate-50 rounded-xl transition text-left">
+      <button id="mobile-akademik-btn" class="w-full flex items-center justify-between px-4 py-3 font-semibold text-slate-600 hover:text-primary hover:bg-slate-50 rounded-xl transition text-left">
         <div class="flex items-center gap-4">
           <i class="fa-solid fa-graduation-cap w-5 text-center"></i> Akademik
         </div>
@@ -83,7 +83,7 @@
         <a href="/tamankanak-kanak/" class="flex items-center gap-4 px-4 py-2 font-medium text-slate-500 hover:text-primary hover:bg-slate-50 rounded-xl transition">
           <i class="fa-solid fa-shapes w-5 text-center"></i> TK Islam
         </a>
-        <a href="/madrasahibtidaiyah/" class="flex items-center gap-4 px-4 py-2 font-medium text-primary bg-slate-50 rounded-xl transition">
+        <a href="/madrasahibtidaiyah/" class="flex items-center gap-4 px-4 py-2 font-medium text-slate-500 hover:text-primary hover:bg-slate-50 rounded-xl transition">
           <i class="fa-solid fa-book-open w-5 text-center"></i> Madrasah Ibtidaiyah
         </a>
       </div>
@@ -109,11 +109,10 @@
   </div>
 </section>
 
-<!-- CONTENT -->
-<section class="py-16 bg-white">
+<!-- Intro & Kurikulum -->
+<section class="py-20 bg-white">
   <div class="max-w-screen-xl mx-auto px-4 md:px-8 lg:px-12">
-    <!-- Intro & Kurikulum -->
-    <div class="grid md:grid-cols-2 gap-12 items-center mb-20">
+    <div class="grid md:grid-cols-2 gap-12 items-center">
       <div>
         <img id="page-hero-image" src="" alt="Kegiatan MI" class="rounded-3xl shadow-xl w-full object-cover h-[400px] bg-slate-200">
       </div>
@@ -142,71 +141,78 @@
         <a href="/ppdbonline/" class="inline-block bg-primary text-white px-6 py-3 rounded-xl font-semibold hover:bg-secondary transition shadow-lg shadow-primary/30">Daftar MI Sekarang</a>
       </div>
     </div>
+  </div>
+</section>
 
-    <!-- Ekstrakurikuler -->
-    <div class="mb-20">
-      <h3 class="text-2xl font-bold text-center text-slate-800 mb-10">Ekstrakurikuler</h3>
-      <div id="page-ekskul-list" class="grid grid-cols-2 md:grid-cols-4 gap-6 min-h-[8rem]">
-        <!-- Konten ekstrakurikuler akan dirender di sini oleh JavaScript -->
+<!-- Ekstrakurikuler -->
+<section class="py-16 bg-white">
+  <div class="max-w-screen-xl mx-auto px-4 md:px-8 lg:px-12">
+    <h3 class="text-2xl font-bold text-center text-slate-800 mb-10">Ekstrakurikuler</h3>
+    <div id="page-ekskul-list" class="grid grid-cols-2 md:grid-cols-4 gap-6 min-h-[8rem]">
+      <!-- Konten ekstrakurikuler akan dirender di sini oleh JavaScript -->
+    </div>
+  </div>
+</section>
+
+<!-- Jadwal Harian -->
+<section class="py-16 bg-slate-50">
+  <div class="max-w-screen-xl mx-auto px-4 md:px-8 lg:px-12">
+    <h3 class="text-2xl font-bold text-center text-slate-800 mb-10">Jadwal Kegiatan Harian</h3>
+    <div class="max-w-3xl mx-auto bg-white rounded-2xl shadow-sm border border-slate-100 overflow-hidden">
+      <div id="page-schedule-list" class="divide-y divide-slate-100 min-h-[10rem]">
+        <!-- Konten jadwal akan dirender di sini oleh JavaScript -->
       </div>
     </div>
+  </div>
+</section>
 
-    <!-- Jadwal Harian -->
-    <div class="mb-20">
-      <h3 class="text-2xl font-bold text-center text-slate-800 mb-10">Jadwal Kegiatan Harian</h3>
-      <div class="max-w-3xl mx-auto bg-slate-50 rounded-2xl border border-slate-100 overflow-hidden">
-        <div id="page-schedule-list" class="divide-y divide-slate-200 min-h-[10rem]">
-          <!-- Konten jadwal akan dirender di sini oleh JavaScript -->
-        </div>
+<!-- Prestasi -->
+<section class="py-16 bg-slate-50">
+  <div class="max-w-screen-xl mx-auto px-4 md:px-8 lg:px-12">
+    <h3 class="text-2xl font-bold text-center text-slate-800 mb-10">Prestasi Siswa</h3>
+    <div class="relative group px-4 md:px-0">
+      <div id="prestasi-slider" class="flex overflow-x-auto snap-x snap-mandatory gap-6 pb-4 scrollbar-hide scroll-smooth">
+         <!-- Data Prestasi akan muncul di sini setelah diinput via Admin -->
       </div>
+
+      <!-- Navigation Buttons -->
+      <button id="prev-prestasi" class="absolute left-0 md:-left-4 top-1/2 -translate-y-1/2 w-10 h-10 md:w-12 md:h-12 bg-white/80 backdrop-blur text-primary rounded-full shadow-lg flex items-center justify-center hover:bg-primary hover:text-white transition opacity-0 group-hover:opacity-100 focus:opacity-100 z-10">
+        <i class="fa-solid fa-chevron-left"></i>
+      </button>
+      <button id="next-prestasi" class="absolute right-0 md:-right-4 top-1/2 -translate-y-1/2 w-10 h-10 md:w-12 md:h-12 bg-white/80 backdrop-blur text-primary rounded-full shadow-lg flex items-center justify-center hover:bg-primary hover:text-white transition opacity-0 group-hover:opacity-100 focus:opacity-100 z-10">
+        <i class="fa-solid fa-chevron-right"></i>
+      </button>
+
+      <!-- Slider Indicators (Bullets) -->
+      <div id="prestasi-indicators" class="flex justify-center gap-2 mt-6"></div>
     </div>
+  </div>
+</section>
 
-    <!-- Prestasi -->
-    <div class="mb-20">
-      <h3 class="text-2xl font-bold text-center text-slate-800 mb-10">Prestasi Siswa</h3>
-      
-      <div class="relative group px-4 md:px-0">
-        <div id="prestasi-slider" class="flex overflow-x-auto snap-x snap-mandatory gap-6 pb-4 scrollbar-hide scroll-smooth">
-           <!-- Data Prestasi akan muncul di sini setelah diinput via Admin -->
-        </div>
-
-        <!-- Navigation Buttons -->
-        <button id="prev-prestasi" class="absolute left-0 md:-left-4 top-1/2 -translate-y-1/2 w-10 h-10 md:w-12 md:h-12 bg-white/80 backdrop-blur text-primary rounded-full shadow-lg flex items-center justify-center hover:bg-primary hover:text-white transition opacity-0 group-hover:opacity-100 focus:opacity-100 z-10">
-          <i class="fa-solid fa-chevron-left"></i>
-        </button>
-        <button id="next-prestasi" class="absolute right-0 md:-right-4 top-1/2 -translate-y-1/2 w-10 h-10 md:w-12 md:h-12 bg-white/80 backdrop-blur text-primary rounded-full shadow-lg flex items-center justify-center hover:bg-primary hover:text-white transition opacity-0 group-hover:opacity-100 focus:opacity-100 z-10">
-          <i class="fa-solid fa-chevron-right"></i>
-        </button>
-
-        <!-- Slider Indicators (Bullets) -->
-        <div id="prestasi-indicators" class="flex justify-center gap-2 mt-6"></div>
+<!-- Biaya Pendidikan -->
+<section class="py-16 bg-white">
+  <div class="max-w-screen-xl mx-auto px-4 md:px-8 lg:px-12">
+    <h3 class="text-2xl font-bold text-center text-slate-800 mb-10">Estimasi Biaya Pendidikan</h3>
+    <div class="grid md:grid-cols-2 gap-8 max-w-4xl mx-auto">
+      <!-- Biaya Masuk -->
+      <div class="bg-slate-50 p-8 rounded-2xl border border-slate-100 hover:shadow-md transition">
+        <h4 class="font-bold text-xl text-primary mb-6 flex items-center gap-3">
+          <i class="fa-solid fa-money-bill-wave"></i> Biaya Awal Masuk
+        </h4>
+      <ul id="page-biaya-masuk" class="space-y-4 text-sm text-slate-600 min-h-[10rem]">
+          <!-- Konten biaya masuk akan dirender di sini oleh JavaScript -->
+        </ul>
       </div>
-    </div>
 
-    <!-- Biaya Pendidikan -->
-    <div>
-      <h3 class="text-2xl font-bold text-center text-slate-800 mb-10">Estimasi Biaya Pendidikan</h3>
-      <div class="grid md:grid-cols-2 gap-8 max-w-4xl mx-auto">
-        <!-- Biaya Masuk -->
-        <div class="bg-slate-50 p-8 rounded-2xl border border-slate-100 hover:shadow-md transition">
-          <h4 class="font-bold text-xl text-primary mb-6 flex items-center gap-3">
-            <i class="fa-solid fa-money-bill-wave"></i> Biaya Awal Masuk
-          </h4>
-        <ul id="page-biaya-masuk" class="space-y-4 text-sm text-slate-600 min-h-[10rem]">
-            <!-- Konten biaya masuk akan dirender di sini oleh JavaScript -->
-          </ul>
-        </div>
-
-        <!-- Biaya Bulanan -->
-        <div class="bg-slate-50 p-8 rounded-2xl border border-slate-100 hover:shadow-md transition">
-          <h4 class="font-bold text-xl text-primary mb-6 flex items-center gap-3">
-            <i class="fa-regular fa-calendar-check"></i> Biaya Bulanan (SPP)
-          </h4>
-        <ul id="page-biaya-bulanan" class="space-y-4 text-sm text-slate-600 min-h-[10rem]">
-            <!-- Konten biaya bulanan akan dirender di sini oleh JavaScript -->
-          </ul>
-          <p class="text-xs text-slate-500 mt-6 italic">* Biaya dapat berubah sewaktu-waktu. Hubungi admin untuk informasi terbaru.</p>
-        </div>
+      <!-- Biaya Bulanan -->
+      <div class="bg-slate-50 p-8 rounded-2xl border border-slate-100 hover:shadow-md transition">
+        <h4 class="font-bold text-xl text-primary mb-6 flex items-center gap-3">
+          <i class="fa-regular fa-calendar-check"></i> Biaya Bulanan (SPP)
+        </h4>
+      <ul id="page-biaya-bulanan" class="space-y-4 text-sm text-slate-600 min-h-[10rem]">
+          <!-- Konten biaya bulanan akan dirender di sini oleh JavaScript -->
+        </ul>
+        <p class="text-xs text-slate-500 mt-6 italic">* Biaya dapat berubah sewaktu-waktu. Hubungi admin untuk informasi terbaru.</p>
       </div>
     </div>
   </div>

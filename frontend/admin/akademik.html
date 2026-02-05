@@ -1,0 +1,264 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Admin Akademik - Al-Ittihadiyyah</title>
+  <link rel="icon" type="image/png" href="/favicon.png">
+
+  <!-- Tailwind CSS -->
+  <link href="/css/output.css" rel="stylesheet">
+
+  <!-- Google Font -->
+  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+  <!-- Font Awesome untuk Ikon -->
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+
+  <style>
+    body { font-family: 'Poppins', sans-serif; }
+    /* Fix list style in rich text editor */
+    #news-content-editor ul { list-style-type: disc; padding-left: 1.5rem; }
+    #news-content-editor ol { list-style-type: decimal; padding-left: 1.5rem; }
+
+    /* Override warna kolom ID pada tabel PPDB menjadi hitam */
+    #ppdb-tbody td:first-child { color: #000000 !important; }
+
+    /* Efek "Zoom Out" di Mobile */
+    @media (max-width: 767px) {
+      html {
+        font-size: 90%;
+      }
+    }
+  </style>
+</head>
+<body class="bg-slate-100 text-slate-800 font-poppins overflow-x-hidden">
+
+<!-- Mobile Overlay -->
+<div id="sidebar-overlay" onclick="toggleSidebar()" class="fixed inset-0 bg-black/50 z-40 hidden md:hidden transition-opacity"></div>
+
+<div class="flex min-h-screen">
+  
+  <!-- SIDEBAR CMS -->
+  <aside id="sidebar" class="w-64 bg-secondary text-white flex-shrink-0 flex flex-col transition-transform duration-300 fixed h-full z-50 transform -translate-x-full md:translate-x-0">
+    <div class="p-6 flex items-center gap-3 font-bold text-xl border-b border-white/10">
+      <img src="/favicon.png" alt="Logo" class="w-8 h-8 bg-white rounded p-0.5 shadow object-contain">
+      <span>Admin Panel</span>
+    </div>
+    
+    <nav class="flex-1 p-4 space-y-2 overflow-y-auto">
+      <p class="text-xs text-white/50 uppercase font-semibold mb-2 px-2 tracking-wider">Menu Utama</p>
+      
+      <a href="/admin/index.html" class="nav-item w-full flex items-center gap-3 px-4 py-3 text-white/80 hover:bg-white/10 rounded-xl transition-all text-left">
+        <i class="fa-solid fa-gauge w-5 text-center"></i> Dashboard
+      </a>
+      <a href="/admin/data-ppdb.html" class="nav-item w-full flex items-center gap-3 px-4 py-3 text-white/80 hover:bg-white/10 rounded-xl transition-all text-left">
+        <i class="fa-solid fa-users w-5 text-center"></i> Data PPDB
+      </a>
+      <a href="/admin/page-ppdb.html" class="nav-item w-full flex items-center gap-3 px-4 py-3 text-white/80 hover:bg-white/10 rounded-xl transition-all text-left">
+        <i class="fa-solid fa-pager w-5 text-center"></i> Halaman PPDB
+      </a>
+      <a href="/admin/berita.html" class="nav-item w-full flex items-center gap-3 px-4 py-3 text-white/80 hover:bg-white/10 rounded-xl transition-all text-left">
+        <i class="fa-solid fa-newspaper w-5 text-center"></i> Berita & Artikel
+      </a>
+      <a href="/admin/galeri.html" class="nav-item w-full flex items-center gap-3 px-4 py-3 text-white/80 hover:bg-white/10 rounded-xl transition-all text-left">
+        <i class="fa-solid fa-images w-5 text-center"></i> Galeri
+      </a>
+      <a href="/admin/guru.html" class="nav-item w-full flex items-center gap-3 px-4 py-3 text-white/80 hover:bg-white/10 rounded-xl transition-all text-left">
+        <i class="fa-solid fa-chalkboard-user w-5 text-center"></i> Guru & Staff
+      </a>
+      <div>
+        <button id="btn-pages-toggle" class="w-full flex items-center justify-between gap-3 px-4 py-3 text-white/80 hover:bg-white/10 rounded-xl transition-all text-left">
+            <span class="flex items-center gap-3">
+                <i class="fa-solid fa-file-lines w-5 text-center"></i> Akademik
+            </span>
+            <i id="pages-submenu-icon" class="fa-solid fa-chevron-down text-xs transition-transform rotate-180"></i>
+        </button>
+        <div id="pages-submenu" class="flex flex-col pl-8 pt-1 space-y-1">
+            <a id="btn-academic-tk" href="/admin/akademik.html?page=tk" class="w-full text-left text-white/70 hover:text-white text-sm py-2 px-2 rounded-lg hover:bg-white/5 transition">TK Islam</a>
+            <a id="btn-academic-mi" href="/admin/akademik.html?page=mi" class="w-full text-left text-white/70 hover:text-white text-sm py-2 px-2 rounded-lg hover:bg-white/5 transition">Madrasah Ibtidaiyah</a>
+        </div>
+      </div>
+      
+      <p class="text-xs text-white/50 uppercase font-semibold mt-6 mb-2 px-2 tracking-wider">Sistem</p>
+      <a href="/admin/pengaturan.html" class="nav-item w-full flex items-center gap-3 px-4 py-3 text-white/80 hover:bg-white/10 rounded-xl transition-all text-left">
+        <i class="fa-solid fa-gear w-5 text-center"></i> Pengaturan
+      </a>
+      <button id="btn-logout" class="w-full flex items-center gap-3 px-4 py-3 text-white/80 hover:bg-red-500/20 hover:text-red-200 rounded-xl transition-all mt-auto text-left" type="button">
+        <i class="fa-solid fa-arrow-right-from-bracket w-5 text-center"></i> Logout
+      </button>
+    </nav>
+  </aside>
+
+  <!-- MAIN CONTENT -->
+  <main class="flex-1 md:ml-64 flex flex-col min-h-screen min-w-0">
+    <!-- Topbar -->
+    <header class="bg-white shadow-sm px-4 md:px-8 py-4 flex justify-between items-center sticky top-0 z-30">
+      <div class="flex items-center gap-4">
+        <button onclick="toggleSidebar()" class="md:hidden text-slate-600 hover:text-primary text-xl" aria-label="Buka menu"><i class="fa-solid fa-bars"></i></button>
+        <h2 class="text-xl font-bold text-slate-700">Edit Halaman Akademik</h2>
+      </div>
+      <div class="flex items-center gap-4">
+        <div class="relative">
+          <button id="btn-notification" class="w-10 h-10 rounded-full hover:bg-slate-100 text-slate-500 transition relative">
+            <i class="fa-solid fa-bell"></i>
+            <span id="notification-badge" class="absolute top-2 right-2 w-2.5 h-2.5 bg-red-500 rounded-full border-2 border-white hidden"></span>
+          </button>
+          <!-- Notification Dropdown -->
+          <div id="notification-dropdown" class="fixed inset-0 md:absolute md:inset-auto md:top-12 md:right-0 md:w-80 hidden z-50 animate-[fade-in_0.2s]">
+            <!-- Wrapper for layout and appearance -->
+            <div class="w-full h-full bg-white flex flex-col md:rounded-xl md:shadow-xl md:border md:border-slate-100">
+              <!-- Header for Mobile and Desktop -->
+              <div class="p-4 border-b border-slate-100 flex justify-between items-center flex-shrink-0">
+                  <h4 class="font-bold text-slate-700">Notifikasi</h4>
+                  <div class="flex items-center gap-4">
+                      <span id="notif-count" class="text-xs bg-red-100 text-red-600 px-2 py-0.5 rounded-full font-bold">0 Baru</span>
+                      <!-- Close button for mobile -->
+                      <button onclick="document.getElementById('btn-notification').click()" class="md:hidden text-slate-500 hover:text-primary text-xl" aria-label="Tutup notifikasi">
+                          <i class="fa-solid fa-xmark"></i>
+                      </button>
+                  </div>
+              </div>
+              <!-- Notification List -->
+              <div id="notification-list" class="flex-1 overflow-y-auto divide-y divide-slate-50 md:flex-none md:max-h-80"><!-- Items rendered by JS --></div>
+            </div>
+          </div>
+        </div>
+        <div class="flex items-center gap-3 border-l pl-4">
+          <div class="text-right hidden sm:block">
+            <p id="user-name" class="text-sm font-bold text-slate-700 truncate max-w-[150px]">Administrator</p>
+            <p id="user-role" class="text-xs text-slate-500 truncate max-w-[150px]">email@example.com</p>
+          </div>
+          <div id="user-initial" class="w-10 h-10 rounded-full bg-primary text-white flex items-center justify-center font-bold shadow-md shrink-0">A</div>
+        </div>
+      </div>
+    </header>
+
+    <!-- Content Area -->
+      
+    <div class="p-4 md:p-8 overflow-y-auto flex-1">
+      <!-- VIEW: EDITOR AKADEMIK (TK/MI) -->
+      <div id="view-academic" class="view-section space-y-6">
+        <div class="flex flex-col md:flex-row justify-between md:items-center gap-4">
+          <h3 id="academic-title" class="text-2xl font-bold text-slate-700">Edit Halaman</h3>
+          <button onclick="saveAcademicPage()" class="w-full md:w-auto bg-primary text-white px-6 py-2 rounded-lg hover:bg-secondary transition shadow-lg shadow-primary/30">
+            Simpan Perubahan
+          </button>
+        </div>
+
+        <div class="bg-white p-8 rounded-2xl shadow-sm border border-slate-100">
+          <input type="hidden" id="academic-key">
+          
+          <div class="space-y-8">
+            <!-- Section 1 -->
+            <div class="space-y-4">
+                <h4 class="font-bold text-primary border-b pb-2 text-lg">1. Tampilan Utama</h4>
+                <div>
+                    <label for="academic-image-input" class="block text-sm font-medium text-slate-700 mb-2">Gambar Utama</label>
+                    <div id="academic-image-dropzone" class="border-2 border-dashed border-slate-300 rounded-xl p-6 text-center cursor-pointer hover:border-primary hover:bg-slate-50 transition">
+                        <div id="academic-image-preview-container" class="hidden relative group">
+                            <img id="academic-image-preview" src="" class="max-h-48 mx-auto rounded-lg mb-4 object-cover">
+                            <button onclick="removeAcademicHeroImage(event)" class="absolute top-2 right-2 bg-red-500 text-white w-8 h-8 rounded-full hover:bg-red-600 transition flex items-center justify-center shadow-md" title="Hapus Gambar">
+                                <i class="fa-solid fa-trash-can"></i>
+                            </button>
+                            <p class="text-xs text-slate-400">Klik untuk mengganti foto</p>
+                        </div>
+                        <div id="academic-upload-prompt">
+                            <i class="fa-solid fa-cloud-arrow-up text-4xl text-slate-400 mb-3"></i>
+                            <p class="text-slate-600">Seret & lepas gambar di sini, atau <span class="text-primary font-semibold">klik untuk memilih file</span>.</p>
+                            <p class="text-xs text-slate-400 mt-1">PNG, JPG, atau WebP. Max 200KB.</p>
+                        </div>
+                        <input type="file" id="academic-image-input" accept="image/*" class="hidden">
+                    </div>
+                </div>
+            </div>
+
+            <!-- Section 2 -->
+            <div class="grid md:grid-cols-2 gap-8">
+                <div class="space-y-4">
+                    <h4 class="font-bold text-primary border-b pb-2 text-lg">2. Jadwal & Kegiatan</h4>
+                    <div>
+                        <label for="academic-schedule" class="block text-sm font-medium text-slate-700 mb-1">Jadwal Harian (Format: Jam | Kegiatan)</label>
+                        <textarea id="academic-schedule" rows="6" class="w-full p-3 border border-slate-200 rounded-xl focus:outline-none focus:border-primary text-sm font-mono" placeholder="07:00 - 08:00 | Upacara"></textarea>
+                        <p class="text-xs text-slate-400 mt-1">Pisahkan jam dan kegiatan dengan tanda garis lurus (|).</p>
+                    </div>
+                    <div>
+                        <label for="academic-ekskul" class="block text-sm font-medium text-slate-700 mb-1">Daftar Ekstrakurikuler</label>
+                        <textarea id="academic-ekskul" rows="5" class="w-full p-3 border border-slate-200 rounded-xl focus:outline-none focus:border-primary text-sm font-mono"></textarea>
+                        <p class="text-xs text-slate-400 mt-1">Tulis satu nama ekskul per baris.</p>
+                    </div>
+                </div>
+
+                <!-- Section 3 -->
+                <div class="space-y-4">
+                    <h4 class="font-bold text-primary border-b pb-2 text-lg">3. Biaya Pendidikan</h4>
+                    
+                    <div>
+                        <label for="academic-biaya-masuk" class="block text-sm font-medium text-slate-700 mb-1">Rincian Biaya Masuk (Format: Item | Harga)</label>
+                        <textarea id="academic-biaya-masuk" rows="6" class="w-full p-3 border border-slate-200 rounded-xl focus:outline-none focus:border-primary text-sm font-mono" placeholder="Uang Pangkal | Rp 1.000.000"></textarea>
+                    </div>
+                    <div>
+                        <label for="academic-biaya-bulanan" class="block text-sm font-medium text-slate-700 mb-1">Rincian Biaya Bulanan (Format: Item | Harga)</label>
+                        <textarea id="academic-biaya-bulanan" rows="5" class="w-full p-3 border border-slate-200 rounded-xl focus:outline-none focus:border-primary text-sm font-mono" placeholder="Uang SPP | Rp 500.000"></textarea>
+                    </div>
+                </div>
+
+                <!-- Section 4 -->
+                <div class="space-y-4">
+                    <h4 class="font-bold text-primary border-b pb-2 text-lg">4. Prestasi Siswa</h4>
+                    <div>
+                        <p class="block text-sm font-medium text-slate-700 mb-3">Daftar Prestasi <span class="text-xs text-slate-500">(Klik "Tambah ke Daftar" setelah mengisi)</span></p>
+                        <!-- Container List -->
+                        <div id="achievement-list-container" class="space-y-3 mb-4"></div>
+                        
+                        <!-- Form Tambah -->
+                        <div class="bg-slate-50 p-4 rounded-xl border border-slate-200">
+                            <h5 class="font-bold text-slate-700 mb-3 text-sm"><i class="fa-solid fa-plus-circle mr-1"></i> Tambah Prestasi Baru</h5>
+                            <div class="grid grid-cols-1 md:grid-cols-2 gap-3 mb-3">
+                                <label for="ach-name" class="sr-only">Nama Siswa</label>
+                                <input type="text" id="ach-name" placeholder="Nama Siswa" class="p-2 border border-slate-200 rounded-lg text-sm focus:outline-none focus:border-primary">
+                                <label for="ach-title" class="sr-only">Judul Prestasi</label>
+                                <input type="text" id="ach-title" placeholder="Judul Prestasi" class="p-2 border border-slate-200 rounded-lg text-sm focus:outline-none focus:border-primary">
+                                <label for="ach-level" class="sr-only">Tingkat Prestasi</label>
+                                <input type="text" id="ach-level" placeholder="Tingkat (Misal: Kota 2024)" class="p-2 border border-slate-200 rounded-lg text-sm focus:outline-none focus:border-primary md:col-span-2">
+                            </div>
+                            
+                            <div class="mb-3">
+                                <label for="ach-image" class="block text-sm font-medium text-slate-700 mb-2 sr-only">Foto Dokumentasi Prestasi</label>
+                                <div id="ach-image-dropzone" class="border-2 border-dashed border-slate-300 rounded-xl p-4 text-center cursor-pointer hover:border-primary hover:bg-slate-50 transition bg-white">
+                                    <div id="ach-image-preview-container" class="hidden relative group">
+                                        <img id="ach-image-preview" src="" class="h-32 mx-auto rounded-lg mb-2 object-cover">
+                                        <p class="text-xs text-slate-400">Klik untuk mengganti foto</p>
+                                    </div>
+                                    <div id="ach-upload-prompt">
+                                        <i class="fa-solid fa-cloud-arrow-up text-2xl text-slate-400 mb-2"></i>
+                                        <p class="text-xs text-slate-600">Upload Foto Dokumentasi (Max 200KB)</p>
+                                    </div>
+                                    <input type="file" id="ach-image" accept="image/*" class="hidden">
+                                </div>
+                            </div>
+                            <button onclick="addAchievementItem()" class="w-full bg-white border border-primary text-primary hover:bg-primary hover:text-white px-4 py-2 rounded-lg text-sm transition font-medium">Tambah ke Daftar</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </main>
+</div>
+
+<!-- Placeholder untuk memuat modal -->
+<div id="modal-container"></div>
+
+<!-- CONFIG: URL Backend Laravel -->
+<script src="/js/config.js"></script>
+
+<!-- Pastikan auth.js dimuat sebelum data.js dan admin.js -->
+<script src="/js/utils.js"></script>
+<script src="/js/data.js"></script>
+<script src="/js/auth.js"></script>
+<script src="/js/admin.js"></script>
+<script src="/js/akademik.js"></script>
+</body>
+</html>
