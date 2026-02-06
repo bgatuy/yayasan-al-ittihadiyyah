@@ -84,6 +84,7 @@ Route::prefix('admin')->middleware('auth:sanctum')->group(function () {
     Route::get('/ppdb/{id}', [PpdbController::class, 'show']); // Detail untuk admin
     Route::post('/ppdb/{id}', [PpdbController::class, 'update']);
     Route::delete('/ppdb/{id}', [PpdbController::class, 'destroy']);
+    Route::get('/ppdb-academic-years', [PpdbController::class, 'getAcademicYears']);
 
     // MANAJEMEN HALAMAN PPDB
     Route::post('/ppdb-page', [PpdbPageController::class, 'store']);

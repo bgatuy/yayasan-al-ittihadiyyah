@@ -283,13 +283,14 @@ document.addEventListener('DOMContentLoaded', async () => {
                 statusText.textContent = 'LULUS SELEKSI';
                 statusText.className = 'text-xl font-bold text-green-700';
                 messageText.textContent = 'Selamat! Anda dinyatakan lulus seleksi. Silakan Unduh Surat Penerimaan untuk proses Daftar Ulang.';
-                
-                // Ambil tahun ajaran dari settings untuk PDF
-                const academicYear = settings.tahun_ajaran || '2025/2026';
 
+                // Ambil tahun ajaran dari hasil PPDB, jika tidak ada, fallback ke settings
+                // Ambil tahun ajaran dari settings untuk PDF
+                const academicYearForPdf = result.tahun_ajaran || settings.tahun_ajaran || '2025/2026';
+                
                 actionDiv.classList.remove('hidden');
                 // Perbarui tombol untuk menyertakan tahun ajaran
-                actionDiv.innerHTML = `<button onclick="downloadAcceptancePDF('${result.id}', '${result.nama_lengkap}', '${result.jenjang}', '${result.gelombang}', '${academicYear}')" class="block w-full bg-primary text-white text-center font-bold py-3 rounded-xl hover:bg-secondary transition shadow-lg shadow-primary/30"><i class="fa-solid fa-file-pdf mr-2"></i> Unduh Surat Penerimaan</button>`;
+                actionDiv.innerHTML = `<button onclick="downloadAcceptancePDF('${result.id}', '${result.nama_lengkap}', '${result.jenjang}', '${result.gelombang}', '${academicYearForPdf}')" class="block w-full bg-primary text-white text-center font-bold py-3 rounded-xl hover:bg-secondary transition shadow-lg shadow-primary/30"><i class="fa-solid fa-file-pdf mr-2"></i> Unduh Surat Penerimaan</button>`;
             } else if (result.status === 'Terverifikasi') { // STATUS: TERVERIFIKASI
                 header.classList.add('bg-green-50');
                 icon.classList.add('bg-green-100', 'text-green-600');
@@ -297,15 +298,16 @@ document.addEventListener('DOMContentLoaded', async () => {
                 statusText.textContent = 'PEMBAYARAN TERVERIFIKASI';
                 statusText.className = 'text-xl font-bold text-green-700';
                 messageText.textContent = 'Data Anda sedang dalam tahap seleksi. Silakan cek pengumuman hasil seleksi di menu "Cek Status Pendaftaran" secara berkala.';
-                
+
                 actionDiv.classList.remove('hidden');
                 // FIX: Evaluate the date expression within the template literal by wrapping it in ${...}
                 // and adding quotes so it's passed as a string in the onclick handler.
-                const dateString = new Date(result.created_at).toLocaleDateString('id-ID');
+                const dateString = new Date(result.created_at).toLocaleDateString('id-ID'); // Ini sudah benar
+                const academicYearForPdf = result.tahun_ajaran || settings.tahun_ajaran || '2025/2026';
                 // Tentukan biaya berdasarkan jenjang dari data settings yang sudah diambil
                 const fee = result.jenjang === 'TK' ? settings.ppdb_fee_tk : settings.ppdb_fee_mi;
                 const formattedFee = new Intl.NumberFormat('id-ID').format(fee || 0);
-                actionDiv.innerHTML = `<button onclick="downloadReceiptPDF('${result.id}', '${result.nama_lengkap}', '${result.jenjang}', '${formattedFee}', '${dateString}')" class="block w-full bg-primary text-white text-center font-bold py-3 rounded-xl hover:bg-secondary transition shadow-lg shadow-primary/30"><i class="fa-solid fa-file-pdf mr-2"></i> Unduh Bukti Pembayaran</button>`;
+                actionDiv.innerHTML = `<button onclick="downloadReceiptPDF('${result.id}', '${result.nama_lengkap}', '${result.jenjang}', '${formattedFee}', '${dateString}', '${academicYearForPdf}')" class="block w-full bg-primary text-white text-center font-bold py-3 rounded-xl hover:bg-secondary transition shadow-lg shadow-primary/30"><i class="fa-solid fa-file-pdf mr-2"></i> Unduh Bukti Pembayaran</button>`;
             } else if (result.status === 'Tidak Diterima') { // STATUS: TIDAK DITERIMA
                 header.classList.add('bg-red-50');
                 icon.classList.add('bg-red-100', 'text-red-600');
@@ -736,16 +738,14 @@ document.addEventListener('DOMContentLoaded', async () => {
       doc.save(`Bukti_Penerimaan_${id}.pdf`);
   };
 
-  window.downloadReceiptPDF = function(id, name, level, amount, date) {
+  window.downloadReceiptPDF = function(id, name, level, amount, date, academicYear) { // Tambahkan academicYear
       // Cek ketersediaan library jsPDF
       const jsPDF = window.jspdf ? window.jspdf.jsPDF : window.jsPDF;
       if (!jsPDF) {
           alert("Library jsPDF tidak ditemukan.");
           return;
       }
-
       const levelName = level === 'MI' ? 'Madrasah Ibtidaiyah' : 'TK Islam';
-      const academicYear = localStorage.getItem('ppdb_academic_year') || '2025/2026';
       
       const doc = new jsPDF('p', 'mm', 'a4');
 
@@ -777,6 +777,8 @@ document.addEventListener('DOMContentLoaded', async () => {
       doc.setFont('helvetica', 'bold');
       doc.setFontSize(12);
       doc.text('KUITANSI PEMBAYARAN', pageWidth / 2, y, { align: 'center' });
+      doc.setLineWidth(0.2);
+      doc.line((pageWidth/2) - 27, y + 1, (pageWidth/2) + 27, y + 1); // Underline judul
       y += 15;
 
       // ===== RINCIAN PEMBAYARAN =====

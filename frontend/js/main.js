@@ -204,7 +204,7 @@ document.addEventListener('DOMContentLoaded', async () => {
 document.addEventListener('DOMContentLoaded', async () => {
   const settings = window.DataStore ? await window.DataStore.getPpdbPageSettings() : {};
   const waNumber = settings.ppdb_contact_wa || '0812-3456-7890';
-  const academicYear = settings.tahun_ajaran || '2025/2026';
+  const academicYear = settings.tahun_ajaran || `${new Date().getFullYear()}/${new Date().getFullYear() + 1}`; // Tambahkan fallback dinamis
 
   // Update WhatsApp Link & Text
   let cleanWaNumber = waNumber.replace(/\D/g, ''); // Hapus tanda hubung

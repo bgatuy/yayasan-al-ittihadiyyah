@@ -6,41 +6,96 @@ document.addEventListener('DOMContentLoaded', () => {
   }
 
   let ppdbData = [];
-  let filteredData = []; // Akan diisi saat renderTable dipanggil atau filter
-  let currentPage = 1;
-  const itemsPerPage = 5;
+  let paginationMeta = {};
   let dashboardStats = {}; // Cache for dashboard stats
+  const itemsPerPage = 10; // Match backend and data.js default
 
   const tbody = document.getElementById('ppdb-tbody');
   const paginationInfo = document.getElementById('pagination-info');
   const paginationControls = document.getElementById('pagination-controls');
   const searchInput = document.getElementById('search-ppdb');
+  const yearDisplayEl = document.getElementById('current-academic-year');
 
-  // Expose fungsi refresh ke global agar bisa dipanggil switchView
-  window.refreshPpdbTable = async () => {
-    // 1. Fetch Data Terbaru
-    [ppdbData, dashboardStats] = await Promise.all([
-        window.DataStore.getPpdb(),
-        window.DataStore.getDashboardStats()
-    ]);
+  // State for current filters on the main PPDB page
+  let currentFilters = {
+    search: '',
+    jenjang: '',
+    status: '',
+    wave: ''
+  };
 
-    // 2. Reset filter ke data terbaru (pertahankan pencarian jika ada)
-    if (searchInput && searchInput.value) {
-        const term = searchInput.value.toLowerCase();
-        filteredData = ppdbData.filter(item => item.nama_lengkap.toLowerCase().includes(term));
-    } else {
-        filteredData = [...ppdbData];
+  // --- MAIN DATA FETCHING AND RENDERING LOGIC ---
+
+  // Fetches data for the active academic year with server-side pagination and filters
+  const fetchData = async (page = 1) => {
+    if (tbody) tbody.innerHTML = '<tr><td colspan="6" class="px-6 py-8 text-center text-slate-500">Memuat data...</td></tr>';
+    if (paginationInfo) paginationInfo.textContent = '';
+    if (paginationControls) paginationControls.innerHTML = '';
+
+    try {
+      // Call getPpdb with null for academicYear to let backend use the active one.
+      const response = await window.DataStore.getPpdb(
+        null,
+        currentFilters.search,
+        currentFilters.jenjang,
+        currentFilters.status,
+        currentFilters.wave,
+        page,
+        itemsPerPage
+      );
+
+      ppdbData = response.data;
+      paginationMeta = response;
+
+      renderTable();
+      renderPagination();
+    } catch (error) {
+      console.error("Gagal memuat data PPDB aktif:", error);
+      if (tbody) tbody.innerHTML = '<tr><td colspan="6" class="px-6 py-8 text-center text-red-500">Gagal memuat data pendaftar.</td></tr>';
+    }
+  };
+
+  // Fetches all necessary data for the dashboard and active PPDB page
+  const initializePage = async () => {
+    // Make API calls more resilient by separating them.
+    // If one fails, the others can still proceed.
+    let ppdbPageSettings = {};
+    try {
+      ppdbPageSettings = await window.DataStore.getPpdbPageSettings();
+    } catch (error) {
+      console.error("Gagal memuat pengaturan halaman PPDB:", error);
     }
 
+    try {
+      dashboardStats = await window.DataStore.getDashboardStats();
+    } catch (error) {
+      console.error("Gagal memuat statistik dashboard:", error);
+      // You can display an error on the dashboard stats widgets if you want
+    }
+
+    // Set the active academic year display
+    if (yearDisplayEl) {
+      yearDisplayEl.textContent = ppdbPageSettings.tahun_ajaran || 'Tidak Diatur';
+    }
+
+    // Fetch the first page of data for the active year
+    await fetchData(1);
+
     // 3. Render Semua Komponen
-    renderTable();
     renderDashboardTable();
     updateDashboardStats();
     updateNotifications(); // Pastikan notifikasi diperbarui setelah data dimuat
   };
 
   // Load awal
-  window.refreshPpdbTable();
+  initializePage();
+
+  // Expose a refresh function to the global scope for external calls (e.g., after deletion)
+  window.refreshPpdbTable = () => {
+    // Re-initialize the page to fetch fresh data for the table, dashboard stats, and notifications.
+    // This is more comprehensive than just fetching table data.
+    initializePage();
+  };
 
   // Listener untuk update Real-time dari tab lain (Notifikasi masuk tanpa refresh)
   window.addEventListener('storage', (e) => {
@@ -57,6 +112,11 @@ document.addEventListener('DOMContentLoaded', () => {
       document.getElementById('detail-name').textContent = data.nama_lengkap;
       document.getElementById('detail-id').textContent = data.id;
       document.getElementById('detail-level').textContent = data.jenjang === 'MI' ? 'Madrasah Ibtidaiyah' : 'Taman Kanak-Kanak';
+      // [FIX] Add a guard clause to prevent error if the element doesn't exist yet.
+      const academicYearEl = document.getElementById('detail-academic-year');
+      if (academicYearEl) {
+        academicYearEl.textContent = data.tahun_ajaran || 'N/A'; // Display academic year
+      }
       document.getElementById('detail-nickname').textContent = data.nama_panggilan || '-';
       
       const tglLahir = data.tanggal_lahir ? new Date(data.tanggal_lahir).toLocaleDateString('id-ID', { day: 'numeric', month: 'long', year: 'numeric' }) : '';
@@ -107,7 +167,7 @@ document.addEventListener('DOMContentLoaded', () => {
     if (!filterWave) return;
     
     const currentWave = localStorage.getItem('ppdb_wave_name') || 'Gelombang 1';
-    const dataWaves = [...new Set(ppdbData.map(item => item.wave))];
+    const dataWaves = [...new Set(ppdbData.map(item => item.gelombang))]; // Use 'gelombang' from data
     const allWaves = [...new Set([...dataWaves, currentWave])].sort();
 
     filterWave.innerHTML = '<option value="">Semua Gelombang</option>';
@@ -122,20 +182,15 @@ document.addEventListener('DOMContentLoaded', () => {
   function renderTable() {
     if (!tbody) return;
     tbody.innerHTML = '';
-    if (filteredData.length === 0 && !document.getElementById('search-ppdb').value) filteredData = [...ppdbData];
 
-    const start = (currentPage - 1) * itemsPerPage;
-    const end = start + itemsPerPage;
-    const paginatedItems = filteredData.slice(start, end);
-
-    if (paginatedItems.length === 0) {
-      tbody.innerHTML = '<tr><td colspan="6" class="px-6 py-8 text-center text-slate-500">Tidak ada data ditemukan</td></tr>';
+    if (ppdbData.length === 0) {
+      tbody.innerHTML = '<tr><td colspan="6" class="px-6 py-8 text-center text-slate-500">Tidak ada data yang cocok dengan filter Anda.</td></tr>';
       paginationInfo.textContent = 'Menampilkan 0 data';
       paginationControls.innerHTML = '';
       return;
     }
 
-    paginatedItems.forEach(item => {
+    ppdbData.forEach(item => {
       let statusClass = '';
       if (item.status === 'Diterima') statusClass = 'bg-green-100 text-green-800';
       else if (item.status === 'Terverifikasi') statusClass = 'bg-green-100 text-green-800';
@@ -161,8 +216,7 @@ document.addEventListener('DOMContentLoaded', () => {
     });
 
     // Update Info
-    paginationInfo.textContent = `Menampilkan ${start + 1} - ${Math.min(end, filteredData.length)} dari ${filteredData.length} data`;
-    renderPagination();
+    paginationInfo.textContent = `Menampilkan ${paginationMeta.from || 0} - ${paginationMeta.to || 0} dari ${paginationMeta.total || 0} data`;
   }
 
   function renderDashboardTable() {
@@ -171,7 +225,7 @@ document.addEventListener('DOMContentLoaded', () => {
     tbody.innerHTML = '';
 
     // Ambil 5 data terbaru dari endpoint dashboard
-    const recentItems = dashboardStats.pendaftar_terbaru || [];
+    const recentItems = (dashboardStats && dashboardStats.pendaftar_terbaru) ? dashboardStats.pendaftar_terbaru.slice(0, 5) : [];
 
     recentItems.forEach(item => {
       let statusClass = '';
@@ -225,7 +279,8 @@ document.addEventListener('DOMContentLoaded', () => {
     if (!paginationControls) return;
     paginationControls.innerHTML = '';
     
-    const totalPages = Math.ceil(filteredData.length / itemsPerPage);
+    const totalPages = paginationMeta.last_page || 1;
+    const currentPage = paginationMeta.current_page || 1;
     
     // Helper untuk membuat tombol
     const createBtn = (html, onClick, disabled = false, active = false) => {
@@ -239,28 +294,26 @@ document.addEventListener('DOMContentLoaded', () => {
 
     // Prev Button
     paginationControls.appendChild(createBtn('<i class="fa-solid fa-chevron-left"></i>', () => {
-      if (currentPage > 1) { currentPage--; renderTable(); }
+      if (currentPage > 1) { fetchData(currentPage - 1); }
     }, currentPage === 1));
 
     // Page Numbers
     for (let i = 1; i <= totalPages; i++) {
       paginationControls.appendChild(createBtn(i, () => {
-        currentPage = i; renderTable();
+        fetchData(i);
       }, false, currentPage === i));
     }
 
     // Next Button
     paginationControls.appendChild(createBtn('<i class="fa-solid fa-chevron-right"></i>', () => {
-      if (currentPage < totalPages) { currentPage++; renderTable(); }
+      if (currentPage < totalPages) { fetchData(currentPage + 1); }
     }, currentPage === totalPages));
   }
 
   if (searchInput) {
     searchInput.addEventListener('keyup', (e) => {
-      const term = e.target.value.toLowerCase();
-      filteredData = ppdbData.filter(item => item.nama_lengkap.toLowerCase().includes(term));
-      currentPage = 1;
-      renderTable();
+      currentFilters.search = e.target.value;
+      fetchData(1); // Fetch from server with new search term
     });
   }
 
@@ -290,27 +343,30 @@ document.addEventListener('DOMContentLoaded', () => {
   // 5. Fitur Filter & Export
   const btnFilter = document.getElementById('btn-filter');
   const btnExport = document.getElementById('btn-export');
-  const btnApplyFilter = document.getElementById('btn-apply-filter');
 
-  if (btnFilter) {
-    btnFilter.addEventListener('click', () => window.utils.toggleModal('modal-filter'));
+  // This function is now needed here as well.
+  function populateWaveFilter() {
+    const filterWave = document.getElementById('filter-wave');
+    if (!filterWave) return;
+    
+    // For simplicity, we can hardcode waves or fetch them from a dedicated endpoint.
+    const allWaves = ['Gelombang 1', 'Gelombang 2', 'Gelombang 3'];
+    filterWave.innerHTML = '<option value="">Pilih Gelombang</option>';
+    allWaves.forEach(wave => {
+      const option = document.createElement('option');
+      option.value = wave;
+      option.textContent = wave;
+      filterWave.appendChild(option);
+    });
   }
 
-  if (btnApplyFilter) {
-    btnApplyFilter.addEventListener('click', () => {
-      const jenjang = document.getElementById('filter-jenjang').value;
-      const status = document.getElementById('filter-status').value;
-      const wave = document.getElementById('filter-wave').value;
-      
-      filteredData = ppdbData.filter(item => {
-        const matchJenjang = jenjang === '' || item.level === jenjang;
-        const matchStatus = status === '' || item.status === status;
-        const matchWave = wave === '' || item.wave === wave;
-        return matchJenjang && matchStatus && matchWave;
-      });
-      
-      currentPage = 1;
-      renderTable();
+  if (btnFilter) {
+    btnFilter.addEventListener('click', () => {
+      populateWaveFilter();
+      // Set dropdown values to match current filters before showing modal
+      document.getElementById('filter-jenjang').value = currentFilters.jenjang;
+      document.getElementById('filter-status').value = currentFilters.status;
+      document.getElementById('filter-wave').value = currentFilters.wave;
       window.utils.toggleModal('modal-filter');
     });
   }
@@ -320,10 +376,10 @@ document.addEventListener('DOMContentLoaded', () => {
       // Define headers
       const headers = ['ID', 'Nama Siswa', 'Gender', 'Jenjang', 'Orang Tua', 'No. HP', 'Email', 'Asal Sekolah', 'Status'];
       
-      // Map data to CSV format
+      // Map data to CSV format (filteredData is already for the current academic year)
       const csvContent = [
-        headers.join(','), // Headers: ['ID', 'Nama Siswa', 'Gender', 'Jenjang', 'Orang Tua', 'No. HP', 'Email', 'Asal Sekolah', 'Status']
-        ...filteredData.map(item => {
+        headers.join(','),
+        ...ppdbData.map(item => {
           return [
             item.id,
             `"${item.nama_lengkap}"`,
@@ -334,52 +390,20 @@ document.addEventListener('DOMContentLoaded', () => {
             item.email,
             `"${item.asal_sekolah}"`,
             item.status
-          ].join(',');
+          ].map(field => `"${String(field).replace(/"/g, '""')}"`).join(','); // Handle commas and quotes in data
         })
       ].join('\n');
 
       // Create blob and download
       const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
       const link = document.createElement('a');
-      const url = URL.createObjectURL(blob);
+      const url = URL.createObjectURL(blob); // Use currentAcademicYear in filename
       link.setAttribute('href', url);
-      link.setAttribute('download', 'data_ppdb_export.csv');
+      link.setAttribute('download', `data_ppdb_aktif.csv`);
       link.style.visibility = 'hidden';
       document.body.appendChild(link);
       link.click();
       document.body.removeChild(link);
-    });
-  }
-
-  // 6. Fitur Simpan Status (Dari Modal Detail)
-  const btnSaveStatus = document.getElementById('btn-save-status');
-  if (btnSaveStatus) {
-    btnSaveStatus.addEventListener('click', async () => {
-      const id = btnSaveStatus.dataset.id;
-      const newStatus = document.getElementById('detail-status-select').value;
-      
-      const itemIndex = ppdbData.findIndex(item => item.id === id);
-      if (itemIndex !== -1) {
-        // Update via DataStore
-        const formData = new FormData();
-        formData.append('status', newStatus);
-
-        await window.DataStore.updatePpdb(id, formData);
-        
-        // Update local state for immediate UI refresh
-        ppdbData[itemIndex].status = newStatus;
-        filteredData = [...ppdbData]; // Reset filter to show all with new status
-
-        renderTable(); // Re-render tabel untuk melihat perubahan
-        renderDashboardTable(); // Update juga tabel dashboard
-        updateDashboardStats(); // Update statistik dashboard
-        updateNotifications(); // Update notifikasi karena status berubah
-        window.utils.toggleModal('modal-detail');
-        
-        document.getElementById('success-title').textContent = 'Status Diperbarui!';
-        document.getElementById('success-message').textContent = `Status siswa ${ppdbData[itemIndex].nama_lengkap} berhasil diubah menjadi ${newStatus}.`;
-        window.utils.toggleModal('modal-success');
-      }
     });
   }
 
@@ -489,4 +513,51 @@ document.addEventListener('DOMContentLoaded', () => {
     // Initial Load
     updateNotifications();
   }
+
+  // Wait for modals to be loaded before attaching listeners to modal elements
+  document.addEventListener('modalsReady', () => {
+    // Fitur Simpan Status (Dari Modal Detail)
+    const btnSaveStatus = document.getElementById('btn-save-status');
+    if (btnSaveStatus) {
+      btnSaveStatus.addEventListener('click', async () => {
+        const id = btnSaveStatus.dataset.id;
+        const newStatus = document.getElementById('detail-status-select').value;
+        
+        if (!id) return;
+
+        try {
+          const formData = new FormData();
+          formData.append('status', newStatus);
+
+          await window.DataStore.updatePpdb(id, formData);
+          
+          // Re-fetch all data to ensure UI is consistent
+          await initializePage();
+          
+          window.utils.toggleModal('modal-detail');
+          document.getElementById('success-title').textContent = 'Status Diperbarui!';
+          document.getElementById('success-message').textContent = `Status pendaftar berhasil diubah menjadi ${newStatus}.`;
+          window.utils.toggleModal('modal-success');
+        } catch (error) {
+          console.error("Gagal memperbarui status:", error);
+          alert(`Gagal memperbarui status: ${error.message}`);
+        }
+      });
+    }
+
+    // Fitur Apply Filter
+    const btnApplyFilter = document.getElementById('btn-apply-filter');
+    if (btnApplyFilter) {
+      btnApplyFilter.addEventListener('click', () => {
+        // Check if we are on the correct view to avoid conflicts
+        if (document.getElementById('view-ppdb')) {
+          currentFilters.jenjang = document.getElementById('filter-jenjang').value;
+          currentFilters.status = document.getElementById('filter-status').value;
+          currentFilters.wave = document.getElementById('filter-wave').value;
+          fetchData(1);
+          window.utils.toggleModal('modal-filter');
+        }
+      });
+    }
+  });
 });

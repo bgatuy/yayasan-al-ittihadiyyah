@@ -22,6 +22,7 @@ use Carbon\Carbon;
  * @property string $alamat
  * @property string $gelombang
  * @property string $status
+ * @property ?string $tahun_ajaran
  * @property ?string $bukti_bayar
  * @property ?\Illuminate\Support\Carbon $created_at
  * @property ?\Illuminate\Support\Carbon $updated_at
@@ -53,6 +54,7 @@ class Ppdb extends Model
         'alamat',
         'gelombang',
         'status',
+        'tahun_ajaran',
         'bukti_bayar',
     ];
 

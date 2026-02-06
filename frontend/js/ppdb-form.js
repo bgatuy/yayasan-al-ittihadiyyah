@@ -99,6 +99,9 @@ document.addEventListener('DOMContentLoaded', async () => {
       formData.append('asal_sekolah', schoolValue);
       // Menggunakan settings yang sudah diambil di atas
       formData.append('gelombang', settings.nama_gelombang || 'Gelombang 1');
+      // [FIX] Tambahkan tahun ajaran ke form data untuk mengatasi error validasi
+      const academicYear = settings.tahun_ajaran || `${new Date().getFullYear()}/${new Date().getFullYear() + 1}`;
+      formData.append('tahun_ajaran', academicYear);
 
       // Simpan via DataStore
       const response = await window.DataStore.registerPpdb(formData);

@@ -109,15 +109,66 @@
     getDashboardStats: () => apiRequest('/admin/dashboard'),
     
     // Admin PPDB
-    getPpdb: () => apiRequest('/admin/ppdb'),
-    getPpdbDetail: (id) => apiRequest(`/admin/ppdb/${id}`),
-    updatePpdb: (id, formData) => {
+    // Modified to accept academicYear and other filters for flexibility
+    // Backend should handle defaulting to current active year if academicYear is null
+    getPpdb: (academicYear = null, search = '', jenjang = '', status = '', wave = '', page = 1, itemsPerPage = 5) => { 
+      let endpoint = '/admin/ppdb';
+      const params = new URLSearchParams();
+
+      // If academicYear is not explicitly provided, and we are in an admin context,
+      // we might want to fetch the current active year from settings.
+      // However, it's cleaner to let the backend handle the default for /admin/ppdb
+      // and explicitly pass academicYear for archive pages.
+      // So, for this frontend DataStore, we just pass what's given.
+      // The backend logic for /admin/ppdb should be:
+      // - If tahun_ajaran param is present, filter by it.
+      // - If tahun_ajaran param is NOT present, filter by the system's current_active_academic_year.
+      // This makes getPpdb versatile for both active and archive views.
+
+      // For the purpose of this diff, I'm assuming the backend will handle the default
+      // if academicYear is null. If the backend requires it, you'd fetch settings here
+      // and set academicYear if it's null.
+      // Example:
+      // if (!academicYear && window.location.pathname.includes('/admin/data-ppdb.html')) {
+      //    const settings = await window.DataStore.getPpdbPageSettings();
+      //    academicYear = settings.tahun_ajaran_aktif;
+      // }
+
+      if (academicYear) params.append('tahun_ajaran', academicYear);
+      if (search) params.append('search', search);
+      if (jenjang) params.append('jenjang', jenjang);
+      if (status) params.append('status', status);
+      if (wave) params.append('gelombang', wave);
+      params.append('page', page);
+      params.append('per_page', itemsPerPage); // Assuming backend supports pagination parameters
+
+      if (params.toString()) {
+          endpoint += `?${params.toString()}`;
+      }
+      return apiRequest(endpoint);
+    },
+    getPpdbDetail: (id, academicYear = null) => { // Modified to accept academicYear
+      let endpoint = `/admin/ppdb/${id}`;
+      if (academicYear) endpoint += `?tahun_ajaran=${academicYear}`;
+      return apiRequest(endpoint);
+    },
+    // Modified to accept academicYear for targeted updates if needed by backend
+    updatePpdb: (id, formData, academicYear = null) => { 
       // Backend route didefinisikan sebagai POST, jadi kita harus menghapus _method=PUT jika ada
       if (formData instanceof FormData && formData.has('_method')) {
         formData.delete('_method');
       }
       return apiRequest(`/admin/ppdb/${id}`, 'POST', formData, true);
     },
+    getAcademicYears: () => apiRequest('/admin/ppdb-academic-years'), // New endpoint to get all available academic years
+    getPpdbPageSettings: () => apiRequest('/ppdb-page'), // Ensure this is accessible for admin
+    // If you need a separate endpoint for deleting archived PPDB, you'd add it here.
+    // For now, assuming deletePpdb can handle academicYear if passed, or ID is unique enough.
+    // deletePpdb: (id, academicYear = null) => {
+    //   let endpoint = `/admin/ppdb/${id}`;
+    //   if (academicYear) endpoint += `?tahun_ajaran=${academicYear}`;
+    //   return apiRequest(endpoint, 'DELETE');
+    // },
     deletePpdb: (id) => apiRequest(`/admin/ppdb/${id}`, 'DELETE'),
 
     // Admin News

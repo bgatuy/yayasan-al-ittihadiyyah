@@ -3,44 +3,60 @@
 namespace App\Http\Controllers;
 
 use App\Models\Ppdb;
+use App\Models\PpdbPage;
+use Illuminate\Http\Request;
 
 class DashboardController extends Controller
 {
+    /**
+     * Menghasilkan statistik untuk halaman dashboard admin.
+     * Semua data difilter berdasarkan tahun ajaran aktif.
+     */
     public function index()
     {
-        // Mengambil semua statistik dalam satu query untuk efisiensi (Conditional Aggregation)
-        $stats = Ppdb::selectRaw("count(*) as total")
-            ->selectRaw("count(case when jenjang = 'TK' then 1 end) as total_tk")
-            ->selectRaw("count(case when jenjang = 'MI' then 1 end) as total_mi")
-            ->selectRaw("count(case when status = 'Diterima' then 1 end) as diterima")
-            ->selectRaw("count(case when status IN ('Menunggu Pembayaran', 'Menunggu Verifikasi', 'Terverifikasi') then 1 end) as pending")
-            ->first();
+        // 1. Ambil tahun ajaran yang aktif dari pengaturan halaman PPDB.
+        $activeYear = PpdbPage::first()->tahun_ajaran ?? null;
 
-        // hitung persentase (hindari bagi 0)
-        $persenDiterima = $stats->total > 0 ? round(($stats->diterima / $stats->total) * 100) : 0;
-        $persenPending  = $stats->total > 0 ? round(($stats->pending / $stats->total) * 100) : 0;
+        // 2. Siapkan struktur data default.
+        $stats = [
+            'total_pendaftar' => 0,
+            'pendaftar_tk' => 0,
+            'pendaftar_mi' => 0,
+        ];
+        $statusPenerimaan = [
+            'diterima' => 0,
+            'menunggu' => 0,
+        ];
+        $pendaftarTerbaru = [];
 
-        // pendaftar terbaru (5)
-        // [REVERT] Mengembalikan data lengkap untuk 5 pendaftar terbaru.
-        // Panel admin membutuhkan ini untuk menampilkan modal detail.
-        $terbaru = Ppdb::latest()
-            ->limit(5)
-            ->get();
+        // 3. Hanya hitung statistik jika ada tahun ajaran yang aktif.
+        if ($activeYear) {
+            // Buat query dasar yang sudah difilter berdasarkan tahun ajaran aktif.
+            $baseQuery = Ppdb::where('tahun_ajaran', $activeYear);
 
+            // Hitung statistik utama
+            $stats['total_pendaftar'] = (clone $baseQuery)->count();
+            $stats['pendaftar_tk'] = (clone $baseQuery)->where('jenjang', 'TK')->count();
+            $stats['pendaftar_mi'] = (clone $baseQuery)->where('jenjang', 'MI')->count();
+
+            // Hitung persentase status penerimaan
+            if ($stats['total_pendaftar'] > 0) {
+                $diterimaCount = (clone $baseQuery)->where('status', 'Diterima')->count();
+                $menungguCount = (clone $baseQuery)->whereIn('status', ['Menunggu Pembayaran', 'Menunggu Verifikasi'])->count();
+                
+                $statusPenerimaan['diterima'] = round(($diterimaCount / $stats['total_pendaftar']) * 100);
+                $statusPenerimaan['menunggu'] = round(($menungguCount / $stats['total_pendaftar']) * 100);
+            }
+
+            // Ambil 5 pendaftar terbaru dari tahun ajaran aktif
+            $pendaftarTerbaru = (clone $baseQuery)->latest()->take(5)->get();
+        }
+
+        // 4. Kembalikan data dalam format JSON yang konsisten.
         return response()->json([
-            'statistik' => [
-                'total_pendaftar' => $stats->total,
-                'pendaftar_tk'    => $stats->total_tk,
-                'pendaftar_mi'    => $stats->total_mi,
-            ],
-            'status_penerimaan' => [
-                'diterima' => $persenDiterima,
-                'menunggu' => $persenPending,
-            ],
-            'pendaftar_terbaru' => $terbaru
-        ])
-        ->header('Cache-Control', 'no-cache, no-store, must-revalidate')
-        ->header('Pragma', 'no-cache')
-        ->header('Expires', '0');
+            'statistik' => $stats,
+            'status_penerimaan' => $statusPenerimaan,
+            'pendaftar_terbaru' => $pendaftarTerbaru,
+        ]);
     }
 }

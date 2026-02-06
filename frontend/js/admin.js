@@ -13,6 +13,11 @@ function switchView(viewId) {
     window.refreshPpdbTable();
   }
 
+  // Auto refresh data saat membuka menu PPDB Arsip
+  if (viewId === 'ppdb-arsip' && typeof window.refreshPpdbArchiveTable === 'function') {
+    window.refreshPpdbArchiveTable();
+  }
+
   // Muat data saat membuka menu Kelola Halaman PPDB
   if (viewId === 'ppdb-page') {
     loadPpdbPageSettings();
@@ -90,7 +95,21 @@ function loadModals() {
                     readNotifs = readNotifs.filter(id => id !== itemToDelete.id);
                     localStorage.setItem('read_notifications', JSON.stringify(readNotifs));
                 }
-                if (typeof window.refreshPpdbTable === 'function') window.refreshPpdbTable();
+
+                // Cek view mana yang sedang aktif dan panggil fungsi refresh yang sesuai.
+                const ppdbArsipView = document.getElementById('view-ppdb-arsip');
+
+                if (ppdbArsipView && !ppdbArsipView.classList.contains('hidden')) {
+                  // Jika di halaman arsip, panggil refresh untuk arsip.
+                  if (typeof window.refreshPpdbArchiveTable === 'function') {
+                    window.refreshPpdbArchiveTable();
+                  }
+                } else {
+                  // Jika tidak, asumsikan di halaman PPDB aktif atau dashboard, yang keduanya perlu refresh data aktif.
+                  if (typeof window.refreshPpdbTable === 'function') {
+                    window.refreshPpdbTable();
+                  }
+                }
                 break;
               case 'news':
                 await window.DataStore.deleteNews(itemToDelete.id);
@@ -166,21 +185,6 @@ document.addEventListener('DOMContentLoaded', () => {
       window.history.replaceState(null, '', newPath + window.location.search + window.location.hash);
   }
   
-  // --- EVENT LISTENERS FOR DYNAMIC UI (Best Practice) ---
-  // 1. Sidebar Navigation (menggantikan onclick di HTML)
-  document.querySelectorAll('.nav-item').forEach(button => {
-    button.addEventListener('click', () => {
-      const viewName = button.dataset.view;
-      if (viewName) {
-        // Khusus untuk tombol submenu, jangan ganti view utama
-        if (button.closest('#pages-submenu')) {
-            return;
-        }
-        switchView(viewName);
-      }
-    });
-  });
-
   // Submenu for "Halaman"
   const pagesToggleBtn = document.getElementById('btn-pages-toggle');
   const pagesSubmenu = document.getElementById('pages-submenu');

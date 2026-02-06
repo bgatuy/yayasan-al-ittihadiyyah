@@ -51,10 +51,10 @@
       <a href="/admin/index.html" class="nav-item w-full flex items-center gap-3 px-4 py-3 bg-primary rounded-xl text-white shadow-lg shadow-primary/50 transition-all text-left">
         <i class="fa-solid fa-gauge w-5 text-center"></i> Dashboard
       </a>
-      <a href="/admin/data-ppdb.html" class="nav-item w-full flex items-center gap-3 px-4 py-3 text-white/80 hover:bg-white/10 rounded-xl transition-all text-left">
+      <a href="/admin/data-ppdb.html" data-view="ppdb" class="nav-item w-full flex items-center gap-3 px-4 py-3 text-white/80 hover:bg-white/10 rounded-xl transition-all text-left">
         <i class="fa-solid fa-users w-5 text-center"></i> Data PPDB
       </a>
-      <a href="/admin/page-ppdb.html" class="nav-item w-full flex items-center gap-3 px-4 py-3 text-white/80 hover:bg-white/10 rounded-xl transition-all text-left">
+      <a href="/admin/page-ppdb.html" data-view="page-ppdb" class="nav-item w-full flex items-center gap-3 px-4 py-3 text-white/80 hover:bg-white/10 rounded-xl transition-all text-left">
         <i class="fa-solid fa-pager w-5 text-center"></i> Halaman PPDB
       </a>
       <a href="/admin/berita.html" class="nav-item w-full flex items-center gap-3 px-4 py-3 text-white/80 hover:bg-white/10 rounded-xl transition-all text-left">
@@ -80,6 +80,9 @@
       </div>
       
       <p class="text-xs text-white/50 uppercase font-semibold mt-6 mb-2 px-2 tracking-wider">Sistem</p>
+      <a href="/admin/data-ppdb-arsip.html" data-view="ppdb-arsip" class="nav-item w-full flex items-center gap-3 px-4 py-3 text-white/80 hover:bg-white/10 rounded-xl transition-all text-left">
+        <i class="fa-solid fa-box-archive w-5 text-center"></i> Data PPDB Arsip
+      </a>
       <a href="/admin/pengaturan.html" class="nav-item w-full flex items-center gap-3 px-4 py-3 text-white/80 hover:bg-white/10 rounded-xl transition-all text-left">
         <i class="fa-solid fa-gear w-5 text-center"></i> Pengaturan
       </a>
@@ -227,14 +230,14 @@
           <div class="bg-white p-6 rounded-2xl shadow-sm border border-slate-100">
             <h3 class="font-bold text-lg text-slate-700 mb-4">Aksi Cepat</h3>
             <div class="grid grid-cols-2 gap-3">
-              <button onclick="switchView('news'); setTimeout(() => document.getElementById('btn-add-news').click(), 100)" class="p-3 rounded-xl border border-slate-100 hover:bg-slate-50 hover:border-primary/30 hover:text-primary transition text-center flex flex-col items-center gap-2">
+              <a href="/admin/berita.html?action=add" class="p-3 rounded-xl border border-slate-100 hover:bg-slate-50 hover:border-primary/30 hover:text-primary transition text-center flex flex-col items-center gap-2">
                 <i class="fa-solid fa-pen-nib text-xl"></i>
                 <span class="text-xs font-medium">Tulis Berita</span>
-              </button>
-              <button onclick="switchView('ppdb')" class="p-3 rounded-xl border border-slate-100 hover:bg-slate-50 hover:border-primary/30 hover:text-primary transition text-center flex flex-col items-center gap-2">
+              </a>
+              <a href="/admin/data-ppdb.html" class="p-3 rounded-xl border border-slate-100 hover:bg-slate-50 hover:border-primary/30 hover:text-primary transition text-center flex flex-col items-center gap-2">
                 <i class="fa-solid fa-users text-xl"></i>
                 <span class="text-xs font-medium">Cek PPDB</span>
-              </button>
+              </a>
             </div>
           </div>
         </div>
