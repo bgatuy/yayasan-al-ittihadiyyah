@@ -27,7 +27,7 @@ class GaleriController extends Controller
         // Upload gambar
         if ($request->hasFile('gambar')) {
             // Simpan ke folder 'public/galeri'
-            $path = $request->file('gambar')->store('galeri', 'public');
+            $path = $request->file('gambar')->store('galeri', 'public_direct');
 
             $galeri = Galeri::create([
                 'judul'  => $request->judul,
@@ -52,8 +52,8 @@ class GaleriController extends Controller
         }
 
         // Hapus file fisik dari storage
-        if ($galeri->gambar && Storage::disk('public')->exists($galeri->gambar)) {
-            Storage::disk('public')->delete($galeri->gambar);
+        if ($galeri->gambar && Storage::disk('public_direct')->exists($galeri->gambar)) {
+            Storage::disk('public_direct')->delete($galeri->gambar);
         }
 
         // Hapus record database
@@ -62,3 +62,4 @@ class GaleriController extends Controller
         return response()->json(['message' => 'Gambar berhasil dihapus']);
     }
 }
+

@@ -32,7 +32,7 @@ class GuruStaffController extends Controller
 
         if ($request->hasFile('image')) {
             // Simpan file dari 'image' ke kolom 'foto' di database
-            $data['foto'] = $request->file('image')->store('guru_staff', 'public');
+            $data['foto'] = $request->file('image')->store('guru_staff', 'public_direct');
         }
 
         $guru = GuruStaff::create($data);
@@ -71,11 +71,11 @@ class GuruStaffController extends Controller
         // Cek apakah ada upload foto baru
         if ($request->hasFile('image')) {
             // Hapus foto lama jika ada
-            if ($guru->foto && Storage::disk('public')->exists($guru->foto)) {
-                Storage::disk('public')->delete($guru->foto);
+            if ($guru->foto && Storage::disk('public_direct')->exists($guru->foto)) {
+                Storage::disk('public_direct')->delete($guru->foto);
             }
             // Simpan foto baru dari 'image' ke kolom 'foto'
-            $data['foto'] = $request->file('image')->store('guru_staff', 'public');
+            $data['foto'] = $request->file('image')->store('guru_staff', 'public_direct');
         }
 
         $guru->update($data);
@@ -91,11 +91,12 @@ class GuruStaffController extends Controller
         $guru = GuruStaff::find($id);
         if (!$guru) return response()->json(['message' => 'Data tidak ditemukan'], 404);
 
-        if ($guru->foto && Storage::disk('public')->exists($guru->foto)) {
-            Storage::disk('public')->delete($guru->foto);
+        if ($guru->foto && Storage::disk('public_direct')->exists($guru->foto)) {
+            Storage::disk('public_direct')->delete($guru->foto);
         }
 
         $guru->delete();
         return response()->json(['message' => 'Data berhasil dihapus']);
     }
 }
+

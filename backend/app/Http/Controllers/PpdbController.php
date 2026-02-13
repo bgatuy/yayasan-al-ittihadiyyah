@@ -7,7 +7,6 @@ use App\Models\Ppdb;
 use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Storage;
-use Illuminate\Support\Str;
 
 class PpdbController extends Controller
 {
@@ -153,7 +152,7 @@ class PpdbController extends Controller
         ]);
 
         if ($request->hasFile('bukti_bayar')) {
-            $path = $request->file('bukti_bayar')->store('ppdb_proofs', 'public');
+            $path = $request->file('bukti_bayar')->store('ppdb_proofs', 'public_direct');
             $ppdb->bukti_bayar = $path;
             // Aturan: Setelah upload, status berubah menjadi 'Menunggu Verifikasi'
             $ppdb->status = 'Menunggu Verifikasi'; 
@@ -191,10 +190,10 @@ class PpdbController extends Controller
 
         // Jika ada update bukti bayar baru (jarang terjadi, tapi fitur disiapkan)
         if ($request->hasFile('bukti_bayar')) {
-            if ($ppdb->bukti_bayar && Storage::disk('public')->exists($ppdb->bukti_bayar)) {
-                Storage::disk('public')->delete($ppdb->bukti_bayar);
+            if ($ppdb->bukti_bayar && Storage::disk('public_direct')->exists($ppdb->bukti_bayar)) {
+                Storage::disk('public_direct')->delete($ppdb->bukti_bayar);
             }
-            $validatedData['bukti_bayar'] = $request->file('bukti_bayar')->store('ppdb_proofs', 'public');
+            $validatedData['bukti_bayar'] = $request->file('bukti_bayar')->store('ppdb_proofs', 'public_direct');
         }
 
         $ppdb->update($validatedData);
@@ -211,8 +210,8 @@ class PpdbController extends Controller
         $ppdb = Ppdb::where('id', $id)->first();
         if (!$ppdb) return response()->json(['message' => 'Data tidak ditemukan'], 404);
 
-        if ($ppdb->bukti_bayar && Storage::disk('public')->exists($ppdb->bukti_bayar)) {
-            Storage::disk('public')->delete($ppdb->bukti_bayar);
+        if ($ppdb->bukti_bayar && Storage::disk('public_direct')->exists($ppdb->bukti_bayar)) {
+            Storage::disk('public_direct')->delete($ppdb->bukti_bayar);
         }
 
         $ppdb->delete();
@@ -238,12 +237,13 @@ class PpdbController extends Controller
             return response()->json(['message' => 'Bukti pembayaran tidak ditemukan'], 404);
         }
 
-        if (!Storage::disk('public')->exists($ppdb->bukti_bayar)) {
+        if (!Storage::disk('public_direct')->exists($ppdb->bukti_bayar)) {
             return response()->json(['message' => 'File bukti pembayaran tidak ditemukan'], 404);
         }
 
         $filename = 'bukti_pembayaran_' . $ppdb->id . '.jpg';
-        $fullPath = Storage::disk('public')->path($ppdb->bukti_bayar);
+        $fullPath = Storage::disk('public_direct')->path($ppdb->bukti_bayar);
         return response()->download($fullPath, $filename);
     }
 }
+

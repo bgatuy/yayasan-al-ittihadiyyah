@@ -39,7 +39,7 @@ class PrestasiController extends Controller
         $data = $request->all();
 
         if ($request->hasFile('gambar')) {
-            $data['gambar'] = $request->file('gambar')->store('prestasi', 'public');
+            $data['gambar'] = $request->file('gambar')->store('prestasi', 'public_direct');
         }
 
         $prestasi = Prestasi::create($data);
@@ -76,10 +76,10 @@ class PrestasiController extends Controller
 
         // Handle update gambar
         if ($request->hasFile('gambar')) {
-            if ($prestasi->gambar && Storage::disk('public')->exists($prestasi->gambar)) {
-                Storage::disk('public')->delete($prestasi->gambar);
+            if ($prestasi->gambar && Storage::disk('public_direct')->exists($prestasi->gambar)) {
+                Storage::disk('public_direct')->delete($prestasi->gambar);
             }
-            $data['gambar'] = $request->file('gambar')->store('prestasi', 'public');
+            $data['gambar'] = $request->file('gambar')->store('prestasi', 'public_direct');
         } else {
             unset($data['gambar']);
         }
@@ -97,11 +97,12 @@ class PrestasiController extends Controller
         $prestasi = Prestasi::find($id);
         if (!$prestasi) return response()->json(['message' => 'Data tidak ditemukan'], 404);
 
-        if ($prestasi->gambar && Storage::disk('public')->exists($prestasi->gambar)) {
-            Storage::disk('public')->delete($prestasi->gambar);
+        if ($prestasi->gambar && Storage::disk('public_direct')->exists($prestasi->gambar)) {
+            Storage::disk('public_direct')->delete($prestasi->gambar);
         }
 
         $prestasi->delete();
         return response()->json(['message' => 'Data berhasil dihapus']);
     }
 }
+

@@ -61,7 +61,7 @@ class PpdbPageController extends Controller
             $imagesToDelete = $request->input('deleted_hero_images');
             foreach ($imagesToDelete as $path) {
                 if (in_array($path, $currentImagePaths)) {
-                    Storage::disk('public')->delete($path);
+                    Storage::disk('public_direct')->delete($path);
                 }
             }
             // Filter out the deleted images from the current list
@@ -71,7 +71,7 @@ class PpdbPageController extends Controller
         // 2. Handle Addition of new images
         if ($request->hasFile('ppdb_hero_images')) {
             foreach ($request->file('ppdb_hero_images') as $file) {
-                $path = $file->store('ppdb_hero', 'public');
+                $path = $file->store('ppdb_hero', 'public_direct');
                 $currentImagePaths[] = $path; // Append new path
             }
         }

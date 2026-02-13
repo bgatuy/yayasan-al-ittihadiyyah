@@ -66,13 +66,13 @@ class AkademikController extends Controller
 
             // Handle image update/deletion
             if ($request->hasFile('hero_image')) {
-                if ($akademik->gambar_utama && Storage::disk('public')->exists($akademik->gambar_utama)) {
-                    Storage::disk('public')->delete($akademik->gambar_utama);
+                if ($akademik->gambar_utama && Storage::disk('public_direct')->exists($akademik->gambar_utama)) {
+                    Storage::disk('public_direct')->delete($akademik->gambar_utama);
                 }
-                $akademik->gambar_utama = $request->file('hero_image')->store('akademik', 'public');
+                $akademik->gambar_utama = $request->file('hero_image')->store('akademik', 'public_direct');
             } elseif ($request->input('delete_hero_image') === 'true') {
-                if ($akademik->gambar_utama && Storage::disk('public')->exists($akademik->gambar_utama)) {
-                    Storage::disk('public')->delete($akademik->gambar_utama);
+                if ($akademik->gambar_utama && Storage::disk('public_direct')->exists($akademik->gambar_utama)) {
+                    Storage::disk('public_direct')->delete($akademik->gambar_utama);
                 }
                 $akademik->gambar_utama = null;
             }
@@ -96,11 +96,11 @@ class AkademikController extends Controller
                         // Hapus gambar lama jika ada file baru dan ini adalah proses update
                         if ($prestasiId) {
                             $existingPrestasi = Prestasi::find($prestasiId);
-                            if ($existingPrestasi && $existingPrestasi->gambar && Storage::disk('public')->exists($existingPrestasi->gambar)) {
-                                Storage::disk('public')->delete($existingPrestasi->gambar);
+                            if ($existingPrestasi && $existingPrestasi->gambar && Storage::disk('public_direct')->exists($existingPrestasi->gambar)) {
+                                Storage::disk('public_direct')->delete($existingPrestasi->gambar);
                             }
                         }
-                        $dataToUpdate['gambar'] = $prestasiFile->store('prestasi', 'public'); // Peta ke kolom 'gambar'
+                        $dataToUpdate['gambar'] = $prestasiFile->store('prestasi', 'public_direct'); // Peta ke kolom 'gambar'
                     }
 
                     Prestasi::updateOrCreate(['id' => $prestasiId], $dataToUpdate);
@@ -111,8 +111,8 @@ class AkademikController extends Controller
             if (!empty($validated['deleted_achievements'])) {
                 $achievementsToDelete = Prestasi::whereIn('id', $validated['deleted_achievements'])->get();
                 foreach ($achievementsToDelete as $achievement) {
-                    if ($achievement->gambar && Storage::disk('public')->exists($achievement->gambar)) {
-                        Storage::disk('public')->delete($achievement->gambar);
+                    if ($achievement->gambar && Storage::disk('public_direct')->exists($achievement->gambar)) {
+                        Storage::disk('public_direct')->delete($achievement->gambar);
                     }
                     $achievement->delete();
                 }
@@ -122,3 +122,4 @@ class AkademikController extends Controller
         });
     }
 }
+

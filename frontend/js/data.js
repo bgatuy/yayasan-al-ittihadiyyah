@@ -189,8 +189,11 @@
     saveNews: (formData) => {
       const id = formData.get('id');
       if (id) {
-        // Laravel needs a _method field to handle PUT/PATCH via POST
-        formData.append('_method', 'PUT');
+        // Backend route for update is POST /admin/news/{id}, not PUT.
+        // Ensure _method spoofing is not sent.
+        if (formData.has('_method')) {
+          formData.delete('_method');
+        }
         return apiRequest(`/admin/news/${id}`, 'POST', formData, true);
       }
       return apiRequest('/admin/news', 'POST',formData, true);

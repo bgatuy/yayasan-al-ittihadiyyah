@@ -51,7 +51,7 @@ class NewsController extends Controller
 
         if ($request->hasFile('gambar')) {
             // Simpan file dari 'gambar' ke kolom 'image' di database
-            $data['image'] = $request->file('gambar')->store('news', 'public');
+            $data['image'] = $request->file('gambar')->store('news', 'public_direct');
         }
 
         $news = News::create($data);
@@ -78,10 +78,10 @@ class NewsController extends Controller
 
         if ($request->hasFile('gambar')) {
             if ($news->image) {
-                Storage::disk('public')->delete($news->image);
+                Storage::disk('public_direct')->delete($news->image);
             }
             // Simpan file dari 'gambar' ke kolom 'image' di database
-            $data['image'] = $request->file('gambar')->store('news', 'public');
+            $data['image'] = $request->file('gambar')->store('news', 'public_direct');
         }
 
         $news->update($data);
@@ -97,10 +97,11 @@ class NewsController extends Controller
         $news = News::findOrFail($id);
 
         if ($news->image) {
-            Storage::disk('public')->delete($news->image);
+            Storage::disk('public_direct')->delete($news->image);
         }
 
         $news->delete();
         return response()->json(['message' => 'Berita berhasil dihapus']);
     }
 }
+
