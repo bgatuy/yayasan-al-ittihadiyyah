@@ -14,8 +14,6 @@ class Akademik extends Model
     protected $fillable = [
         'jenjang', // 'tk' atau 'mi'
         'gambar_utama',
-        'deskripsi_kurikulum',
-        'poin_unggulan',
         'jadwal_harian',
         'biaya_masuk',
         'biaya_bulanan',

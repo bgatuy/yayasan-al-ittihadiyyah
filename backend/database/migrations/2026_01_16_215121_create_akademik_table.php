@@ -12,8 +12,6 @@ return new class extends Migration
             $table->id();
             $table->string('jenjang')->unique(); // TK / MI
             $table->string('gambar_utama')->nullable();
-            $table->text('deskripsi_kurikulum')->nullable();
-            $table->text('poin_unggulan')->nullable();
             $table->text('jadwal_harian')->nullable();
             $table->text('biaya_masuk')->nullable();
             $table->text('biaya_bulanan')->nullable();

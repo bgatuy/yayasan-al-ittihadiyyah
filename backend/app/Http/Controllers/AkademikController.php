@@ -20,8 +20,6 @@ class AkademikController extends Controller
             // Jika belum ada, return struktur default agar frontend tidak error
             return response()->json([
                 'jenjang' => $jenjang,
-                'deskripsi_kurikulum' => '',
-                'poin_unggulan' => '',
                 'prestasi' => [],
             ]);
         }
@@ -116,6 +114,18 @@ class AkademikController extends Controller
                     }
                     $achievement->delete();
                 }
+            }
+
+            // 4. Jika semua data kosong dan tidak ada prestasi, hapus row akademik
+            $hasAnyPrestasi = Prestasi::where('jenjang', $jenjang)->exists();
+            $isMainDataEmpty = empty($akademik->jadwal_harian)
+                && empty($akademik->ekstrakurikuler)
+                && empty($akademik->biaya_masuk)
+                && empty($akademik->biaya_bulanan)
+                && empty($akademik->gambar_utama);
+
+            if ($isMainDataEmpty && !$hasAnyPrestasi) {
+                $akademik->delete();
             }
 
             return response()->json(['message' => 'Halaman akademik berhasil diperbarui']);
