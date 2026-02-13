@@ -10,7 +10,7 @@
 
   const apiBaseUrl = isLocal 
     ? `http://${window.location.hostname}:8000/api`
-    : 'https://api.yayasanalittihadiyyah.com/api';
+    : 'https://testingwebsite.my.id/api';
 
   // Buat URL dasar untuk file storage, misal: http://localhost:8000/storage
   const storageBaseUrl = apiBaseUrl.replace('/api', '/storage');

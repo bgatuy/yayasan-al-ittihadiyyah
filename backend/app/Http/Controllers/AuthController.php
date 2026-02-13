@@ -70,12 +70,9 @@ class AuthController extends Controller
             $payload = [
                 'message' => 'Login berhasil',
                 'user'    => $user,
+                // Always return token so frontend can set Authorization header if cookies fail.
+                'token'   => $token,
             ];
-
-            // Dev fallback: expose token in local env for non-cookie clients (e.g. Live Server)
-            if (config('app.env') === 'local') {
-                $payload['token'] = $token;
-            }
 
             return response()->json($payload)->cookie($cookie);
         }
