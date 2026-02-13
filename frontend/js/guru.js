@@ -27,13 +27,21 @@ window.saveTeacher = async function() {
     }
 
     if (fileInput.files && fileInput.files[0]) {
-        if (fileInput.files[0].size > 200 * 1024) {
-            document.getElementById('alert-title').textContent = 'Ukuran Terlalu Besar';
-            document.getElementById('alert-message').textContent = 'Ukuran gambar guru maksimal 200KB.';
+        try {
+            const compressed = await window.utils.compressImageAdaptive(fileInput.files[0], { maxSizeKB: 200 });
+            if (compressed.size > 200 * 1024) {
+                document.getElementById('alert-title').textContent = 'Ukuran Terlalu Besar';
+                document.getElementById('alert-message').textContent = 'Ukuran gambar guru maksimal 200KB.';
+                window.utils.toggleModal('modal-alert');
+                return;
+            }
+            formData.append('image', compressed.blob, 'teacher.jpg');
+        } catch (e) {
+            document.getElementById('alert-title').textContent = 'Gagal Memproses Gambar';
+            document.getElementById('alert-message').textContent = 'Silakan coba gambar lain.';
             window.utils.toggleModal('modal-alert');
             return;
         }
-        formData.append('image', fileInput.files[0]);
     }
 
     try {
@@ -68,13 +76,6 @@ function initializeTeacherModalListeners() {
     if (teacherDropzone) {
         const previewTeacherImage = (input) => {
             if (input.files && input.files[0]) {
-                if (input.files[0].size > 200 * 1024) {
-                    document.getElementById('alert-title').textContent = 'Ukuran Terlalu Besar';
-                    document.getElementById('alert-message').textContent = 'Ukuran gambar guru maksimal 200KB.';
-                    window.utils.toggleModal('modal-alert');
-                    input.value = '';
-                    return;
-                }
                 const reader = new FileReader();
                 reader.onload = (e) => {
                     teacherPreviewImageEl.src = e.target.result;

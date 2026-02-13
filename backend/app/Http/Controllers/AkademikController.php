@@ -39,7 +39,7 @@ class AkademikController extends Controller
         // Gunakan transaksi database untuk memastikan semua operasi berhasil atau gagal bersamaan
         return DB::transaction(function () use ($request, $jenjang) {
             $validated = $request->validate([
-                'hero_image' => 'nullable|image|max:2048',
+                'hero_image' => 'nullable|image|max:200',
                 'delete_hero_image' => 'nullable|string',
                 'jadwal' => 'nullable|string',
                 'ekskul' => 'nullable|string',

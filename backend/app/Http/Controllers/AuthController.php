@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Models\User;
+use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\RateLimiter;
@@ -50,11 +51,33 @@ class AuthController extends Controller
             $user = Auth::user();
             $token = $user->createToken('admin-token')->plainTextToken;
 
-            return response()->json([
+            $cookieMinutes = 60 * 24 * 7; // 7 hari
+            $cookieDomain = config('session.domain');
+            $secure = (bool) config('session.secure') || $request->isSecure();
+
+            $cookie = cookie(
+                'admin_auth_token',
+                $token,
+                $cookieMinutes,
+                '/',
+                $cookieDomain,
+                $secure,
+                true,   // HttpOnly
+                false,  // raw
+                'Lax'   // SameSite
+            );
+
+            $payload = [
                 'message' => 'Login berhasil',
                 'user'    => $user,
-                'token'   => $token,
-            ]);
+            ];
+
+            // Dev fallback: expose token in local env for non-cookie clients (e.g. Live Server)
+            if (config('app.env') === 'local') {
+                $payload['token'] = $token;
+            }
+
+            return response()->json($payload)->cookie($cookie);
         }
 
         // gagal → tambah hit limiter
@@ -63,5 +86,34 @@ class AuthController extends Controller
         return response()->json([
             'message' => __('auth.failed')
         ], 401);
+    }
+
+    public function me(Request $request)
+    {
+        return response()->json([
+            'user' => $request->user(),
+        ]);
+    }
+
+    public function logout(Request $request)
+    {
+        $user = $request->user();
+        if ($user && $user->currentAccessToken()) {
+            $user->currentAccessToken()->delete();
+        }
+
+        $cookie = cookie(
+            'admin_auth_token',
+            '',
+            -1,
+            '/',
+            config('session.domain'),
+            (bool) config('session.secure') || $request->isSecure(),
+            true,
+            false,
+            'Lax'
+        );
+
+        return response()->json(['message' => 'Logout berhasil.'])->cookie($cookie);
     }
 }

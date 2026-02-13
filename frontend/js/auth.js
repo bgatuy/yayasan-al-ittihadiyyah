@@ -71,7 +71,9 @@ document.addEventListener('DOMContentLoaded', () => {
 
     window.Auth = {
         setAuthToken: (token) => {
-            localStorage.setItem(TOKEN_KEY, token);
+            if (token) {
+                localStorage.setItem(TOKEN_KEY, token);
+            }
         },
 
         setUserData: (user) => {
@@ -100,19 +102,29 @@ document.addEventListener('DOMContentLoaded', () => {
         login: async (email, password) => {
             const response = await window.DataStore.login({ email, password });
 
-            if (response.token && response.user) {
-                window.Auth.setAuthToken(response.token);
+            if (response.user) {
+                // Dev fallback: simpan token jika ada (untuk Live Server)
+                if (response.token) {
+                    window.Auth.setAuthToken(response.token);
+                }
                 window.Auth.setUserData(response.user);
                 return response;
             }
 
-            throw new Error('Token atau data pengguna tidak diterima dari server.');
+            throw new Error('Data pengguna tidak diterima dari server.');
         },
 
-        logout: () => {
-            window.Auth.removeAuthToken();
-            window.Auth.removeUserData();
-            window.location.href = '/admin/login.html';
+        logout: async () => {
+            try {
+                await window.DataStore.logout();
+            } catch (e) {
+                // Tetap lanjut logout di client meskipun request gagal
+                console.error('Logout failed:', e);
+            } finally {
+                window.Auth.removeAuthToken();
+                window.Auth.removeUserData();
+                window.location.href = '/admin/login.html';
+            }
         },
     };
 })();

@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Models\Galeri;
+use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Storage;
 
@@ -20,7 +21,7 @@ class GaleriController extends Controller
         // Validasi input
         $request->validate([
             'judul'  => 'nullable|string|max:255',
-            'gambar' => 'required|image|max:2048', // Max 2MB
+            'gambar' => 'required|image|max:200', // Max 200KB
         ]);
 
         // Upload gambar

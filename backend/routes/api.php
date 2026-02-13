@@ -30,7 +30,8 @@ Route::get('/news/{id}', [NewsController::class, 'show']);
 // 2. PPDB (Pendaftaran)
 Route::post('/ppdb', [PpdbController::class, 'store']); // Endpoint pendaftaran
 Route::get('/ppdb/status/{id}', [PpdbController::class, 'checkStatus']); // Endpoint cek status publik
-Route::post('/ppdb/{id}/payment', [PpdbController::class, 'uploadPaymentProof']); // Endpoint upload bukti bayar
+Route::post('/ppdb/{id}/payment', [PpdbController::class, 'uploadPaymentProof'])
+    ->middleware('throttle:3,1'); // 3 request/menit/IP untuk upload bukti bayar
 
 // 3. GALERI
 Route::get('/galeri', [GaleriController::class, 'index']);
@@ -57,6 +58,10 @@ Route::get('/akademik/{jenjang}', [AkademikController::class, 'show']);
  */
 // ================= ADMIN ROUTES =================
 Route::prefix('admin')->middleware('auth:sanctum')->group(function () {
+    // AUTH (ADMIN)
+    Route::get('/me', [AuthController::class, 'me']);
+    Route::post('/logout', [AuthController::class, 'logout']);
+
     // DASHBOARD
     Route::get('/dashboard', [DashboardController::class, 'index']);
 
@@ -82,6 +87,7 @@ Route::prefix('admin')->middleware('auth:sanctum')->group(function () {
     // MANAJEMEN PPDB
     Route::get('/ppdb', [PpdbController::class, 'index']);
     Route::get('/ppdb/{id}', [PpdbController::class, 'show']); // Detail untuk admin
+    Route::get('/ppdb/{id}/payment-download', [PpdbController::class, 'downloadPaymentProof']); // Download bukti bayar
     Route::post('/ppdb/{id}', [PpdbController::class, 'update']);
     Route::delete('/ppdb/{id}', [PpdbController::class, 'destroy']);
     Route::get('/ppdb-academic-years', [PpdbController::class, 'getAcademicYears']);

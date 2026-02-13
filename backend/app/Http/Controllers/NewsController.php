@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Models\News;
+use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Storage;
 
@@ -42,7 +43,7 @@ class NewsController extends Controller
             'title'   => 'required|string',
             'content' => 'required|string',
             'date'    => 'nullable|date',
-            'gambar'  => 'nullable|image|max:2048' // Terima key 'gambar' dari frontend
+            'gambar'  => 'nullable|image|max:200' // Terima key 'gambar' dari frontend (200KB)
         ]);
 
         // Map 'gambar' dari form ke 'image' di database
@@ -69,7 +70,7 @@ class NewsController extends Controller
             'title'   => 'required|string',
             'content' => 'required|string',
             'date'    => 'nullable|date',
-            'gambar'  => 'nullable|image|max:2048' // Terima key 'gambar' dari frontend
+            'gambar'  => 'nullable|image|max:200' // Terima key 'gambar' dari frontend (200KB)
         ]);
 
         // Map 'gambar' dari form ke 'image' di database

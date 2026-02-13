@@ -91,9 +91,24 @@ document.addEventListener('DOMContentLoaded', () => {
 
         // 1. Tambahkan file gambar BARU yang akan diupload
         if (newPpdbHeroImages.length > 0) {
-            newPpdbHeroImages.forEach(item => {
-                formData.append('ppdb_hero_images[]', item.file);
-            });
+            for (let i = 0; i < newPpdbHeroImages.length; i++) {
+                const item = newPpdbHeroImages[i];
+                try {
+                    const compressed = await window.utils.compressImageAdaptive(item.file, { maxSizeKB: 200 });
+                    if (compressed.size > 200 * 1024) {
+                        document.getElementById('alert-title').textContent = 'Ukuran Gambar Terlalu Besar';
+                        document.getElementById('alert-message').textContent = 'Ukuran gambar hero maksimal 200KB.';
+                        window.utils.toggleModal('modal-alert');
+                        return;
+                    }
+                    formData.append('ppdb_hero_images[]', compressed.blob, `ppdb_hero_${i}.jpg`);
+                } catch (e) {
+                    document.getElementById('alert-title').textContent = 'Gagal Memproses Gambar';
+                    document.getElementById('alert-message').textContent = 'Silakan coba gambar lain.';
+                    window.utils.toggleModal('modal-alert');
+                    return;
+                }
+            }
         }
 
         // 2. Tambahkan path gambar LAMA yang akan dihapus
@@ -173,16 +188,6 @@ document.addEventListener('DOMContentLoaded', () => {
         heroFileInput.addEventListener('change', (e) => {
             const file = e.target.files[0];
             if (!file) return;
-
-            // Validasi sisi klien
-            const maxFileSize = 200 * 1024; // 200KB
-            if (file.size > maxFileSize) {
-                document.getElementById('alert-title').textContent = 'Ukuran Gambar Terlalu Besar';
-                document.getElementById('alert-message').textContent = `File "${file.name}" melebihi batas 200KB.`;
-                window.utils.toggleModal('modal-alert');
-                heroFileInput.value = ''; // Reset input
-                return;
-            }
 
             // Tambahkan ke array staging dan render ulang preview
             newPpdbHeroImages.push({ file: file, previewUrl: URL.createObjectURL(file) });

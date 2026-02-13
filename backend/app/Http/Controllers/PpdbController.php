@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Models\PpdbPage;
 use App\Models\Ppdb;
+use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Str;
@@ -148,7 +149,7 @@ class PpdbController extends Controller
         }
 
         $request->validate([
-            'bukti_bayar' => 'required|image|mimes:jpeg,png,jpg,webp|max:2048',
+            'bukti_bayar' => 'required|image|mimes:jpeg,png,jpg,webp|max:100',
         ]);
 
         if ($request->hasFile('bukti_bayar')) {
@@ -185,7 +186,7 @@ class PpdbController extends Controller
             'gelombang'      => 'sometimes|required|string',
             'tahun_ajaran'   => 'sometimes|nullable|string|max:9', // Tambahkan validasi untuk tahun_ajaran
             'status'         => 'sometimes|required|in:Menunggu Pembayaran,Menunggu Verifikasi,Terverifikasi,Diterima,Tidak Diterima',
-            'bukti_bayar'    => 'nullable|image|mimes:jpeg,png,jpg,webp|max:2048',
+            'bukti_bayar'    => 'nullable|image|mimes:jpeg,png,jpg,webp|max:100',
         ]);
 
         // Jika ada update bukti bayar baru (jarang terjadi, tapi fitur disiapkan)
@@ -227,5 +228,22 @@ class PpdbController extends Controller
                      ->pluck('tahun_ajaran');
 
         return response()->json($years);
+    }
+
+    // Download bukti pembayaran (Admin)
+    public function downloadPaymentProof($id)
+    {
+        $ppdb = Ppdb::where('id', $id)->first();
+        if (!$ppdb || !$ppdb->bukti_bayar) {
+            return response()->json(['message' => 'Bukti pembayaran tidak ditemukan'], 404);
+        }
+
+        if (!Storage::disk('public')->exists($ppdb->bukti_bayar)) {
+            return response()->json(['message' => 'File bukti pembayaran tidak ditemukan'], 404);
+        }
+
+        $filename = 'bukti_pembayaran_' . $ppdb->id . '.jpg';
+        $fullPath = Storage::disk('public')->path($ppdb->bukti_bayar);
+        return response()->download($fullPath, $filename);
     }
 }

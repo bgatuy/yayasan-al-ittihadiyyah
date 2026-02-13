@@ -1,3 +1,6 @@
 {
-  "liveServer.settings.root": "/frontend"
+  "liveServer.settings.root": "/frontend",
+  "tailwindCSS.files.exclude": [
+    "**/vendor/**"
+  ]
 }

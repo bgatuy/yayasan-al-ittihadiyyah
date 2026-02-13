@@ -472,39 +472,6 @@ document.addEventListener('DOMContentLoaded', async () => {
       });
   }
 
-  // Helper: Kompresi Gambar Agresif (Target ~50KB)
-  const compressImage = (file, quality = 0.4, maxWidth = 500) => {
-      return new Promise((resolve, reject) => {
-          const reader = new FileReader();
-          reader.readAsDataURL(file);
-          reader.onload = event => {
-              const img = new Image();
-              img.src = event.target.result;
-              img.onload = () => {
-                  const canvas = document.createElement('canvas');
-                  let width = img.width;
-                  let height = img.height;
-
-                  // Resize paksa ke lebar 500px agar file kecil
-                  if (width > maxWidth) {
-                      height = Math.round(height * (maxWidth / width));
-                      width = maxWidth;
-                  }
-
-                  canvas.width = width;
-                  canvas.height = height;
-                  const ctx = canvas.getContext('2d');
-                  ctx.drawImage(img, 0, 0, width, height);
-                  
-                  // Output: JPEG dengan kualitas 40%
-                  resolve(canvas.toDataURL('image/jpeg', quality));
-              };
-              img.onerror = error => reject(error);
-          };
-          reader.onerror = error => reject(error);
-      });
-  };
-
   const btnConfirmPayment = document.getElementById('btn-confirm-payment');
   if(btnConfirmPayment) {
       btnConfirmPayment.addEventListener('click', async () => {
@@ -531,12 +498,15 @@ document.addEventListener('DOMContentLoaded', async () => {
           btnConfirmPayment.disabled = true;
 
           try {
-              // Kompres gambar dan konversi ke Blob
-              const compressedDataUrl = await compressImage(fileInput.files[0]);
-              const imageBlob = window.utils.dataURLtoBlob(compressedDataUrl);
+              // Kompres gambar adaptif (target 100KB) dan konversi ke Blob
+              const compressed = await window.utils.compressImageAdaptive(fileInput.files[0], { maxSizeKB: 100 });
+              if (compressed.size > 100 * 1024) {
+                  alert('Ukuran gambar bukti pembayaran maksimal 100KB.');
+                  return;
+              }
 
               const formData = new FormData();
-              formData.append('bukti_bayar', imageBlob, `payment_${id}.jpg`);
+              formData.append('bukti_bayar', compressed.blob, `payment_${id}.jpg`);
               
               // Panggil fungsi DataStore baru yang menargetkan endpoint upload
               const updated = await window.DataStore.uploadPaymentProof(id, formData);

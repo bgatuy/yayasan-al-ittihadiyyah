@@ -33,7 +33,7 @@ class PrestasiController extends Controller
             'peringkat'   => 'nullable|string|max:100',
             'deskripsi'   => 'nullable|string',
             'tanggal'     => 'nullable|date',
-            'gambar'      => 'nullable|image|mimes:jpeg,png,jpg|max:2048',
+            'gambar'      => 'nullable|image|mimes:jpeg,png,jpg|max:200',
         ]);
 
         $data = $request->all();
@@ -69,7 +69,7 @@ class PrestasiController extends Controller
             'peringkat'   => 'nullable|string|max:100',
             'deskripsi'   => 'nullable|string',
             'tanggal'     => 'nullable|date',
-            'gambar'      => 'nullable|image|mimes:jpeg,png,jpg|max:2048',
+            'gambar'      => 'nullable|image|mimes:jpeg,png,jpg|max:200',
         ]);
 
         $data = $request->all();

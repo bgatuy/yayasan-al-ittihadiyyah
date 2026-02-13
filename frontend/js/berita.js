@@ -42,7 +42,21 @@ window.saveNews = async function() {
     
     // Append image file if it exists
     if (fileInput.files && fileInput.files[0]) {
-        formData.append('gambar', fileInput.files[0]);
+        try {
+            const compressed = await window.utils.compressImageAdaptive(fileInput.files[0], { maxSizeKB: 200 });
+            if (compressed.size > 200 * 1024) {
+                document.getElementById('alert-title').textContent = 'Ukuran Terlalu Besar';
+                document.getElementById('alert-message').textContent = 'Ukuran gambar berita maksimal 200KB.';
+                window.utils.toggleModal('modal-alert');
+                return;
+            }
+            formData.append('gambar', compressed.blob, 'news.jpg');
+        } catch (e) {
+            document.getElementById('alert-title').textContent = 'Gagal Memproses Gambar';
+            document.getElementById('alert-message').textContent = 'Silakan coba gambar lain.';
+            window.utils.toggleModal('modal-alert');
+            return;
+        }
     }
 
     try {
@@ -74,13 +88,6 @@ function initializeNewsModalListeners() {
     if (newsDropzone) {
         const previewNewsImage = (input) => {
             if (input.files && input.files[0]) {
-                if (input.files[0].size > 200 * 1024) {
-                    document.getElementById('alert-title').textContent = 'Ukuran Terlalu Besar';
-                    document.getElementById('alert-message').textContent = 'Ukuran gambar berita maksimal 200KB.';
-                    window.utils.toggleModal('modal-alert');
-                    input.value = '';
-                    return;
-                }
                 const reader = new FileReader();
                 reader.onload = (e) => {
                     newsPreviewImageEl.src = e.target.result;

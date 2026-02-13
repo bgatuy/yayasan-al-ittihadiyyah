@@ -65,13 +65,6 @@ document.addEventListener('DOMContentLoaded', () => {
         const container = document.getElementById('academic-image-preview-container');
         const prompt = document.getElementById('academic-upload-prompt');
         if (input.files && input.files[0]) {
-            if (input.files[0].size > 200 * 1024) {
-                document.getElementById('alert-title').textContent = 'Ukuran Terlalu Besar';
-                document.getElementById('alert-message').textContent = 'Ukuran gambar header maksimal 200KB.';
-                window.utils.toggleModal('modal-alert');
-                input.value = '';
-                return;
-            }
             const reader = new FileReader();
             reader.onload = function(e) {
                 preview.src = e.target.result;
@@ -88,13 +81,6 @@ document.addEventListener('DOMContentLoaded', () => {
         const container = document.getElementById('ach-image-preview-container');
         const prompt = document.getElementById('ach-upload-prompt');
         if (input.files && input.files[0]) {
-            if (input.files[0].size > 200 * 1024) {
-                document.getElementById('alert-title').textContent = 'Ukuran Terlalu Besar';
-                document.getElementById('alert-message').textContent = 'Ukuran gambar prestasi maksimal 200KB.';
-                window.utils.toggleModal('modal-alert');
-                input.value = '';
-                return;
-            }
             const reader = new FileReader();
             reader.onload = function(e) {
                 preview.src = e.target.result;
@@ -222,15 +208,30 @@ document.addEventListener('DOMContentLoaded', () => {
         // Append hero image file if changed
         const fileInput = document.getElementById('academic-image-input');
         if (fileInput.files && fileInput.files[0]) {
-            formData.append('hero_image', fileInput.files[0]); // gambar_utama
-        } 
+            try {
+                const compressedHero = await window.utils.compressImageAdaptive(fileInput.files[0], { maxSizeKB: 200 });
+                if (compressedHero.size > 200 * 1024) {
+                    document.getElementById('alert-title').textContent = 'Ukuran Terlalu Besar';
+                    document.getElementById('alert-message').textContent = 'Ukuran gambar header maksimal 200KB.';
+                    window.utils.toggleModal('modal-alert');
+                    return;
+                }
+                formData.append('hero_image', compressedHero.blob, 'academic-hero.jpg'); // gambar_utama
+            } catch (e) {
+                document.getElementById('alert-title').textContent = 'Gagal Memproses Gambar';
+                document.getElementById('alert-message').textContent = 'Silakan coba gambar lain.';
+                window.utils.toggleModal('modal-alert');
+                return;
+            }
+        }
         // Jika tidak ada file baru, cek apakah gambar ditandai untuk dihapus
         else if (isAcademicHeroImageMarkedForDeletion) {
             formData.append('delete_hero_image', 'true');
         }
 
         // Append achievements data
-        window.tempAchievements.forEach((item, index) => {
+        for (let index = 0; index < window.tempAchievements.length; index++) {
+            const item = window.tempAchievements[index];
             // Append text data for each achievement
             if (item.id) { // If it's an existing achievement
                 formData.append(`prestasi[${index}][id]`, item.id);
@@ -242,9 +243,23 @@ document.addEventListener('DOMContentLoaded', () => {
             // Handle image
             // item.image contains a File object for new/changed files
             if (item.image instanceof File) {
-                formData.append(`prestasi[${index}][image]`, item.image);
+                try {
+                    const compressedAch = await window.utils.compressImageAdaptive(item.image, { maxSizeKB: 200 });
+                    if (compressedAch.size > 200 * 1024) {
+                        document.getElementById('alert-title').textContent = 'Ukuran Terlalu Besar';
+                        document.getElementById('alert-message').textContent = 'Ukuran gambar prestasi maksimal 200KB.';
+                        window.utils.toggleModal('modal-alert');
+                        return;
+                    }
+                    formData.append(`prestasi[${index}][image]`, compressedAch.blob, `prestasi_${index}.jpg`);
+                } catch (e) {
+                    document.getElementById('alert-title').textContent = 'Gagal Memproses Gambar';
+                    document.getElementById('alert-message').textContent = 'Silakan coba gambar lain.';
+                    window.utils.toggleModal('modal-alert');
+                    return;
+                }
             }
-        });
+        }
 
         // Append deleted achievement IDs
         if (window.deletedAchievementIds && window.deletedAchievementIds.length > 0) {
@@ -306,13 +321,6 @@ document.addEventListener('DOMContentLoaded', () => {
         }
 
         const file = (fileInput.files && fileInput.files[0]) ? fileInput.files[0] : null;
-
-        if (file && file.size > 200 * 1024) {
-            document.getElementById('alert-title').textContent = 'Ukuran Terlalu Besar';
-            document.getElementById('alert-message').textContent = 'Ukuran gambar prestasi maksimal 200KB.';
-            window.utils.toggleModal('modal-alert');
-            return;
-        }
 
         // For new items, we store the File object itself and a temporary object URL for preview
         // For existing items (from API), 'image' will be a URL string.

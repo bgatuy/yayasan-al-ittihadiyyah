@@ -24,7 +24,7 @@ class GuruStaffController extends Controller
             'mata_pelajaran' => 'nullable|string|max:255',
             'masa_bakti'     => 'nullable|string|max:255',
             'quote'          => 'nullable|string|max:500',
-            'image'          => 'nullable|image|mimes:jpeg,png,jpg|max:2048', // Terima 'image' dari frontend
+            'image'          => 'nullable|image|mimes:jpeg,png,jpg|max:200', // Terima 'image' dari frontend (200KB)
         ]);
 
         // Map 'image' dari form ke 'foto' di database
@@ -62,7 +62,7 @@ class GuruStaffController extends Controller
             'mata_pelajaran' => 'nullable|string|max:255',
             'masa_bakti'     => 'nullable|string|max:255',
             'quote'          => 'nullable|string|max:500',
-            'image'          => 'nullable|image|mimes:jpeg,png,jpg|max:2048', // Terima 'image' dari frontend
+            'image'          => 'nullable|image|mimes:jpeg,png,jpg|max:200', // Terima 'image' dari frontend (200KB)
         ]);
 
         // Map 'image' dari form ke 'foto' di database

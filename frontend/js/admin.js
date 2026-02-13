@@ -168,15 +168,25 @@ function populateUserData() {
 
 document.addEventListener('DOMContentLoaded', () => {
   // --- AUTHENTICATION CHECK ---
-  // Redirect ke halaman login jika tidak ada token atau token tidak valid
-  if (typeof window.Auth !== 'undefined' && !window.Auth.getAuthToken()) {
+  // Validasi sesi via cookie (HttpOnly) dengan memanggil endpoint /admin/me
+  if (window.DataStore && typeof window.DataStore.getMe === 'function') {
+    window.DataStore.getMe()
+      .then((res) => {
+        if (res && res.user) {
+          if (window.Auth) window.Auth.setUserData(res.user);
+          populateUserData();
+        }
+      })
+      .catch(() => {
+        window.location.href = '/admin/login.html';
+      });
+  } else {
     window.location.href = '/admin/login.html';
     return; // Hentikan eksekusi script jika belum login
   }
 
   // --- INITIALIZE PAGE ---
   loadModals();
-  populateUserData();
 
   // --- URL CLEANER ---
   // Hapus index.html dari address bar agar terlihat lebih bersih

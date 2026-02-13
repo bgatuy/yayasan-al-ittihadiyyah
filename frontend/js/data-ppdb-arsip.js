@@ -131,16 +131,33 @@ document.addEventListener('DOMContentLoaded', () => {
       if(paymentContainer) {
           paymentContainer.innerHTML = '';
           if (fullData.bukti_bayar) {
+              const url = window.utils.getStorageUrl(fullData.bukti_bayar);
+              const downloadUrl = `${window.APP_CONFIG.API_BASE_URL}/admin/ppdb/${fullData.id}/payment-download`;
+              const wrapper = document.createElement('div');
+              wrapper.className = 'space-y-3';
               const imgWrapper = document.createElement('div');
               imgWrapper.className = 'relative group cursor-pointer inline-block';
-              imgWrapper.onclick = () => window.viewFullImage(window.utils.getStorageUrl(fullData.bukti_bayar));
+              imgWrapper.onclick = () => window.viewFullImage(url);
               imgWrapper.innerHTML = `
-                  <img src="${window.utils.getStorageUrl(fullData.bukti_bayar)}" class="max-h-64 mx-auto rounded-lg shadow-sm border border-slate-200" alt="Bukti Transfer">
+                  <img src="${url}" class="max-h-64 mx-auto rounded-lg shadow-sm border border-slate-200" alt="Bukti Transfer">
                   <div class="absolute inset-0 bg-black/0 group-hover:bg-black/10 transition flex items-center justify-center rounded-lg">
                       <i class="fa-solid fa-magnifying-glass-plus text-white opacity-0 group-hover:opacity-100 text-3xl drop-shadow-md transition"></i>
                   </div>
               `;
-              paymentContainer.appendChild(imgWrapper);
+              const downloadBtn = document.createElement('button');
+              downloadBtn.type = 'button';
+              downloadBtn.className = 'w-full inline-flex items-center justify-center gap-2 bg-primary text-white px-4 py-2 rounded-lg hover:bg-secondary transition text-sm';
+              downloadBtn.innerHTML = '<i class="fa-solid fa-download"></i> Unduh Bukti Pembayaran';
+              downloadBtn.addEventListener('click', async () => {
+                  try {
+                      await window.utils.downloadFile(downloadUrl, `bukti_pembayaran_${fullData.id || 'ppdb'}.jpg`);
+                  } catch (e) {
+                      alert('Gagal mengunduh bukti pembayaran.');
+                  }
+              });
+              wrapper.appendChild(imgWrapper);
+              wrapper.appendChild(downloadBtn);
+              paymentContainer.appendChild(wrapper);
           } else {
               paymentContainer.innerHTML = `<p class="text-slate-500 italic text-sm"><i class="fa-solid fa-circle-xmark mr-1"></i> Belum ada bukti pembayaran.</p>`;
           }
@@ -267,7 +284,8 @@ document.addEventListener('DOMContentLoaded', () => {
     const detailBtn = e.target.closest('.btn-detail');
     if (detailBtn) {
       const id = detailBtn.dataset.id;
-      const data = ppdbData.find(item => item.id === id);
+      // dataset.id is always a string; API data may use numeric ids.
+      const data = ppdbData.find(item => String(item.id) === String(id));
       
       if (data) {
         openDetailModal(data);

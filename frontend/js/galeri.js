@@ -8,16 +8,23 @@ window.saveGalleryImage = async function() {
     }
 
     const file = fileInput.files[0];
-    // Validasi Ukuran (Max 200KB)
-    if (file.size > 200 * 1024) {
-        document.getElementById('alert-title').textContent = 'Ukuran Terlalu Besar';
-        document.getElementById('alert-message').textContent = 'Ukuran gambar maksimal 200KB.';
+
+    const formData = new FormData();
+    try {
+        const compressed = await window.utils.compressImageAdaptive(file, { maxSizeKB: 200 });
+        if (compressed.size > 200 * 1024) {
+            document.getElementById('alert-title').textContent = 'Ukuran Terlalu Besar';
+            document.getElementById('alert-message').textContent = 'Ukuran gambar maksimal 200KB.';
+            window.utils.toggleModal('modal-alert');
+            return;
+        }
+        formData.append('gambar', compressed.blob, 'gallery.jpg');
+    } catch (e) {
+        document.getElementById('alert-title').textContent = 'Gagal Memproses Gambar';
+        document.getElementById('alert-message').textContent = 'Silakan coba gambar lain.';
         window.utils.toggleModal('modal-alert');
         return;
     }
-
-    const formData = new FormData();
-    formData.append('gambar', file);
 
     try {
         await window.DataStore.saveGallery(formData);
@@ -48,13 +55,6 @@ function initializeGalleryModalListeners() {
     if (dropzone) {
         const previewGalleryImage = (input) => {
             if (input.files && input.files[0]) {
-                if (input.files[0].size > 200 * 1024) {
-                    document.getElementById('alert-title').textContent = 'Ukuran Terlalu Besar';
-                    document.getElementById('alert-message').textContent = 'Ukuran gambar galeri maksimal 200KB.';
-                    window.utils.toggleModal('modal-alert');
-                    input.value = '';
-                    return;
-                }
                 const reader = new FileReader();
                 reader.onload = (e) => {
                     galleryPreviewImageEl.src = e.target.result;

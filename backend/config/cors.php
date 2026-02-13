@@ -1,5 +1,7 @@
 <?php
 
+// NOTE: Saat memakai cookie HttpOnly lintas origin, pastikan CORS mengizinkan origin frontend
+// melalui env CORS_ALLOWED_ORIGINS (comma-separated).
 return [
 
     /*
@@ -17,18 +19,30 @@ return [
 
     'paths' => ['api/*', 'sanctum/csrf-cookie', 'storage/*'],
 
-    'allowed_methods' => ['*'],
+    // Batasi metode hanya yang dibutuhkan
+    'allowed_methods' => ['GET', 'POST', 'PUT', 'PATCH', 'DELETE', 'OPTIONS'],
 
-    'allowed_origins' => ['*'],
+    // Wajib diisi di .env untuk production (comma-separated)
+    // Contoh: https://yayasanalittihadiyyah.com,https://www.yayasanalittihadiyyah.com
+    'allowed_origins' => env('CORS_ALLOWED_ORIGINS')
+        ? array_map('trim', explode(',', env('CORS_ALLOWED_ORIGINS')))
+        : [env('APP_URL', 'http://localhost:8000')],
 
     'allowed_origins_patterns' => [],
 
-    'allowed_headers' => ['*'],
+    // Batasi header yang diizinkan
+    'allowed_headers' => [
+        'Content-Type',
+        'Authorization',
+        'X-Requested-With',
+        'Accept',
+        'Origin',
+    ],
 
     'exposed_headers' => [],
 
     'max_age' => 0,
 
-    'supports_credentials' => false,
+    'supports_credentials' => true,
 
 ];

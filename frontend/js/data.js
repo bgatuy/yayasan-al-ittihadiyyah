@@ -3,12 +3,15 @@
 
   // --- CORE API REQUEST FUNCTION ---
   // Fungsi pusat untuk semua komunikasi API.
-  // Secara otomatis menambahkan header otentikasi untuk rute admin.
+  // Secara otomatis menambahkan header otentikasi jika token tersedia.
+  // Untuk mode cookie HttpOnly, autentikasi dilakukan via cookie.
   async function apiRequest(endpoint, method = 'GET', body = null, isFormData = false) {
     let url = `${window.APP_CONFIG.API_BASE_URL}${endpoint}`;
     
-    // Ambil token dari localStorage (atau di mana pun auth.js menyimpannya)
-    const token = window.Auth ? window.Auth.getAuthToken() : null;
+    // Ambil token jika ada (fallback, tidak digunakan saat cookie HttpOnly aktif)
+    const token = (window.Auth && typeof window.Auth.getAuthToken === 'function')
+      ? window.Auth.getAuthToken()
+      : null;
 
     const headers = {
       'Accept': 'application/json',
@@ -23,6 +26,7 @@
     const options = {
       method,
       headers,
+      credentials: 'include', // Kirim cookie HttpOnly untuk autentikasi
     };
 
     if (body) {
@@ -40,6 +44,8 @@
 
       if (response.status === 401) {
         const isLoginPage = window.location.pathname.endsWith('/login.html');
+        const isLogoutEndpoint = endpoint.startsWith('/admin/logout');
+        const isMeEndpoint = endpoint.startsWith('/admin/me');
 
         // Handle 401 untuk token yang kedaluwarsa di halaman mana pun KECUALI halaman login itu sendiri.
         // 401 di halaman login berarti kredensial salah, yang harus ditangani oleh alur error normal di bawah.
@@ -48,6 +54,12 @@
 
             // Untuk halaman admin mana pun, 401 yang tidak terduga berarti sesi telah berakhir. Logout.
             if (isAnAdminPage) {
+                if (isLogoutEndpoint) {
+                    return null;
+                }
+                if (isMeEndpoint) {
+                    throw new Error('Unauthorized');
+                }
                 if (window.Auth) {
                     window.Auth.logout(); // Fungsi ini menangani redirect.
                 }
@@ -87,6 +99,8 @@
   window.DataStore = {
     // --- AUTHENTICATION ---
     login: (credentials) => apiRequest('/login', 'POST', credentials),
+    getMe: () => apiRequest('/admin/me'),
+    logout: () => apiRequest('/admin/logout', 'POST'),
 
     // --- PUBLIC ENDPOINTS ---
     getPpdbPageSettings: () => apiRequest('/ppdb-page'),

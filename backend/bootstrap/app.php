@@ -3,6 +3,7 @@
 use Illuminate\Foundation\Application;
 use Illuminate\Foundation\Configuration\Exceptions;
 use Illuminate\Foundation\Configuration\Middleware;
+use Illuminate\Http\Request;
 
 return Application::configure(basePath: dirname(__DIR__))
     ->withRouting(
@@ -12,7 +13,13 @@ return Application::configure(basePath: dirname(__DIR__))
         health: '/up',
     )
     ->withMiddleware(function (Middleware $middleware): void {
-        //
+        $middleware->appendToGroup('api', [
+            \App\Http\Middleware\AttachBearerTokenFromCookie::class,
+        ]);
+        // Redirect guests only for non-API requests; avoid redirect for API (prevents 500 due to missing route)
+        $middleware->redirectGuestsTo(function (Request $request) {
+            return $request->expectsJson() ? null : '/admin/login.html';
+        });
     })
     ->withExceptions(function (Exceptions $exceptions): void {
         //
