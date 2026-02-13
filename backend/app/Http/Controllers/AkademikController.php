@@ -78,6 +78,7 @@ class AkademikController extends Controller
             $akademik->save();
 
             // 2. Handle Prestasi (Create/Update)
+            $keptPrestasiIds = [];
             if (!empty($validated['prestasi'])) {
                 foreach ($validated['prestasi'] as $index => $prestasiData) {
                     $prestasiFile = $request->file("prestasi.{$index}.image"); // Frontend mengirim 'image'
@@ -102,7 +103,8 @@ class AkademikController extends Controller
                         $dataToUpdate['gambar'] = $prestasiFile->store('prestasi', 'public_direct'); // Peta ke kolom 'gambar'
                     }
 
-                    Prestasi::updateOrCreate(['id' => $prestasiId], $dataToUpdate);
+                    $savedPrestasi = Prestasi::updateOrCreate(['id' => $prestasiId], $dataToUpdate);
+                    $keptPrestasiIds[] = $savedPrestasi->id;
                 }
             }
 
@@ -119,16 +121,9 @@ class AkademikController extends Controller
 
             // 3b. Sinkronkan prestasi berdasarkan data terkirim (jika diminta)
             if ($request->input('prestasi_sync') === 'true') {
-                $incomingIds = collect($validated['prestasi'] ?? [])
-                    ->pluck('id')
-                    ->filter()
-                    ->map(fn ($id) => (int) $id)
-                    ->values()
-                    ->all();
-
                 $query = Prestasi::where('jenjang', $jenjang);
-                if (!empty($incomingIds)) {
-                    $query->whereNotIn('id', $incomingIds);
+                if (!empty($keptPrestasiIds)) {
+                    $query->whereNotIn('id', $keptPrestasiIds);
                 }
                 $toDelete = $query->get();
                 foreach ($toDelete as $achievement) {
