@@ -39,6 +39,7 @@ class AkademikController extends Controller
             $validated = $request->validate([
                 'hero_image' => 'nullable|image|max:200',
                 'delete_hero_image' => 'nullable|string',
+                'prestasi_sync' => 'nullable|string',
                 'jadwal' => 'nullable|string',
                 'ekskul' => 'nullable|string',
                 'biaya_masuk' => 'nullable|string',
@@ -109,6 +110,28 @@ class AkademikController extends Controller
             if (!empty($validated['deleted_achievements'])) {
                 $achievementsToDelete = Prestasi::whereIn('id', $validated['deleted_achievements'])->get();
                 foreach ($achievementsToDelete as $achievement) {
+                    if ($achievement->gambar && Storage::disk('public_direct')->exists($achievement->gambar)) {
+                        Storage::disk('public_direct')->delete($achievement->gambar);
+                    }
+                    $achievement->delete();
+                }
+            }
+
+            // 3b. Sinkronkan prestasi berdasarkan data terkirim (jika diminta)
+            if ($request->input('prestasi_sync') === 'true') {
+                $incomingIds = collect($validated['prestasi'] ?? [])
+                    ->pluck('id')
+                    ->filter()
+                    ->map(fn ($id) => (int) $id)
+                    ->values()
+                    ->all();
+
+                $query = Prestasi::where('jenjang', $jenjang);
+                if (!empty($incomingIds)) {
+                    $query->whereNotIn('id', $incomingIds);
+                }
+                $toDelete = $query->get();
+                foreach ($toDelete as $achievement) {
                     if ($achievement->gambar && Storage::disk('public_direct')->exists($achievement->gambar)) {
                         Storage::disk('public_direct')->delete($achievement->gambar);
                     }

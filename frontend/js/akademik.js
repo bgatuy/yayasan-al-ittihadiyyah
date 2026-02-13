@@ -198,6 +198,8 @@ document.addEventListener('DOMContentLoaded', () => {
         
         // Create FormData
         const formData = new FormData();
+        // Signal backend to sync prestasi list against current state
+        formData.append('prestasi_sync', 'true');
 
         // Append main page data
         formData.append('jadwal', document.getElementById('academic-schedule').value); // jadwal_harian
