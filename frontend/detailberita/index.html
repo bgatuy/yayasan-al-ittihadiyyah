@@ -20,6 +20,12 @@
     /* Fix list style for dynamic content */
     #news-detail-content ul { list-style-type: disc; padding-left: 1.5rem; margin-bottom: 1rem; }
     #news-detail-content ol { list-style-type: decimal; padding-left: 1.5rem; margin-bottom: 1rem; }
+    /* Efek "Zoom Out" di Mobile agar layout lebih proporsional */
+    @media (max-width: 767px) {
+      html {
+        font-size: 81.25%; 
+      }
+    }
   </style>
 </head>
 <body class="bg-slate-50 text-slate-800">

@@ -27,6 +27,12 @@
         -ms-overflow-style: none;  /* IE and Edge */
         scrollbar-width: none;  /* Firefox */
     }
+    /* Efek "Zoom Out" di Mobile agar layout lebih proporsional */
+    @media (max-width: 767px) {
+      html {
+        font-size: 81.25%; 
+      }
+    }
   </style>
 </head>
 <body class="bg-slate-50 text-slate-800">
@@ -160,43 +166,78 @@
       </div>
     </div>
 
-    <!-- Visi Misi Redesigned -->
-    <div class="rounded-[3rem] p-8 md:p-16 relative overflow-hidden">      
+    <!-- VISI & MISI -->
+    <div class="rounded-[3rem] p-8 md:p-16 relative overflow-hidden bg-gradient-to-br from-slate-50 to-white border border-slate-100 shadow-sm">
+      <div class="absolute -top-24 -right-24 w-72 h-72 bg-primary/10 blur-3xl rounded-full"></div>
+      <div class="absolute -bottom-24 -left-24 w-72 h-72 bg-accent/20 blur-3xl rounded-full"></div>
+
       <div class="relative z-10">
-        <!-- Visi Section (Centered) -->
-        <div class="text-center max-w-3xl mx-auto mb-16 relative">
-           <h2 class="text-3xl font-bold text-primary mb-6 relative z-10">Visi & Misi</h2>
-           <p class="text-lg md:text-xl font-medium text-slate-700 mb-6 leading-relaxed italic relative z-10">
-             "Menjadi lembaga pendidikan Islam terdepan yang mencetak generasi Rabbani, unggul dalam prestasi, dan berwawasan global."
-           </p>
-           <p class="text-slate-500">Komitmen kami untuk masa depan pendidikan Islam yang lebih cerah.</p>
+        <div class="text-center max-w-3xl mx-auto mb-12">
+          <h2 class="text-3xl font-bold text-primary mb-4">Visi & Misi</h2>
+          <p class="text-slate-600">Komitmen kami membentuk generasi Rabbani yang unggul dan berwawasan global.</p>
         </div>
 
-        <!-- Misi Section (Grid) -->
+        <div class="grid lg:grid-cols-2 gap-8 md:gap-10 items-stretch">
+          <!-- Visi -->
+          <div class="bg-white/70 backdrop-blur rounded-3xl border border-white/60 shadow-sm p-8 md:p-10">
+            <div class="flex items-center gap-3 mb-5">
+              <div class="w-12 h-12 rounded-2xl bg-primary/10 text-primary flex items-center justify-center text-xl">
+                <i class="fa-solid fa-compass"></i>
+              </div>
+              <h3 class="text-xl font-bold text-slate-800">Visi</h3>
+            </div>
 
-        <div class="grid md:grid-cols-3 gap-8">
-          <div class="bg-white p-8 rounded-2xl shadow-sm border border-slate-100 hover:shadow-md transition group text-center md:text-left">
-            <div class="w-14 h-14 bg-blue-50 text-blue-600 rounded-2xl flex items-center justify-center text-2xl mb-6 group-hover:bg-blue-600 group-hover:text-white transition mx-auto md:mx-0">
-              <i class="fa-solid fa-book-quran"></i>
-            </div>
-            <h4 class="font-bold text-lg text-slate-800 mb-3">Pendidikan Karakter</h4>
-            <p class="text-slate-600 text-sm leading-relaxed">Menanamkan nilai-nilai tauhid dan akhlakul karimah dalam setiap aspek pembelajaran.</p>
-          </div>
-          
-          <div class="bg-white p-8 rounded-2xl shadow-sm border border-slate-100 hover:shadow-md transition group text-center md:text-left">
-            <div class="w-14 h-14 bg-emerald-50 text-emerald-600 rounded-2xl flex items-center justify-center text-2xl mb-6 group-hover:bg-emerald-600 group-hover:text-white transition mx-auto md:mx-0">
-              <i class="fa-solid fa-brain"></i>
-            </div>
-            <h4 class="font-bold text-lg text-slate-800 mb-3">Akademik Unggul</h4>
-            <p class="text-slate-600 text-sm leading-relaxed">Menyelenggarakan pembelajaran yang integratif, kreatif, dan inovatif berbasis teknologi.</p>
+            <blockquote class="text-lg md:text-xl font-semibold text-slate-800 leading-relaxed">
+              <span class="text-primary">&ldquo;</span>Menjadi lembaga pendidikan Islam terdepan yang mencetak generasi Rabbani, unggul dalam prestasi, dan berwawasan global.<span class="text-primary">&rdquo;</span>
+            </blockquote>
+
           </div>
 
-          <div class="bg-white p-8 rounded-2xl shadow-sm border border-slate-100 hover:shadow-md transition group text-center md:text-left">
-            <div class="w-14 h-14 bg-orange-50 text-orange-600 rounded-2xl flex items-center justify-center text-2xl mb-6 group-hover:bg-orange-600 group-hover:text-white transition mx-auto md:mx-0">
-              <i class="fa-solid fa-users-rays"></i>
+          <!-- Misi -->
+          <div class="bg-white rounded-3xl border border-slate-100 shadow-sm p-8 md:p-10">
+            <div class="flex items-center gap-3 mb-6">
+              <div class="w-12 h-12 rounded-2xl bg-accent/25 text-secondary flex items-center justify-center text-xl">
+                <i class="fa-solid fa-bullseye"></i>
+              </div>
+              <h3 class="text-xl font-bold text-slate-800">Misi</h3>
             </div>
-            <h4 class="font-bold text-lg text-slate-800 mb-3">Sinergi Harmonis</h4>
-            <p class="text-slate-600 text-sm leading-relaxed">Membangun kerjasama yang harmonis antara sekolah, orang tua, dan masyarakat luas.</p>
+
+            <ul class="space-y-5">
+              <li class="flex gap-4">
+                <div class="w-10 h-10 rounded-2xl bg-primary/10 text-primary flex items-center justify-center flex-shrink-0">
+                  <i class="fa-solid fa-circle-check"></i>
+                </div>
+                <div>
+                  <p class="font-bold text-slate-800">Pendidikan karakter</p>
+                  <p class="text-sm text-slate-600 leading-relaxed">Menanamkan nilai tauhid dan akhlakul karimah dalam setiap aspek pembelajaran.</p>
+                </div>
+              </li>
+
+              <li class="flex gap-4">
+                <div class="w-10 h-10 rounded-2xl bg-primary/10 text-primary flex items-center justify-center flex-shrink-0">
+                  <i class="fa-solid fa-circle-check"></i>
+                </div>
+                <div>
+                  <p class="font-bold text-slate-800">Akademik unggul</p>
+                  <p class="text-sm text-slate-600 leading-relaxed">Pembelajaran integratif, kreatif, dan inovatif yang relevan dengan perkembangan zaman.</p>
+                </div>
+              </li>
+
+              <li class="flex gap-4">
+                <div class="w-10 h-10 rounded-2xl bg-primary/10 text-primary flex items-center justify-center flex-shrink-0">
+                  <i class="fa-solid fa-circle-check"></i>
+                </div>
+                <div>
+                  <p class="font-bold text-slate-800">Sinergi harmonis</p>
+                  <p class="text-sm text-slate-600 leading-relaxed">Kolaborasi kuat antara sekolah, orang tua, dan masyarakat untuk mendukung tumbuh kembang anak.</p>
+                </div>
+              </li>
+            </ul>
+
+            <div class="mt-8 p-5 rounded-2xl bg-slate-50 border border-slate-100 text-sm text-slate-600">
+              <p class="font-semibold text-slate-700 mb-1">Prinsip kami</p>
+              <p>Iman & taqwa, disiplin, dan pembelajaran yang menyenangkan.</p>
+            </div>
           </div>
         </div>
       </div>
@@ -223,20 +264,37 @@
 </section>
 
 <!-- PROGRAM -->
-<section id="program" class="max-w-screen-xl mx-auto px-4 md:px-8 lg:px-12 py-20">
-  <h2 class="text-3xl font-bold text-center mb-14 text-primary">Program Unggulan</h2>
-  <div class="grid md:grid-cols-3 gap-8">
-    <div class="bg-white p-8 rounded-2xl shadow hover:shadow-lg transition">
-      <h3 class="font-semibold text-lg mb-3">Tahfidz & Akhlak</h3>
-      <p class="text-slate-600 text-sm">Pembiasaan ibadah, hafalan Al-Qur'an, dan pendidikan karakter Islami.</p>
+<section id="program" class="py-20 bg-gradient-to-b from-white to-slate-50">
+  <div class="max-w-screen-xl mx-auto px-4 md:px-8 lg:px-12">
+    <div class="text-center mb-14">
+      <h2 class="text-3xl font-bold text-primary mb-4">Program Unggulan</h2>
+      <p class="text-slate-600">Kurikulum seimbang untuk membentuk karakter, keterampilan, dan prestasi.</p>
     </div>
-    <div class="bg-white p-8 rounded-2xl shadow hover:shadow-lg transition">
-      <h3 class="font-semibold text-lg mb-3">Akademik Aktif</h3>
-      <p class="text-slate-600 text-sm">Belajar tematik, numerasi, literasi, dan sains berbasis praktik.</p>
-    </div>
-    <div class="bg-white p-8 rounded-2xl shadow hover:shadow-lg transition">
-      <h3 class="font-semibold text-lg mb-3">Ekstrakurikuler</h3>
-      <p class="text-slate-600 text-sm">Pramuka, seni islami, olahraga, dan kreativitas anak.</p>
+
+    <div class="grid md:grid-cols-3 gap-8">
+      <div class="bg-white p-8 rounded-3xl border border-slate-100 shadow-sm hover:shadow-lg hover:-translate-y-1 transition">
+        <div class="w-14 h-14 rounded-2xl bg-primary/10 text-primary flex items-center justify-center text-2xl mb-6">
+          <i class="fa-solid fa-book-quran"></i>
+        </div>
+        <h3 class="font-bold text-lg mb-2 text-slate-800">Tahfidz & Akhlak</h3>
+        <p class="text-slate-600 text-sm leading-relaxed">Pembiasaan ibadah, hafalan Al-Qur'an, dan pendidikan karakter Islami.</p>
+      </div>
+
+      <div class="bg-white p-8 rounded-3xl border border-slate-100 shadow-sm hover:shadow-lg hover:-translate-y-1 transition">
+        <div class="w-14 h-14 rounded-2xl bg-emerald-50 text-emerald-600 flex items-center justify-center text-2xl mb-6">
+          <i class="fa-solid fa-laptop-code"></i>
+        </div>
+        <h3 class="font-bold text-lg mb-2 text-slate-800">Akademik Aktif</h3>
+        <p class="text-slate-600 text-sm leading-relaxed">Belajar tematik, numerasi, literasi, dan sains berbasis praktik.</p>
+      </div>
+
+      <div class="bg-white p-8 rounded-3xl border border-slate-100 shadow-sm hover:shadow-lg hover:-translate-y-1 transition">
+        <div class="w-14 h-14 rounded-2xl bg-orange-50 text-orange-600 flex items-center justify-center text-2xl mb-6">
+          <i class="fa-solid fa-children"></i>
+        </div>
+        <h3 class="font-bold text-lg mb-2 text-slate-800">Ekstrakurikuler</h3>
+        <p class="text-slate-600 text-sm leading-relaxed">Pramuka, seni islami, olahraga, dan kreativitas anak.</p>
+      </div>
     </div>
   </div>
 </section>
