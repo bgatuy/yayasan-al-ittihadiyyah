@@ -597,40 +597,39 @@ function renderNewsCards(container, data) {
   }).join('');
 }
 
-// --- DATA SEJARAH (Timeline) ---
-const historyData = [
-  {
-    title: "1990 - Awal Berdiri",
-    desc: "Yayasan didirikan oleh Alm. H. Ahmad Dahlan bersama tokoh masyarakat setempat. Awalnya hanya berupa Taman Pendidikan Al-Qur'an (TPA) yang beroperasi di serambi masjid dengan 15 orang santri."
-  },
-  {
-    title: "1995 - Pendirian TK Islam",
-    desc: "Melihat kebutuhan akan pendidikan pra-sekolah yang berbasis Islam, yayasan resmi membuka TK Islam Al-Ittihadiyyah. Angkatan pertama terdiri dari 30 siswa dengan 3 orang tenaga pengajar."
-  },
-  {
-    title: "2005 - Peresmian Madrasah Ibtidaiyah",
-    desc: "Atas desakan wali murid yang menginginkan kelanjutan pendidikan yang selaras, Madrasah Ibtidaiyah (MI) didirikan. Gedung baru 2 lantai dibangun berkat wakaf dan gotong royong masyarakat."
-  },
-  {
-    title: "2015 - Akreditasi & Modernisasi",
-    desc: "MI Al-Ittihadiyyah berhasil meraih Akreditasi \"B\". Yayasan mulai melakukan modernisasi fasilitas dengan membangun laboratorium komputer dan perpustakaan digital untuk menunjang pembelajaran abad 21."
-  },
-  {
-    title: "Masa Kini",
-    desc: "Kini, Al-Ittihadiyyah telah meluluskan ribuan alumni yang tersebar di berbagai jenjang pendidikan lanjutan favorit. Kami terus berkomitmen meningkatkan kualitas SDM dan sarana prasarana demi mewujudkan generasi Rabbani yang unggul."
-  }
-];
-
 document.addEventListener('DOMContentLoaded', async () => {
-  const historyContainer = document.getElementById('history-container');
-  if (historyContainer) {
-    historyContainer.innerHTML = historyData.map((item, index) => `
-      <div class="relative">
-        <div class="absolute -left-[38px] md:-left-[54px] top-1 w-5 h-5 bg-primary rounded-full border-4 border-white shadow-sm"></div>
-        <h3 class="text-xl md:text-2xl font-bold text-slate-800 mb-2">${item.title}</h3>
-        <p class="text-slate-600 leading-relaxed">${item.desc}</p>
-      </div>
-    `).join('');
+  // --- ORGANIZATION CARD ACCORDION (Profil) ---
+  const accordion = document.querySelector('.org-accordion');
+  if (accordion) {
+    const panels = Array.from(accordion.querySelectorAll('details'));
+    panels.forEach(panel => {
+      const summary = panel.querySelector('summary');
+      if (!summary) return;
+
+      const togglePanel = () => {
+        const isOpen = panel.hasAttribute('open');
+        panels.forEach(other => {
+          if (other !== panel) other.removeAttribute('open');
+        });
+        if (isOpen) {
+          panel.removeAttribute('open');
+        } else {
+          panel.setAttribute('open', '');
+        }
+      };
+
+      summary.addEventListener('click', (e) => {
+        e.preventDefault();
+        togglePanel();
+      });
+
+      summary.addEventListener('keydown', (e) => {
+        if (e.key === 'Enter' || e.key === ' ') {
+          e.preventDefault();
+          togglePanel();
+        }
+      });
+    });
   }
 
   // --- RENDER GURU & STAFF (Halaman Guru) ---
@@ -665,9 +664,11 @@ document.addEventListener('DOMContentLoaded', async () => {
             teacherContainer.innerHTML = staff.map(item => {
                 const imageUrl = item.foto ? window.utils.getStorageUrl(item.foto) : 'https://placehold.co/240x320/E8E8E8/AAAAAA?text=Foto';
                 return `
-                    <div class="bg-white p-6 rounded-2xl shadow-sm border border-slate-100 hover:shadow-md transition flex flex-col sm:flex-row gap-6 items-start">
-                        <img src="${imageUrl}" alt="${item.nama}" class="w-24 h-32 object-cover rounded-xl shadow-sm flex-shrink-0 mx-auto sm:mx-0 bg-slate-100">
-                        <div class="flex-1 w-full text-center sm:text-left">
+                    <div class="bg-white rounded-2xl shadow-sm border border-slate-100 hover:shadow-md transition overflow-hidden flex flex-col sm:flex-row">
+                        <div class="w-full sm:w-1/3 bg-slate-100">
+                          <img src="${imageUrl}" alt="${item.nama}" class="w-full h-full object-cover min-h-[220px] sm:min-h-[260px]">
+                        </div>
+                        <div class="flex-1 p-6 flex flex-col justify-center text-center sm:text-left">
                           <h4 class="text-lg font-bold text-slate-800 mb-1">${item.nama}</h4>
                           <p class="text-primary text-sm font-medium mb-4">${item.jabatan}</p>
                           <div class="bg-slate-50 rounded-xl p-3 text-sm space-y-2 text-left">

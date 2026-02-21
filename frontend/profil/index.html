@@ -40,6 +40,7 @@
     <!-- Desktop Menu -->
     <nav class="hidden md:flex items-center gap-8 text-sm font-medium">
       <a href="/" class="hover:text-accent transition">Beranda</a>
+      <a href="/profil/" class="hover:text-accent transition">Profil</a>
       <a href="/berita/" class="hover:text-accent transition">Berita</a>
       <div class="relative group">
         <button class="hover:text-accent transition flex items-center gap-1 py-4">Akademik <i class="fa-solid fa-chevron-down text-xs"></i></button>
@@ -62,6 +63,9 @@
   <div id="mobile-menu" class="hidden md:hidden absolute top-full left-0 w-full bg-white/95 backdrop-blur-xl border-t border-slate-100 shadow-2xl flex-col p-4 gap-2 transition-all">
     <a href="/" class="flex items-center gap-4 px-4 py-3 font-semibold text-slate-600 hover:text-primary hover:bg-slate-50 rounded-xl transition">
       <i class="fa-solid fa-house w-5 text-center"></i> Beranda
+    </a>
+    <a href="/profil/" class="flex items-center gap-4 px-4 py-3 font-semibold text-slate-600 hover:text-primary hover:bg-slate-50 rounded-xl transition">
+      <i class="fa-solid fa-id-card w-5 text-center"></i> Profil
     </a>
     <a href="/berita/" class="flex items-center gap-4 px-4 py-3 font-semibold text-slate-600 hover:text-primary hover:bg-slate-50 rounded-xl transition">
       <i class="fa-solid fa-newspaper w-5 text-center"></i> Berita
@@ -106,9 +110,206 @@
 <!-- CONTENT (TIMELINE) -->
 <section class="py-20 bg-white">
   <div class="max-w-screen-xl mx-auto px-4 md:px-8 lg:px-12">
-    <div id="history-container" class="relative border-l-2 border-primary/20 pl-8 md:pl-12 space-y-12 max-w-3xl mx-auto">
-      <!-- Timeline items will be rendered here by JS -->
+    <!-- SAMBUTAN -->
+    <div class="max-w-5xl mx-auto mb-16">
+      <div class="grid md:grid-cols-12 gap-10 items-center">
+        <div class="md:col-span-4">
+          <div class="bg-slate-100 rounded-3xl p-3 shadow-sm border border-slate-100">
+            <img
+              src="https://placehold.co/600x750/E2E8F0/0F172A?text=Foto+Sambutan"
+              alt="Foto Kepala Sekolah"
+              class="w-full h-auto rounded-2xl object-cover"
+            />
+          </div>
+        </div>
+        <div class="md:col-span-8">
+          <p class="text-primary font-semibold tracking-wide mb-2">Sambutan</p>
+          <h2 class="text-2xl md:text-3xl font-bold text-slate-800 mb-4">Kepala Sekolah</h2>
+          <p class="text-slate-600 leading-relaxed">
+            Assalamu’alaikum warahmatullahi wabarakatuh. Selamat datang di Yayasan Pendidikan Islam Al‑Ittihadiyyah.
+            Kami berkomitmen membina generasi yang beradab, berilmu, dan berprestasi melalui pendidikan yang kokoh dalam
+            nilai keislaman serta relevan dengan kebutuhan zaman.
+          </p>
+          <div class="mt-6">
+            <p class="font-bold text-slate-800">Nama Pimpinan</p>
+            <p class="text-sm text-slate-500">Jabatan • Periode</p>
+          </div>
+        </div>
+      </div>
     </div>
+
+    <!-- SEJARAH SINGKAT -->
+    <div class="max-w-5xl mx-auto mb-16">
+      <div class="bg-slate-50 border border-slate-100 rounded-3xl p-8 md:p-10">
+        <div class="flex flex-col md:flex-row md:items-center md:justify-between gap-6">
+          <div>
+            <p class="text-primary font-semibold tracking-wide mb-2">Sejarah</p>
+            <h2 class="text-2xl md:text-3xl font-bold text-slate-800">Tahun Berdiri Yayasan</h2>
+          </div>
+          <div class="flex items-center gap-3 bg-white rounded-2xl border border-slate-100 px-5 py-4 shadow-sm">
+            <div class="w-11 h-11 rounded-2xl bg-primary/10 text-primary flex items-center justify-center text-xl">
+              <i class="fa-solid fa-calendar-days"></i>
+            </div>
+            <div>
+              <p class="text-sm text-slate-500 leading-none">Berdiri sejak</p>
+              <p class="text-xl font-bold text-slate-800 leading-none">1990</p>
+            </div>
+          </div>
+        </div>
+        <p class="text-slate-600 leading-relaxed mt-6">
+          Yayasan Pendidikan Islam Al‑Ittihadiyyah berdiri pada tahun 1990 sebagai ikhtiar menghadirkan pendidikan yang
+          menguatkan akidah, memperindah akhlak, dan menumbuhkan kecintaan terhadap ilmu. Seiring waktu, yayasan terus
+          berkembang untuk melayani kebutuhan pendidikan masyarakat dengan peningkatan mutu SDM dan sarana pembelajaran.
+        </p>
+      </div>
+    </div>
+
+    <!-- STRUKTUR ORGANISASI SEKOLAH -->
+    <div class="max-w-5xl mx-auto mb-16">
+      <div class="text-center mb-10">
+        <p class="text-primary font-semibold tracking-wide mb-2">Organisasi</p>
+        <h2 class="text-2xl md:text-3xl font-bold text-slate-800">Struktur Organisasi Sekolah</h2>
+        <p class="text-slate-600 mt-3">Susunan peran dan tanggung jawab utama di lingkungan sekolah.</p>
+      </div>
+
+      <div class="bg-slate-50 border border-slate-100 rounded-3xl p-6 md:p-10">
+        <div class="max-w-5xl mx-auto">
+          <div class="relative">
+            <div class="flex flex-col items-center gap-6">
+              <div class="w-full max-w-md mx-auto bg-white border border-slate-100 rounded-2xl p-6 shadow-sm">
+                <div class="flex flex-col items-center text-center gap-3">
+                  <div class="w-12 h-12 rounded-2xl bg-primary/10 text-primary flex items-center justify-center text-xl flex-shrink-0">
+                    <i class="fa-solid fa-user-tie"></i>
+                  </div>
+                  <div class="flex-1">
+                    <p class="font-bold text-slate-800 text-lg leading-tight">Kepala Sekolah</p>
+                    <p class="text-sm text-slate-600 mt-1">Nama Kepala Sekolah</p>
+                  </div>
+                </div>
+              </div>
+
+              <div class="hidden lg:block w-px h-8 bg-primary/20"></div>
+
+              <div class="w-full max-w-md mx-auto bg-white border border-slate-100 rounded-2xl p-6 shadow-sm">
+                <div class="flex flex-col items-center text-center gap-3">
+                  <div class="w-12 h-12 rounded-2xl bg-primary/10 text-primary flex items-center justify-center text-xl flex-shrink-0">
+                    <i class="fa-solid fa-user-group"></i>
+                  </div>
+                  <div class="flex-1">
+                    <p class="font-bold text-slate-800 text-lg leading-tight">Wakil Kepala Sekolah</p>
+                    <p class="text-sm text-slate-600 mt-1">Nama Wakil Kepala</p>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <div class="hidden lg:flex flex-col items-center mt-4">
+              <div class="w-px h-8 bg-primary/20"></div>
+              <div class="w-[min(760px,92%)] h-px bg-primary/20"></div>
+            </div>
+
+            <div class="grid md:grid-cols-2 lg:grid-cols-3 gap-6 mt-6 items-start org-accordion max-w-4xl mx-auto">
+              <details class="group bg-white border border-slate-100 rounded-2xl p-6 shadow-sm h-fit">
+                <summary class="list-none cursor-pointer select-none">
+                  <div class="flex items-center gap-4">
+                    <div class="w-11 h-11 rounded-2xl bg-primary/10 text-primary flex items-center justify-center text-lg flex-shrink-0">
+                      <i class="fa-solid fa-chalkboard-user"></i>
+                    </div>
+                    <div class="flex-1">
+                      <div class="flex items-center justify-between gap-3">
+                        <div>
+                          <p class="font-bold text-slate-800 leading-tight">Guru</p>
+                        </div>
+                        <i class="fa-solid fa-chevron-down text-slate-400 transition-transform duration-300 group-open:rotate-180"></i>
+                      </div>
+                    </div>
+                  </div>
+                </summary>
+                <div class="pt-4">
+                  <div class="grid grid-cols-1 gap-3 w-full">
+                    <div class="bg-slate-50 border border-slate-100 rounded-xl p-3">
+                      <p class="font-semibold text-slate-800 text-sm">Nama Guru 1</p>
+                      <p class="text-xs text-slate-500">Mata Pelajaran</p>
+                    </div>
+                    <div class="bg-slate-50 border border-slate-100 rounded-xl p-3">
+                      <p class="font-semibold text-slate-800 text-sm">Nama Guru 2</p>
+                      <p class="text-xs text-slate-500">Mata Pelajaran</p>
+                    </div>
+                    <div class="bg-slate-50 border border-slate-100 rounded-xl p-3">
+                      <p class="font-semibold text-slate-800 text-sm">Nama Guru 3</p>
+                      <p class="text-xs text-slate-500">Mata Pelajaran</p>
+                    </div>
+                  </div>
+                </div>
+              </details>
+
+              <details class="group bg-white border border-slate-100 rounded-2xl p-6 shadow-sm h-fit">
+                <summary class="list-none cursor-pointer select-none">
+                  <div class="flex items-center gap-4">
+                    <div class="w-11 h-11 rounded-2xl bg-primary/10 text-primary flex items-center justify-center text-lg flex-shrink-0">
+                      <i class="fa-solid fa-building-user"></i>
+                    </div>
+                    <div class="flex-1">
+                      <div class="flex items-center justify-between gap-3">
+                        <div>
+                          <p class="font-bold text-slate-800 leading-tight">Staff Tata Usaha (TU)</p>
+                        </div>
+                        <i class="fa-solid fa-chevron-down text-slate-400 transition-transform duration-300 group-open:rotate-180"></i>
+                      </div>
+                    </div>
+                  </div>
+                </summary>
+                <div class="pt-4">
+                  <div class="grid grid-cols-1 gap-3 w-full">
+                    <div class="bg-slate-50 border border-slate-100 rounded-xl p-3">
+                      <p class="font-semibold text-slate-800 text-sm">Nama TU 1</p>
+                      <p class="text-xs text-slate-500">Staff Tata Usaha</p>
+                    </div>
+                    <div class="bg-slate-50 border border-slate-100 rounded-xl p-3">
+                      <p class="font-semibold text-slate-800 text-sm">Nama TU 2</p>
+                      <p class="text-xs text-slate-500">Staff Tata Usaha</p>
+                    </div>
+                  </div>
+                </div>
+              </details>
+
+              <details class="group bg-white border border-slate-100 rounded-2xl p-6 shadow-sm h-fit">
+                <summary class="list-none cursor-pointer select-none">
+                  <div class="flex items-center gap-4">
+                    <div class="w-11 h-11 rounded-2xl bg-emerald-500/10 text-emerald-700 flex items-center justify-center text-lg flex-shrink-0">
+                      <i class="fa-solid fa-people-carry-box"></i>
+                    </div>
+                    <div class="flex-1">
+                      <div class="flex items-center justify-between gap-3">
+                        <div>
+                          <p class="font-bold text-slate-800 leading-tight">Staff</p>
+                        </div>
+                        <i class="fa-solid fa-chevron-down text-slate-400 transition-transform duration-300 group-open:rotate-180"></i>
+                      </div>
+                    </div>
+                  </div>
+                </summary>
+                <div class="pt-4">
+                  <div class="grid grid-cols-1 gap-3 w-full">
+                    <div class="bg-slate-50 border border-slate-100 rounded-xl p-3">
+                      <p class="font-semibold text-slate-800 text-sm">Nama Staff 1</p>
+                      <p class="text-xs text-slate-500">Jabatan/Staff</p>
+                    </div>
+                    <div class="bg-slate-50 border border-slate-100 rounded-xl p-3">
+                      <p class="font-semibold text-slate-800 text-sm">Nama Staff 2</p>
+                      <p class="text-xs text-slate-500">Jabatan/Staff</p>
+                    </div>
+                  </div>
+                </div>
+              </details>
+            </div>
+          </div>
+        </div>
+
+        </div>
+      </div>
+    </div>
+
   </div>
 </section>
 
