@@ -343,7 +343,18 @@ document.addEventListener('DOMContentLoaded', async () => {
 
             resultCard.classList.remove('hidden');
         } else {
-            alert('Data tidak ditemukan! Mohon periksa kembali ID Pendaftaran Anda.');
+            const modalAlert = document.getElementById('modal-alert-ppdb');
+            const alertMsg = document.getElementById('alert-message-ppdb');
+            const alertTitle = document.getElementById('alert-title-ppdb');
+
+            if (modalAlert) {
+                if (alertTitle) alertTitle.textContent = 'Data Tidak Ditemukan';
+                if (alertMsg) alertMsg.textContent = 'Data tidak ditemukan! Mohon periksa kembali ID Pendaftaran Anda.';
+                modalAlert.classList.remove('hidden');
+                modalAlert.classList.add('flex');
+            } else {
+                alert('Data tidak ditemukan! Mohon periksa kembali ID Pendaftaran Anda.');
+            }
             resultCard.classList.add('hidden');
         }
     });
